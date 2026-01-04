@@ -25,10 +25,10 @@ from elo_calculator import (
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.firefox.options import Options
+from webdriver_manager.firefox import GeckoDriverManager
 
 # ============================================
 # CONFIGURATION
@@ -73,7 +73,7 @@ TEAMS_FOR_ELO_API = [
 # ============================================
 
 class OddsCalculator:
-    def __init__(self, data_dir='assets/data'):
+    def __init__(self, data_dir='data'):
         """Initialize the calculator with data directory"""
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
@@ -90,11 +90,9 @@ class OddsCalculator:
         self.load_existing_data()
         
         # Selenium setup for scraping
-        self.chrome_options = Options()
-        self.chrome_options.add_argument("--headless")
-        self.chrome_options.add_argument("--no-sandbox")
-        self.chrome_options.add_argument("--disable-dev-shm-usage")
-        self.service = ChromeService(ChromeDriverManager().install())
+        self.firefox_options = Options()
+        self.firefox_options.add_argument("--headless")
+        self.service = FirefoxService(GeckoDriverManager().install())
     
     def load_existing_data(self):
         """Load existing JSON data if available"""
@@ -344,7 +342,7 @@ class OddsCalculator:
                 continue
             
             url = f'https://www.premierleague.com/en/match/{match_id}'
-            driver = webdriver.Chrome(service=self.service, options=self.chrome_options)
+            driver = webdriver.Firefox(service=self.service, options=self.firefox_options)
             
             try:
                 driver.get(url)
