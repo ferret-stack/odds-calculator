@@ -1,0 +1,338 @@
+{
+  "Arsenal": {
+    "last_10_avg_goals_for": 2.1,
+    "last_10_avg_goals_against": 0.9,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 34.1,
+    "form": {
+      "elo_change_last_5": 5,
+      "elo_change_last_10": 12,
+      "trend": "stable",
+      "form_rating": 5.3
+    }
+  },
+  "Man City": {
+    "last_10_avg_goals_for": 2.6,
+    "last_10_avg_goals_against": 1.0,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 31.9,
+    "form": {
+      "elo_change_last_5": 20,
+      "elo_change_last_10": 32,
+      "trend": "improving",
+      "form_rating": 6.4
+    }
+  },
+  "Liverpool": {
+    "last_10_avg_goals_for": 1.4,
+    "last_10_avg_goals_against": 1.2,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 31.5,
+    "form": {
+      "elo_change_last_5": -1,
+      "elo_change_last_10": -31,
+      "trend": "stable",
+      "form_rating": 5.5
+    }
+  },
+  "Aston Villa": {
+    "last_10_avg_goals_for": 2.1,
+    "last_10_avg_goals_against": 1.5,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 40.7,
+    "form": {
+      "elo_change_last_5": 19,
+      "elo_change_last_10": 37,
+      "trend": "improving",
+      "form_rating": 6.2
+    }
+  },
+  "Chelsea": {
+    "last_10_avg_goals_for": 1.5,
+    "last_10_avg_goals_against": 1.0,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 39.0,
+    "form": {
+      "elo_change_last_5": -5,
+      "elo_change_last_10": -5,
+      "trend": "stable",
+      "form_rating": 4.6
+    }
+  },
+  "Newcastle": {
+    "last_10_avg_goals_for": 1.7,
+    "last_10_avg_goals_against": 1.6,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 37.0,
+    "form": {
+      "elo_change_last_5": -6,
+      "elo_change_last_10": -11,
+      "trend": "stable",
+      "form_rating": 4.6
+    }
+  },
+  "Brighton": {
+    "last_10_avg_goals_for": 1.4,
+    "last_10_avg_goals_against": 1.2,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 37.6,
+    "form": {
+      "elo_change_last_5": -16,
+      "elo_change_last_10": 0,
+      "trend": "declining",
+      "form_rating": 4.0
+    }
+  },
+  "Brentford": {
+    "last_10_avg_goals_for": 1.4,
+    "last_10_avg_goals_against": 1.2,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 33.4,
+    "form": {
+      "elo_change_last_5": -1,
+      "elo_change_last_10": -4,
+      "trend": "stable",
+      "form_rating": 5.0
+    }
+  },
+  "Man Utd": {
+    "last_10_avg_goals_for": 1.8,
+    "last_10_avg_goals_against": 1.5,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 33.2,
+    "form": {
+      "elo_change_last_5": 1,
+      "elo_change_last_10": 0,
+      "trend": "stable",
+      "form_rating": 5.1
+    }
+  },
+  "Crystal Palace": {
+    "last_10_avg_goals_for": 1.0,
+    "last_10_avg_goals_against": 1.2,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 36.1,
+    "form": {
+      "elo_change_last_5": -36,
+      "elo_change_last_10": -31,
+      "trend": "declining",
+      "form_rating": 2.0
+    }
+  },
+  "Spurs": {
+    "last_10_avg_goals_for": 1.0,
+    "last_10_avg_goals_against": 1.6,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 39.4,
+    "form": {
+      "elo_change_last_5": 1,
+      "elo_change_last_10": -19,
+      "trend": "stable",
+      "form_rating": 5.5
+    }
+  },
+  "Sunderland": {
+    "last_10_avg_goals_for": 1.0,
+    "last_10_avg_goals_against": 1.1,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 0.0,
+    "form": {
+      "elo_change_last_5": 5,
+      "elo_change_last_10": 25,
+      "trend": "stable",
+      "form_rating": 5.0
+    }
+  },
+  "Everton": {
+    "last_10_avg_goals_for": 1.0,
+    "last_10_avg_goals_against": 1.0,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 35.0,
+    "form": {
+      "elo_change_last_5": 10,
+      "elo_change_last_10": 5,
+      "trend": "stable",
+      "form_rating": 5.9
+    }
+  },
+  "Fulham": {
+    "last_10_avg_goals_for": 1.7,
+    "last_10_avg_goals_against": 1.3,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 32.7,
+    "form": {
+      "elo_change_last_5": 16,
+      "elo_change_last_10": 26,
+      "trend": "improving",
+      "form_rating": 6.1
+    }
+  },
+  "Bournemouth": {
+    "last_10_avg_goals_for": 1.3,
+    "last_10_avg_goals_against": 2.4,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 35.1,
+    "form": {
+      "elo_change_last_5": -5,
+      "elo_change_last_10": -36,
+      "trend": "stable",
+      "form_rating": 5.2
+    }
+  },
+  "Nott'm Forest": {
+    "last_10_avg_goals_for": 1.3,
+    "last_10_avg_goals_against": 1.3,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 36.4,
+    "form": {
+      "elo_change_last_5": -18,
+      "elo_change_last_10": 6,
+      "trend": "declining",
+      "form_rating": 3.1
+    }
+  },
+  "West Ham": {
+    "last_10_avg_goals_for": 1.4,
+    "last_10_avg_goals_against": 1.8,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 28.0,
+    "form": {
+      "elo_change_last_5": -11,
+      "elo_change_last_10": 9,
+      "trend": "stable",
+      "form_rating": 3.7
+    }
+  },
+  "Leeds": {
+    "last_10_avg_goals_for": 1.6,
+    "last_10_avg_goals_against": 1.8,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 34.5,
+    "form": {
+      "elo_change_last_5": 42,
+      "elo_change_last_10": 45,
+      "trend": "improving",
+      "form_rating": 8.3
+    }
+  },
+  "Luton": {
+    "last_10_avg_goals_for": 1.1,
+    "last_10_avg_goals_against": 2.6,
+    "last_10_avg_booking_points": 36.0,
+    "season_avg_booking_points": 38.4,
+    "form": {
+      "elo_change_last_5": -40,
+      "elo_change_last_10": -43,
+      "trend": "declining",
+      "form_rating": 1.9
+    }
+  },
+  "Ipswich": {
+    "last_10_avg_goals_for": 1.0,
+    "last_10_avg_goals_against": 2.4,
+    "last_10_avg_booking_points": 36.0,
+    "season_avg_booking_points": 42.3,
+    "form": {
+      "elo_change_last_5": -24,
+      "elo_change_last_10": -32,
+      "trend": "declining",
+      "form_rating": 3.2
+    }
+  },
+  "West Brom": {
+    "last_10_avg_goals_for": 1.5,
+    "last_10_avg_goals_against": 2.0,
+    "last_10_avg_booking_points": 25.5,
+    "season_avg_booking_points": 29.3,
+    "form": {
+      "elo_change_last_5": 0,
+      "elo_change_last_10": -22,
+      "trend": "stable",
+      "form_rating": 5.4
+    }
+  },
+  "Leicester": {
+    "last_10_avg_goals_for": 0.8,
+    "last_10_avg_goals_against": 1.8,
+    "last_10_avg_booking_points": 35.0,
+    "season_avg_booking_points": 32.8,
+    "form": {
+      "elo_change_last_5": 8,
+      "elo_change_last_10": -8,
+      "trend": "stable",
+      "form_rating": 6.0
+    }
+  },
+  "Burnley": {
+    "last_10_avg_goals_for": 0.8,
+    "last_10_avg_goals_against": 2.0,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 28.3,
+    "form": {
+      "elo_change_last_5": -7,
+      "elo_change_last_10": -28,
+      "trend": "stable",
+      "form_rating": 4.9
+    }
+  },
+  "Wolves": {
+    "last_10_avg_goals_for": 0.4,
+    "last_10_avg_goals_against": 2.1,
+    "last_10_avg_booking_points": 0.0,
+    "season_avg_booking_points": 38.0,
+    "form": {
+      "elo_change_last_5": -13,
+      "elo_change_last_10": -38,
+      "trend": "stable",
+      "form_rating": 4.5
+    }
+  },
+  "Watford": {
+    "last_10_avg_goals_for": 0.7,
+    "last_10_avg_goals_against": 2.3,
+    "last_10_avg_booking_points": 25.5,
+    "season_avg_booking_points": 33.9,
+    "form": {
+      "elo_change_last_5": -35,
+      "elo_change_last_10": -56,
+      "trend": "declining",
+      "form_rating": 2.6
+    }
+  },
+  "Norwich": {
+    "last_10_avg_goals_for": 0.7,
+    "last_10_avg_goals_against": 2.3,
+    "last_10_avg_booking_points": 26.0,
+    "season_avg_booking_points": 32.0,
+    "form": {
+      "elo_change_last_5": -8,
+      "elo_change_last_10": -39,
+      "trend": "stable",
+      "form_rating": 5.0
+    }
+  },
+  "Sheffield Utd": {
+    "last_10_avg_goals_for": 1.1,
+    "last_10_avg_goals_against": 2.8,
+    "last_10_avg_booking_points": 33.5,
+    "season_avg_booking_points": 36.9,
+    "form": {
+      "elo_change_last_5": -36,
+      "elo_change_last_10": -27,
+      "trend": "declining",
+      "form_rating": 1.9
+    }
+  },
+  "Southampton": {
+    "last_10_avg_goals_for": 0.5,
+    "last_10_avg_goals_against": 2.3,
+    "last_10_avg_booking_points": 22.0,
+    "season_avg_booking_points": 34.4,
+    "form": {
+      "elo_change_last_5": -5,
+      "elo_change_last_10": -21,
+      "trend": "stable",
+      "form_rating": 4.9
+    }
+  }
+}
