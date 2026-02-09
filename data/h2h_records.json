@@ -47,14 +47,6 @@
     "last_result": "Arsenal 2-3 Man Utd",
     "last_date": "2026-01-25"
   },
-  "Arsenal_Brighton": {
-    "total_games": 11,
-    "Arsenal_wins": 6,
-    "Brighton_wins": 2,
-    "draws": 3,
-    "last_result": "Arsenal 2-1 Brighton",
-    "last_date": "2025-12-27"
-  },
   "Arsenal_Brentford": {
     "total_games": 8,
     "Arsenal_wins": 5,
@@ -63,13 +55,13 @@
     "last_result": "Arsenal 2-0 Brentford",
     "last_date": "2025-12-03"
   },
-  "Arsenal_Fulham": {
-    "total_games": 9,
-    "Arsenal_wins": 5,
-    "Fulham_wins": 1,
+  "Arsenal_Brighton": {
+    "total_games": 11,
+    "Arsenal_wins": 6,
+    "Brighton_wins": 2,
     "draws": 3,
-    "last_result": "Fulham 0-1 Arsenal",
-    "last_date": "2025-10-18"
+    "last_result": "Arsenal 2-1 Brighton",
+    "last_date": "2025-12-27"
   },
   "Arsenal_Crystal Palace": {
     "total_games": 10,
@@ -87,6 +79,22 @@
     "last_result": "Arsenal 4-1 Spurs",
     "last_date": "2025-11-23"
   },
+  "Arsenal_Sunderland": {
+    "total_games": 2,
+    "Arsenal_wins": 1,
+    "Sunderland_wins": 0,
+    "draws": 1,
+    "last_result": "Arsenal 3-0 Sunderland",
+    "last_date": "2026-02-07"
+  },
+  "Arsenal_Fulham": {
+    "total_games": 9,
+    "Arsenal_wins": 5,
+    "Fulham_wins": 1,
+    "draws": 3,
+    "last_result": "Fulham 0-1 Arsenal",
+    "last_date": "2025-10-18"
+  },
   "Arsenal_Bournemouth": {
     "total_games": 7,
     "Arsenal_wins": 5,
@@ -94,14 +102,6 @@
     "draws": 0,
     "last_result": "Bournemouth 2-3 Arsenal",
     "last_date": "2026-01-03"
-  },
-  "Arsenal_Sunderland": {
-    "total_games": 1,
-    "Arsenal_wins": 0,
-    "Sunderland_wins": 0,
-    "draws": 1,
-    "last_result": "Sunderland 2-2 Arsenal",
-    "last_date": "2025-11-08"
   },
   "Arsenal_Everton": {
     "total_games": 11,
@@ -216,12 +216,12 @@
     "last_date": "2025-05-25"
   },
   "Liverpool_Man City": {
-    "total_games": 11,
+    "total_games": 12,
     "Liverpool_wins": 3,
-    "Man City_wins": 3,
+    "Man City_wins": 4,
     "draws": 5,
-    "last_result": "Man City 3-0 Liverpool",
-    "last_date": "2025-11-09"
+    "last_result": "Liverpool 1-2 Man City",
+    "last_date": "2026-02-08"
   },
   "Aston Villa_Man City": {
     "total_games": 11,
@@ -255,14 +255,6 @@
     "last_result": "Man Utd 2-0 Man City",
     "last_date": "2026-01-17"
   },
-  "Brighton_Man City": {
-    "total_games": 12,
-    "Brighton_wins": 4,
-    "Man City_wins": 5,
-    "draws": 3,
-    "last_result": "Man City 1-1 Brighton",
-    "last_date": "2026-01-07"
-  },
   "Brentford_Man City": {
     "total_games": 9,
     "Brentford_wins": 2,
@@ -271,13 +263,13 @@
     "last_result": "Brentford 0-1 Man City",
     "last_date": "2025-10-05"
   },
-  "Fulham_Man City": {
-    "total_games": 9,
-    "Fulham_wins": 0,
-    "Man City_wins": 9,
-    "draws": 0,
-    "last_result": "Fulham 4-5 Man City",
-    "last_date": "2025-12-02"
+  "Brighton_Man City": {
+    "total_games": 12,
+    "Brighton_wins": 4,
+    "Man City_wins": 5,
+    "draws": 3,
+    "last_result": "Man City 1-1 Brighton",
+    "last_date": "2026-01-07"
   },
   "Crystal Palace_Man City": {
     "total_games": 10,
@@ -295,14 +287,6 @@
     "last_result": "Spurs 2-2 Man City",
     "last_date": "2026-02-01"
   },
-  "Bournemouth_Man City": {
-    "total_games": 7,
-    "Bournemouth_wins": 0,
-    "Man City_wins": 7,
-    "draws": 0,
-    "last_result": "Man City 3-1 Bournemouth",
-    "last_date": "2025-11-02"
-  },
   "Man City_Sunderland": {
     "total_games": 2,
     "Man City_wins": 1,
@@ -310,6 +294,22 @@
     "draws": 1,
     "last_result": "Sunderland 0-0 Man City",
     "last_date": "2026-01-01"
+  },
+  "Fulham_Man City": {
+    "total_games": 9,
+    "Fulham_wins": 0,
+    "Man City_wins": 9,
+    "draws": 0,
+    "last_result": "Fulham 4-5 Man City",
+    "last_date": "2025-12-02"
+  },
+  "Bournemouth_Man City": {
+    "total_games": 7,
+    "Bournemouth_wins": 0,
+    "Man City_wins": 7,
+    "draws": 0,
+    "last_result": "Man City 3-1 Bournemouth",
+    "last_date": "2025-11-02"
   },
   "Everton_Man City": {
     "total_games": 11,
@@ -455,14 +455,6 @@
     "last_result": "Liverpool 1-2 Man Utd",
     "last_date": "2025-10-19"
   },
-  "Brighton_Liverpool": {
-    "total_games": 10,
-    "Brighton_wins": 3,
-    "Liverpool_wins": 3,
-    "draws": 4,
-    "last_result": "Liverpool 2-0 Brighton",
-    "last_date": "2025-12-13"
-  },
   "Brentford_Liverpool": {
     "total_games": 8,
     "Brentford_wins": 2,
@@ -471,13 +463,13 @@
     "last_result": "Brentford 3-2 Liverpool",
     "last_date": "2025-10-25"
   },
-  "Fulham_Liverpool": {
-    "total_games": 9,
-    "Fulham_wins": 2,
+  "Brighton_Liverpool": {
+    "total_games": 10,
+    "Brighton_wins": 3,
     "Liverpool_wins": 3,
     "draws": 4,
-    "last_result": "Fulham 2-2 Liverpool",
-    "last_date": "2026-01-04"
+    "last_result": "Liverpool 2-0 Brighton",
+    "last_date": "2025-12-13"
   },
   "Crystal Palace_Liverpool": {
     "total_games": 11,
@@ -495,14 +487,6 @@
     "last_result": "Spurs 1-2 Liverpool",
     "last_date": "2025-12-20"
   },
-  "Bournemouth_Liverpool": {
-    "total_games": 7,
-    "Bournemouth_wins": 2,
-    "Liverpool_wins": 5,
-    "draws": 0,
-    "last_result": "Bournemouth 3-2 Liverpool",
-    "last_date": "2026-01-24"
-  },
   "Liverpool_Sunderland": {
     "total_games": 1,
     "Liverpool_wins": 0,
@@ -510,6 +494,22 @@
     "draws": 1,
     "last_result": "Liverpool 1-1 Sunderland",
     "last_date": "2025-12-03"
+  },
+  "Fulham_Liverpool": {
+    "total_games": 9,
+    "Fulham_wins": 2,
+    "Liverpool_wins": 3,
+    "draws": 4,
+    "last_result": "Fulham 2-2 Liverpool",
+    "last_date": "2026-01-04"
+  },
+  "Bournemouth_Liverpool": {
+    "total_games": 7,
+    "Bournemouth_wins": 2,
+    "Liverpool_wins": 5,
+    "draws": 0,
+    "last_result": "Bournemouth 3-2 Liverpool",
+    "last_date": "2026-01-24"
   },
   "Everton_Liverpool": {
     "total_games": 9,
@@ -647,14 +647,6 @@
     "last_result": "Aston Villa 2-1 Man Utd",
     "last_date": "2025-12-21"
   },
-  "Aston Villa_Brighton": {
-    "total_games": 10,
-    "Aston Villa_wins": 7,
-    "Brighton_wins": 2,
-    "draws": 1,
-    "last_result": "Brighton 3-4 Aston Villa",
-    "last_date": "2025-12-03"
-  },
   "Aston Villa_Brentford": {
     "total_games": 10,
     "Aston Villa_wins": 4,
@@ -663,13 +655,13 @@
     "last_result": "Aston Villa 0-1 Brentford",
     "last_date": "2026-02-01"
   },
-  "Aston Villa_Fulham": {
-    "total_games": 8,
+  "Aston Villa_Brighton": {
+    "total_games": 10,
     "Aston Villa_wins": 7,
-    "Fulham_wins": 1,
-    "draws": 0,
-    "last_result": "Aston Villa 3-1 Fulham",
-    "last_date": "2025-09-28"
+    "Brighton_wins": 2,
+    "draws": 1,
+    "last_result": "Brighton 3-4 Aston Villa",
+    "last_date": "2025-12-03"
   },
   "Aston Villa_Crystal Palace": {
     "total_games": 12,
@@ -687,14 +679,6 @@
     "last_result": "Spurs 1-2 Aston Villa",
     "last_date": "2025-10-19"
   },
-  "Aston Villa_Bournemouth": {
-    "total_games": 7,
-    "Aston Villa_wins": 4,
-    "Bournemouth_wins": 1,
-    "draws": 2,
-    "last_result": "Aston Villa 4-0 Bournemouth",
-    "last_date": "2025-11-09"
-  },
   "Aston Villa_Sunderland": {
     "total_games": 1,
     "Aston Villa_wins": 0,
@@ -702,6 +686,22 @@
     "draws": 1,
     "last_result": "Sunderland 1-1 Aston Villa",
     "last_date": "2025-09-21"
+  },
+  "Aston Villa_Fulham": {
+    "total_games": 8,
+    "Aston Villa_wins": 7,
+    "Fulham_wins": 1,
+    "draws": 0,
+    "last_result": "Aston Villa 3-1 Fulham",
+    "last_date": "2025-09-28"
+  },
+  "Aston Villa_Bournemouth": {
+    "total_games": 8,
+    "Aston Villa_wins": 4,
+    "Bournemouth_wins": 1,
+    "draws": 3,
+    "last_result": "Bournemouth 1-1 Aston Villa",
+    "last_date": "2026-02-07"
   },
   "Aston Villa_Everton": {
     "total_games": 12,
@@ -831,14 +831,6 @@
     "last_result": "Man Utd 2-1 Chelsea",
     "last_date": "2025-09-20"
   },
-  "Brighton_Chelsea": {
-    "total_games": 10,
-    "Brighton_wins": 4,
-    "Chelsea_wins": 3,
-    "draws": 3,
-    "last_result": "Chelsea 1-3 Brighton",
-    "last_date": "2025-09-27"
-  },
   "Brentford_Chelsea": {
     "total_games": 10,
     "Brentford_wins": 3,
@@ -847,13 +839,13 @@
     "last_result": "Chelsea 2-0 Brentford",
     "last_date": "2026-01-17"
   },
-  "Chelsea_Fulham": {
+  "Brighton_Chelsea": {
     "total_games": 10,
-    "Chelsea_wins": 6,
-    "Fulham_wins": 3,
-    "draws": 1,
-    "last_result": "Fulham 2-1 Chelsea",
-    "last_date": "2026-01-07"
+    "Brighton_wins": 4,
+    "Chelsea_wins": 3,
+    "draws": 3,
+    "last_result": "Chelsea 1-3 Brighton",
+    "last_date": "2025-09-27"
   },
   "Chelsea_Crystal Palace": {
     "total_games": 12,
@@ -871,14 +863,6 @@
     "last_result": "Spurs 0-1 Chelsea",
     "last_date": "2025-11-01"
   },
-  "Bournemouth_Chelsea": {
-    "total_games": 8,
-    "Bournemouth_wins": 0,
-    "Chelsea_wins": 4,
-    "draws": 4,
-    "last_result": "Chelsea 2-2 Bournemouth",
-    "last_date": "2026-12-30"
-  },
   "Chelsea_Sunderland": {
     "total_games": 1,
     "Chelsea_wins": 0,
@@ -886,6 +870,22 @@
     "draws": 0,
     "last_result": "Chelsea 1-2 Sunderland",
     "last_date": "2025-10-25"
+  },
+  "Chelsea_Fulham": {
+    "total_games": 10,
+    "Chelsea_wins": 6,
+    "Fulham_wins": 3,
+    "draws": 1,
+    "last_result": "Fulham 2-1 Chelsea",
+    "last_date": "2026-01-07"
+  },
+  "Bournemouth_Chelsea": {
+    "total_games": 8,
+    "Bournemouth_wins": 0,
+    "Chelsea_wins": 4,
+    "draws": 4,
+    "last_result": "Chelsea 2-2 Bournemouth",
+    "last_date": "2026-12-30"
   },
   "Chelsea_Everton": {
     "total_games": 10,
@@ -960,12 +960,12 @@
     "last_date": "2025-11-22"
   },
   "Chelsea_Wolves": {
-    "total_games": 10,
-    "Chelsea_wins": 3,
+    "total_games": 11,
+    "Chelsea_wins": 4,
     "Wolves_wins": 4,
     "draws": 3,
-    "last_result": "Chelsea 3-0 Wolves",
-    "last_date": "2025-11-08"
+    "last_result": "Wolves 1-3 Chelsea",
+    "last_date": "2026-02-07"
   },
   "Chelsea_Watford": {
     "total_games": 2,
@@ -1007,6 +1007,14 @@
     "last_result": "Man Utd 1-0 Newcastle",
     "last_date": "2025-12-26"
   },
+  "Brentford_Newcastle": {
+    "total_games": 10,
+    "Brentford_wins": 3,
+    "Newcastle_wins": 6,
+    "draws": 1,
+    "last_result": "Newcastle 2-3 Brentford",
+    "last_date": "2026-02-07"
+  },
   "Brighton_Newcastle": {
     "total_games": 11,
     "Brighton_wins": 5,
@@ -1014,22 +1022,6 @@
     "draws": 4,
     "last_result": "Brighton 2-1 Newcastle",
     "last_date": "2025-10-18"
-  },
-  "Brentford_Newcastle": {
-    "total_games": 9,
-    "Brentford_wins": 2,
-    "Newcastle_wins": 6,
-    "draws": 1,
-    "last_result": "Brentford 3-1 Newcastle",
-    "last_date": "2025-11-09"
-  },
-  "Fulham_Newcastle": {
-    "total_games": 9,
-    "Fulham_wins": 2,
-    "Newcastle_wins": 6,
-    "draws": 1,
-    "last_result": "Newcastle 2-1 Fulham",
-    "last_date": "2025-10-25"
   },
   "Crystal Palace_Newcastle": {
     "total_games": 9,
@@ -1047,14 +1039,6 @@
     "last_result": "Newcastle 2-2 Spurs",
     "last_date": "2025-12-02"
   },
-  "Bournemouth_Newcastle": {
-    "total_games": 6,
-    "Bournemouth_wins": 1,
-    "Newcastle_wins": 0,
-    "draws": 5,
-    "last_result": "Bournemouth 0-0 Newcastle",
-    "last_date": "2025-09-21"
-  },
   "Newcastle_Sunderland": {
     "total_games": 1,
     "Newcastle_wins": 0,
@@ -1062,6 +1046,22 @@
     "draws": 0,
     "last_result": "Sunderland 1-0 Newcastle",
     "last_date": "2025-12-14"
+  },
+  "Fulham_Newcastle": {
+    "total_games": 9,
+    "Fulham_wins": 2,
+    "Newcastle_wins": 6,
+    "draws": 1,
+    "last_result": "Newcastle 2-1 Fulham",
+    "last_date": "2025-10-25"
+  },
+  "Bournemouth_Newcastle": {
+    "total_games": 6,
+    "Bournemouth_wins": 1,
+    "Newcastle_wins": 0,
+    "draws": 5,
+    "last_result": "Bournemouth 0-0 Newcastle",
+    "last_date": "2025-09-21"
   },
   "Everton_Newcastle": {
     "total_games": 11,
@@ -1175,14 +1175,6 @@
     "last_result": "Southampton 1-3 Newcastle",
     "last_date": "2025-01-25"
   },
-  "Brighton_Man Utd": {
-    "total_games": 10,
-    "Brighton_wins": 5,
-    "Man Utd_wins": 5,
-    "draws": 0,
-    "last_result": "Man Utd 4-2 Brighton",
-    "last_date": "2025-10-25"
-  },
   "Brentford_Man Utd": {
     "total_games": 9,
     "Brentford_wins": 3,
@@ -1191,13 +1183,13 @@
     "last_result": "Brentford 3-1 Man Utd",
     "last_date": "2025-09-27"
   },
-  "Fulham_Man Utd": {
+  "Brighton_Man Utd": {
     "total_games": 10,
-    "Fulham_wins": 1,
-    "Man Utd_wins": 7,
-    "draws": 2,
-    "last_result": "Man Utd 3-2 Fulham",
-    "last_date": "2026-02-01"
+    "Brighton_wins": 5,
+    "Man Utd_wins": 5,
+    "draws": 0,
+    "last_result": "Man Utd 4-2 Brighton",
+    "last_date": "2025-10-25"
   },
   "Crystal Palace_Man Utd": {
     "total_games": 11,
@@ -1208,20 +1200,12 @@
     "last_date": "2025-11-30"
   },
   "Man Utd_Spurs": {
-    "total_games": 11,
-    "Man Utd_wins": 4,
+    "total_games": 12,
+    "Man Utd_wins": 5,
     "Spurs_wins": 4,
     "draws": 3,
-    "last_result": "Spurs 2-2 Man Utd",
-    "last_date": "2025-11-08"
-  },
-  "Bournemouth_Man Utd": {
-    "total_games": 5,
-    "Bournemouth_wins": 1,
-    "Man Utd_wins": 2,
-    "draws": 2,
-    "last_result": "Man Utd 4-4 Bournemouth",
-    "last_date": "2025-12-15"
+    "last_result": "Man Utd 2-0 Spurs",
+    "last_date": "2026-02-07"
   },
   "Man Utd_Sunderland": {
     "total_games": 1,
@@ -1230,6 +1214,22 @@
     "draws": 0,
     "last_result": "Man Utd 2-0 Sunderland",
     "last_date": "2025-10-04"
+  },
+  "Fulham_Man Utd": {
+    "total_games": 10,
+    "Fulham_wins": 1,
+    "Man Utd_wins": 7,
+    "draws": 2,
+    "last_result": "Man Utd 3-2 Fulham",
+    "last_date": "2026-02-01"
+  },
+  "Bournemouth_Man Utd": {
+    "total_games": 5,
+    "Bournemouth_wins": 1,
+    "Man Utd_wins": 2,
+    "draws": 2,
+    "last_result": "Man Utd 4-4 Bournemouth",
+    "last_date": "2025-12-15"
   },
   "Everton_Man Utd": {
     "total_games": 11,
@@ -1351,21 +1351,157 @@
     "last_result": "Brighton 2-1 Brentford",
     "last_date": "2025-11-22"
   },
-  "Brighton_Fulham": {
-    "total_games": 11,
-    "Brighton_wins": 2,
-    "Fulham_wins": 5,
+  "Brentford_Crystal Palace": {
+    "total_games": 7,
+    "Brentford_wins": 2,
+    "Crystal Palace_wins": 1,
     "draws": 4,
-    "last_result": "Fulham 2-1 Brighton",
-    "last_date": "2026-01-24"
+    "last_result": "Crystal Palace 2-0 Brentford",
+    "last_date": "2025-11-01"
+  },
+  "Brentford_Spurs": {
+    "total_games": 10,
+    "Brentford_wins": 1,
+    "Spurs_wins": 5,
+    "draws": 4,
+    "last_result": "Brentford 0-0 Spurs",
+    "last_date": "2026-01-01"
+  },
+  "Brentford_Sunderland": {
+    "total_games": 2,
+    "Brentford_wins": 1,
+    "Sunderland_wins": 1,
+    "draws": 0,
+    "last_result": "Brentford 3-0 Sunderland",
+    "last_date": "2026-01-07"
+  },
+  "Brentford_Fulham": {
+    "total_games": 6,
+    "Brentford_wins": 2,
+    "Fulham_wins": 3,
+    "draws": 1,
+    "last_result": "Fulham 3-1 Brentford",
+    "last_date": "2025-09-20"
+  },
+  "Bournemouth_Brentford": {
+    "total_games": 8,
+    "Bournemouth_wins": 0,
+    "Brentford_wins": 6,
+    "draws": 2,
+    "last_result": "Brentford 4-1 Bournemouth",
+    "last_date": "2025-12-27"
+  },
+  "Brentford_Everton": {
+    "total_games": 6,
+    "Brentford_wins": 2,
+    "Everton_wins": 2,
+    "draws": 2,
+    "last_result": "Everton 2-4 Brentford",
+    "last_date": "2026-01-04"
+  },
+  "Brentford_Nott'm Forest": {
+    "total_games": 7,
+    "Brentford_wins": 3,
+    "Nott'm Forest_wins": 3,
+    "draws": 1,
+    "last_result": "Brentford 0-2 Nott'm Forest",
+    "last_date": "2026-01-25"
+  },
+  "Brentford_West Ham": {
+    "total_games": 8,
+    "Brentford_wins": 6,
+    "West Ham_wins": 1,
+    "draws": 1,
+    "last_result": "West Ham 0-2 Brentford",
+    "last_date": "2025-10-20"
+  },
+  "Brentford_Leeds": {
+    "total_games": 5,
+    "Brentford_wins": 1,
+    "Leeds_wins": 1,
+    "draws": 3,
+    "last_result": "Brentford 1-1 Leeds",
+    "last_date": "2025-12-14"
+  },
+  "Brentford_Luton": {
+    "total_games": 2,
+    "Brentford_wins": 2,
+    "Luton_wins": 0,
+    "draws": 0,
+    "last_result": "Luton 1-5 Brentford",
+    "last_date": "2024-04-20"
+  },
+  "Brentford_Ipswich": {
+    "total_games": 2,
+    "Brentford_wins": 2,
+    "Ipswich_wins": 0,
+    "draws": 0,
+    "last_result": "Ipswich 0-1 Brentford",
+    "last_date": "2025-05-10"
+  },
+  "Brentford_Leicester": {
+    "total_games": 6,
+    "Brentford_wins": 2,
+    "Leicester_wins": 2,
+    "draws": 2,
+    "last_result": "Leicester 0-4 Brentford",
+    "last_date": "2025-02-21"
+  },
+  "Brentford_Burnley": {
+    "total_games": 5,
+    "Brentford_wins": 3,
+    "Burnley_wins": 2,
+    "draws": 0,
+    "last_result": "Brentford 3-1 Burnley",
+    "last_date": "2025-11-29"
+  },
+  "Brentford_Wolves": {
+    "total_games": 9,
+    "Brentford_wins": 4,
+    "Wolves_wins": 3,
+    "draws": 2,
+    "last_result": "Wolves 0-2 Brentford",
+    "last_date": "2025-12-20"
+  },
+  "Brentford_Watford": {
+    "total_games": 2,
+    "Brentford_wins": 2,
+    "Watford_wins": 0,
+    "draws": 0,
+    "last_result": "Watford 1-2 Brentford",
+    "last_date": "2022-04-16"
+  },
+  "Brentford_Norwich": {
+    "total_games": 2,
+    "Brentford_wins": 1,
+    "Norwich_wins": 1,
+    "draws": 0,
+    "last_result": "Norwich 1-3 Brentford",
+    "last_date": "2022-05-03"
+  },
+  "Brentford_Sheffield Utd": {
+    "total_games": 2,
+    "Brentford_wins": 1,
+    "Sheffield Utd_wins": 1,
+    "draws": 0,
+    "last_result": "Brentford 2-0 Sheffield Utd",
+    "last_date": "2024-04-13"
+  },
+  "Brentford_Southampton": {
+    "total_games": 6,
+    "Brentford_wins": 5,
+    "Southampton_wins": 1,
+    "draws": 0,
+    "last_result": "Southampton 0-5 Brentford",
+    "last_date": "2025-01-04"
   },
   "Brighton_Crystal Palace": {
-    "total_games": 11,
+    "total_games": 12,
     "Brighton_wins": 2,
-    "Crystal Palace_wins": 3,
+    "Crystal Palace_wins": 4,
     "draws": 6,
-    "last_result": "Crystal Palace 0-0 Brighton",
-    "last_date": "2025-11-09"
+    "last_result": "Brighton 0-1 Crystal Palace",
+    "last_date": "2026-02-08"
   },
   "Brighton_Spurs": {
     "total_games": 11,
@@ -1375,14 +1511,6 @@
     "last_result": "Brighton 2-2 Spurs",
     "last_date": "2025-09-20"
   },
-  "Bournemouth_Brighton": {
-    "total_games": 7,
-    "Bournemouth_wins": 1,
-    "Brighton_wins": 5,
-    "draws": 1,
-    "last_result": "Brighton 1-1 Bournemouth",
-    "last_date": "2026-01-19"
-  },
   "Brighton_Sunderland": {
     "total_games": 1,
     "Brighton_wins": 0,
@@ -1390,6 +1518,22 @@
     "draws": 1,
     "last_result": "Brighton 0-0 Sunderland",
     "last_date": "2025-12-20"
+  },
+  "Brighton_Fulham": {
+    "total_games": 11,
+    "Brighton_wins": 2,
+    "Fulham_wins": 5,
+    "draws": 4,
+    "last_result": "Fulham 2-1 Brighton",
+    "last_date": "2026-01-24"
+  },
+  "Bournemouth_Brighton": {
+    "total_games": 7,
+    "Bournemouth_wins": 1,
+    "Brighton_wins": 5,
+    "draws": 1,
+    "last_result": "Brighton 1-1 Bournemouth",
+    "last_date": "2026-01-19"
   },
   "Brighton_Everton": {
     "total_games": 12,
@@ -1503,149 +1647,21 @@
     "last_result": "Southampton 0-4 Brighton",
     "last_date": "2025-02-22"
   },
-  "Brentford_Fulham": {
-    "total_games": 6,
-    "Brentford_wins": 2,
-    "Fulham_wins": 3,
+  "Crystal Palace_Spurs": {
+    "total_games": 11,
+    "Crystal Palace_wins": 3,
+    "Spurs_wins": 7,
     "draws": 1,
-    "last_result": "Fulham 3-1 Brentford",
-    "last_date": "2025-09-20"
+    "last_result": "Crystal Palace 0-1 Spurs",
+    "last_date": "2025-12-28"
   },
-  "Brentford_Crystal Palace": {
-    "total_games": 7,
-    "Brentford_wins": 2,
-    "Crystal Palace_wins": 1,
-    "draws": 4,
-    "last_result": "Crystal Palace 2-0 Brentford",
-    "last_date": "2025-11-01"
-  },
-  "Brentford_Spurs": {
-    "total_games": 10,
-    "Brentford_wins": 1,
-    "Spurs_wins": 5,
-    "draws": 4,
-    "last_result": "Brentford 0-0 Spurs",
-    "last_date": "2026-01-01"
-  },
-  "Bournemouth_Brentford": {
-    "total_games": 8,
-    "Bournemouth_wins": 0,
-    "Brentford_wins": 6,
-    "draws": 2,
-    "last_result": "Brentford 4-1 Bournemouth",
-    "last_date": "2025-12-27"
-  },
-  "Brentford_Sunderland": {
+  "Crystal Palace_Sunderland": {
     "total_games": 2,
-    "Brentford_wins": 1,
+    "Crystal Palace_wins": 0,
     "Sunderland_wins": 1,
-    "draws": 0,
-    "last_result": "Brentford 3-0 Sunderland",
-    "last_date": "2026-01-07"
-  },
-  "Brentford_Everton": {
-    "total_games": 6,
-    "Brentford_wins": 2,
-    "Everton_wins": 2,
-    "draws": 2,
-    "last_result": "Everton 2-4 Brentford",
-    "last_date": "2026-01-04"
-  },
-  "Brentford_Nott'm Forest": {
-    "total_games": 7,
-    "Brentford_wins": 3,
-    "Nott'm Forest_wins": 3,
     "draws": 1,
-    "last_result": "Brentford 0-2 Nott'm Forest",
-    "last_date": "2026-01-25"
-  },
-  "Brentford_West Ham": {
-    "total_games": 8,
-    "Brentford_wins": 6,
-    "West Ham_wins": 1,
-    "draws": 1,
-    "last_result": "West Ham 0-2 Brentford",
-    "last_date": "2025-10-20"
-  },
-  "Brentford_Leeds": {
-    "total_games": 5,
-    "Brentford_wins": 1,
-    "Leeds_wins": 1,
-    "draws": 3,
-    "last_result": "Brentford 1-1 Leeds",
-    "last_date": "2025-12-14"
-  },
-  "Brentford_Luton": {
-    "total_games": 2,
-    "Brentford_wins": 2,
-    "Luton_wins": 0,
-    "draws": 0,
-    "last_result": "Luton 1-5 Brentford",
-    "last_date": "2024-04-20"
-  },
-  "Brentford_Ipswich": {
-    "total_games": 2,
-    "Brentford_wins": 2,
-    "Ipswich_wins": 0,
-    "draws": 0,
-    "last_result": "Ipswich 0-1 Brentford",
-    "last_date": "2025-05-10"
-  },
-  "Brentford_Leicester": {
-    "total_games": 6,
-    "Brentford_wins": 2,
-    "Leicester_wins": 2,
-    "draws": 2,
-    "last_result": "Leicester 0-4 Brentford",
-    "last_date": "2025-02-21"
-  },
-  "Brentford_Burnley": {
-    "total_games": 5,
-    "Brentford_wins": 3,
-    "Burnley_wins": 2,
-    "draws": 0,
-    "last_result": "Brentford 3-1 Burnley",
-    "last_date": "2025-11-29"
-  },
-  "Brentford_Wolves": {
-    "total_games": 9,
-    "Brentford_wins": 4,
-    "Wolves_wins": 3,
-    "draws": 2,
-    "last_result": "Wolves 0-2 Brentford",
-    "last_date": "2025-12-20"
-  },
-  "Brentford_Watford": {
-    "total_games": 2,
-    "Brentford_wins": 2,
-    "Watford_wins": 0,
-    "draws": 0,
-    "last_result": "Watford 1-2 Brentford",
-    "last_date": "2022-04-16"
-  },
-  "Brentford_Norwich": {
-    "total_games": 2,
-    "Brentford_wins": 1,
-    "Norwich_wins": 1,
-    "draws": 0,
-    "last_result": "Norwich 1-3 Brentford",
-    "last_date": "2022-05-03"
-  },
-  "Brentford_Sheffield Utd": {
-    "total_games": 2,
-    "Brentford_wins": 1,
-    "Sheffield Utd_wins": 1,
-    "draws": 0,
-    "last_result": "Brentford 2-0 Sheffield Utd",
-    "last_date": "2024-04-13"
-  },
-  "Brentford_Southampton": {
-    "total_games": 6,
-    "Brentford_wins": 5,
-    "Southampton_wins": 1,
-    "draws": 0,
-    "last_result": "Southampton 0-5 Brentford",
-    "last_date": "2025-01-04"
+    "last_result": "Sunderland 2-1 Crystal Palace",
+    "last_date": "2026-01-17"
   },
   "Crystal Palace_Fulham": {
     "total_games": 11,
@@ -1655,134 +1671,6 @@
     "last_result": "Crystal Palace 1-1 Fulham",
     "last_date": "2026-01-01"
   },
-  "Fulham_Spurs": {
-    "total_games": 9,
-    "Fulham_wins": 3,
-    "Spurs_wins": 4,
-    "draws": 2,
-    "last_result": "Spurs 1-2 Fulham",
-    "last_date": "2025-11-29"
-  },
-  "Bournemouth_Fulham": {
-    "total_games": 7,
-    "Bournemouth_wins": 4,
-    "Fulham_wins": 1,
-    "draws": 2,
-    "last_result": "Bournemouth 3-1 Fulham",
-    "last_date": "2025-10-03"
-  },
-  "Fulham_Sunderland": {
-    "total_games": 1,
-    "Fulham_wins": 1,
-    "Sunderland_wins": 0,
-    "draws": 0,
-    "last_result": "Fulham 1-0 Sunderland",
-    "last_date": "2025-11-22"
-  },
-  "Everton_Fulham": {
-    "total_games": 9,
-    "Everton_wins": 3,
-    "Fulham_wins": 3,
-    "draws": 3,
-    "last_result": "Everton 2-0 Fulham",
-    "last_date": "2025-11-08"
-  },
-  "Fulham_Nott'm Forest": {
-    "total_games": 7,
-    "Fulham_wins": 6,
-    "Nott'm Forest_wins": 1,
-    "draws": 0,
-    "last_result": "Fulham 1-0 Nott'm Forest",
-    "last_date": "2025-12-22"
-  },
-  "Fulham_West Ham": {
-    "total_games": 9,
-    "Fulham_wins": 3,
-    "West Ham_wins": 4,
-    "draws": 2,
-    "last_result": "West Ham 0-1 Fulham",
-    "last_date": "2025-12-27"
-  },
-  "Fulham_Leeds": {
-    "total_games": 6,
-    "Fulham_wins": 3,
-    "Leeds_wins": 3,
-    "draws": 0,
-    "last_result": "Leeds 1-0 Fulham",
-    "last_date": "2026-01-17"
-  },
-  "Fulham_Luton": {
-    "total_games": 2,
-    "Fulham_wins": 2,
-    "Luton_wins": 0,
-    "draws": 0,
-    "last_result": "Luton 2-4 Fulham",
-    "last_date": "2024-05-19"
-  },
-  "Fulham_Ipswich": {
-    "total_games": 2,
-    "Fulham_wins": 0,
-    "Ipswich_wins": 0,
-    "draws": 2,
-    "last_result": "Fulham 2-2 Ipswich",
-    "last_date": "2025-01-05"
-  },
-  "Fulham_West Brom": {
-    "total_games": 2,
-    "Fulham_wins": 1,
-    "West Brom_wins": 0,
-    "draws": 1,
-    "last_result": "West Brom 2-2 Fulham",
-    "last_date": "2021-01-30"
-  },
-  "Fulham_Leicester": {
-    "total_games": 5,
-    "Fulham_wins": 4,
-    "Leicester_wins": 1,
-    "draws": 0,
-    "last_result": "Fulham 2-1 Leicester",
-    "last_date": "2024-08-24"
-  },
-  "Burnley_Fulham": {
-    "total_games": 5,
-    "Burnley_wins": 2,
-    "Fulham_wins": 1,
-    "draws": 2,
-    "last_result": "Burnley 2-3 Fulham",
-    "last_date": "2025-12-13"
-  },
-  "Fulham_Wolves": {
-    "total_games": 8,
-    "Fulham_wins": 3,
-    "Wolves_wins": 3,
-    "draws": 2,
-    "last_result": "Fulham 3-0 Wolves",
-    "last_date": "2025-11-01"
-  },
-  "Fulham_Sheffield Utd": {
-    "total_games": 4,
-    "Fulham_wins": 2,
-    "Sheffield Utd_wins": 0,
-    "draws": 2,
-    "last_result": "Sheffield Utd 3-3 Fulham",
-    "last_date": "2024-03-30"
-  },
-  "Fulham_Southampton": {
-    "total_games": 6,
-    "Fulham_wins": 3,
-    "Southampton_wins": 1,
-    "draws": 2,
-    "last_result": "Southampton 1-2 Fulham",
-    "last_date": "2025-04-26"
-  },
-  "Crystal Palace_Spurs": {
-    "total_games": 11,
-    "Crystal Palace_wins": 3,
-    "Spurs_wins": 7,
-    "draws": 1,
-    "last_result": "Crystal Palace 0-1 Spurs",
-    "last_date": "2025-12-28"
-  },
   "Bournemouth_Crystal Palace": {
     "total_games": 6,
     "Bournemouth_wins": 1,
@@ -1790,14 +1678,6 @@
     "draws": 3,
     "last_result": "Crystal Palace 3-3 Bournemouth",
     "last_date": "2025-10-18"
-  },
-  "Crystal Palace_Sunderland": {
-    "total_games": 2,
-    "Crystal Palace_wins": 0,
-    "Sunderland_wins": 1,
-    "draws": 1,
-    "last_result": "Sunderland 2-1 Crystal Palace",
-    "last_date": "2026-01-17"
   },
   "Crystal Palace_Everton": {
     "total_games": 11,
@@ -1911,14 +1791,6 @@
     "last_result": "Southampton 0-2 Crystal Palace",
     "last_date": "2023-04-15"
   },
-  "Bournemouth_Spurs": {
-    "total_games": 9,
-    "Bournemouth_wins": 4,
-    "Spurs_wins": 3,
-    "draws": 2,
-    "last_result": "Bournemouth 3-2 Spurs",
-    "last_date": "2026-01-07"
-  },
   "Spurs_Sunderland": {
     "total_games": 1,
     "Spurs_wins": 0,
@@ -1926,6 +1798,22 @@
     "draws": 1,
     "last_result": "Spurs 1-1 Sunderland",
     "last_date": "2026-01-04"
+  },
+  "Fulham_Spurs": {
+    "total_games": 9,
+    "Fulham_wins": 3,
+    "Spurs_wins": 4,
+    "draws": 2,
+    "last_result": "Spurs 1-2 Fulham",
+    "last_date": "2025-11-29"
+  },
+  "Bournemouth_Spurs": {
+    "total_games": 9,
+    "Bournemouth_wins": 4,
+    "Spurs_wins": 3,
+    "draws": 2,
+    "last_result": "Bournemouth 3-2 Spurs",
+    "last_date": "2026-01-07"
   },
   "Everton_Spurs": {
     "total_games": 10,
@@ -2039,6 +1927,14 @@
     "last_result": "Spurs 3-1 Southampton",
     "last_date": "2025-04-06"
   },
+  "Fulham_Sunderland": {
+    "total_games": 1,
+    "Fulham_wins": 1,
+    "Sunderland_wins": 0,
+    "draws": 0,
+    "last_result": "Fulham 1-0 Sunderland",
+    "last_date": "2025-11-22"
+  },
   "Bournemouth_Sunderland": {
     "total_games": 1,
     "Bournemouth_wins": 0,
@@ -2046,6 +1942,150 @@
     "draws": 0,
     "last_result": "Sunderland 3-2 Bournemouth",
     "last_date": "2025-11-29"
+  },
+  "Nott'm Forest_Sunderland": {
+    "total_games": 1,
+    "Nott'm Forest_wins": 0,
+    "Sunderland_wins": 1,
+    "draws": 0,
+    "last_result": "Nott'm Forest 0-1 Sunderland",
+    "last_date": "2025-09-27"
+  },
+  "Sunderland_West Ham": {
+    "total_games": 2,
+    "Sunderland_wins": 1,
+    "West Ham_wins": 1,
+    "draws": 0,
+    "last_result": "West Ham 3-1 Sunderland",
+    "last_date": "2026-01-24"
+  },
+  "Leeds_Sunderland": {
+    "total_games": 1,
+    "Leeds_wins": 0,
+    "Sunderland_wins": 0,
+    "draws": 1,
+    "last_result": "Sunderland 1-1 Leeds",
+    "last_date": "2025-12-28"
+  },
+  "Burnley_Sunderland": {
+    "total_games": 2,
+    "Burnley_wins": 1,
+    "Sunderland_wins": 1,
+    "draws": 0,
+    "last_result": "Sunderland 3-0 Burnley",
+    "last_date": "2026-02-02"
+  },
+  "Sunderland_Wolves": {
+    "total_games": 1,
+    "Sunderland_wins": 1,
+    "Wolves_wins": 0,
+    "draws": 0,
+    "last_result": "Sunderland 2-0 Wolves",
+    "last_date": "2025-10-18"
+  },
+  "Bournemouth_Fulham": {
+    "total_games": 7,
+    "Bournemouth_wins": 4,
+    "Fulham_wins": 1,
+    "draws": 2,
+    "last_result": "Bournemouth 3-1 Fulham",
+    "last_date": "2025-10-03"
+  },
+  "Everton_Fulham": {
+    "total_games": 10,
+    "Everton_wins": 4,
+    "Fulham_wins": 3,
+    "draws": 3,
+    "last_result": "Fulham 1-2 Everton",
+    "last_date": "2026-02-07"
+  },
+  "Fulham_Nott'm Forest": {
+    "total_games": 7,
+    "Fulham_wins": 6,
+    "Nott'm Forest_wins": 1,
+    "draws": 0,
+    "last_result": "Fulham 1-0 Nott'm Forest",
+    "last_date": "2025-12-22"
+  },
+  "Fulham_West Ham": {
+    "total_games": 9,
+    "Fulham_wins": 3,
+    "West Ham_wins": 4,
+    "draws": 2,
+    "last_result": "West Ham 0-1 Fulham",
+    "last_date": "2025-12-27"
+  },
+  "Fulham_Leeds": {
+    "total_games": 6,
+    "Fulham_wins": 3,
+    "Leeds_wins": 3,
+    "draws": 0,
+    "last_result": "Leeds 1-0 Fulham",
+    "last_date": "2026-01-17"
+  },
+  "Fulham_Luton": {
+    "total_games": 2,
+    "Fulham_wins": 2,
+    "Luton_wins": 0,
+    "draws": 0,
+    "last_result": "Luton 2-4 Fulham",
+    "last_date": "2024-05-19"
+  },
+  "Fulham_Ipswich": {
+    "total_games": 2,
+    "Fulham_wins": 0,
+    "Ipswich_wins": 0,
+    "draws": 2,
+    "last_result": "Fulham 2-2 Ipswich",
+    "last_date": "2025-01-05"
+  },
+  "Fulham_West Brom": {
+    "total_games": 2,
+    "Fulham_wins": 1,
+    "West Brom_wins": 0,
+    "draws": 1,
+    "last_result": "West Brom 2-2 Fulham",
+    "last_date": "2021-01-30"
+  },
+  "Fulham_Leicester": {
+    "total_games": 5,
+    "Fulham_wins": 4,
+    "Leicester_wins": 1,
+    "draws": 0,
+    "last_result": "Fulham 2-1 Leicester",
+    "last_date": "2024-08-24"
+  },
+  "Burnley_Fulham": {
+    "total_games": 5,
+    "Burnley_wins": 2,
+    "Fulham_wins": 1,
+    "draws": 2,
+    "last_result": "Burnley 2-3 Fulham",
+    "last_date": "2025-12-13"
+  },
+  "Fulham_Wolves": {
+    "total_games": 8,
+    "Fulham_wins": 3,
+    "Wolves_wins": 3,
+    "draws": 2,
+    "last_result": "Fulham 3-0 Wolves",
+    "last_date": "2025-11-01"
+  },
+  "Fulham_Sheffield Utd": {
+    "total_games": 4,
+    "Fulham_wins": 2,
+    "Sheffield Utd_wins": 0,
+    "draws": 2,
+    "last_result": "Sheffield Utd 3-3 Fulham",
+    "last_date": "2024-03-30"
+  },
+  "Fulham_Southampton": {
+    "total_games": 6,
+    "Fulham_wins": 3,
+    "Southampton_wins": 1,
+    "draws": 2,
+    "last_result": "Southampton 1-2 Fulham",
+    "last_date": "2025-04-26"
   },
   "Bournemouth_Everton": {
     "total_games": 7,
@@ -2134,46 +2174,6 @@
     "draws": 0,
     "last_result": "Southampton 1-3 Bournemouth",
     "last_date": "2025-02-15"
-  },
-  "Nott'm Forest_Sunderland": {
-    "total_games": 1,
-    "Nott'm Forest_wins": 0,
-    "Sunderland_wins": 1,
-    "draws": 0,
-    "last_result": "Nott'm Forest 0-1 Sunderland",
-    "last_date": "2025-09-27"
-  },
-  "Sunderland_West Ham": {
-    "total_games": 2,
-    "Sunderland_wins": 1,
-    "West Ham_wins": 1,
-    "draws": 0,
-    "last_result": "West Ham 3-1 Sunderland",
-    "last_date": "2026-01-24"
-  },
-  "Leeds_Sunderland": {
-    "total_games": 1,
-    "Leeds_wins": 0,
-    "Sunderland_wins": 0,
-    "draws": 1,
-    "last_result": "Sunderland 1-1 Leeds",
-    "last_date": "2025-12-28"
-  },
-  "Burnley_Sunderland": {
-    "total_games": 2,
-    "Burnley_wins": 1,
-    "Sunderland_wins": 1,
-    "draws": 0,
-    "last_result": "Sunderland 3-0 Burnley",
-    "last_date": "2026-02-02"
-  },
-  "Sunderland_Wolves": {
-    "total_games": 1,
-    "Sunderland_wins": 1,
-    "Wolves_wins": 0,
-    "draws": 0,
-    "last_result": "Sunderland 2-0 Wolves",
-    "last_date": "2025-10-18"
   },
   "Everton_Nott'm Forest": {
     "total_games": 7,
@@ -2288,12 +2288,12 @@
     "last_date": "2026-01-06"
   },
   "Leeds_Nott'm Forest": {
-    "total_games": 3,
-    "Leeds_wins": 1,
+    "total_games": 4,
+    "Leeds_wins": 2,
     "Nott'm Forest_wins": 2,
     "draws": 0,
-    "last_result": "Nott'm Forest 3-1 Leeds",
-    "last_date": "2025-11-09"
+    "last_result": "Leeds 3-1 Nott'm Forest",
+    "last_date": "2026-02-06"
   },
   "Luton_Nott'm Forest": {
     "total_games": 2,
@@ -2392,12 +2392,12 @@
     "last_date": "2025-02-27"
   },
   "Burnley_West Ham": {
-    "total_games": 7,
+    "total_games": 8,
     "Burnley_wins": 0,
-    "West Ham_wins": 4,
+    "West Ham_wins": 5,
     "draws": 3,
-    "last_result": "West Ham 3-2 Burnley",
-    "last_date": "2025-11-08"
+    "last_result": "Burnley 0-2 West Ham",
+    "last_date": "2026-02-07"
   },
   "West Ham_Wolves": {
     "total_games": 10,
