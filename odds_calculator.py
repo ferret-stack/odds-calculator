@@ -356,17 +356,17 @@ class OddsCalculator:
                     ).click()
                 except:
                     pass
-                
+
                 # Get teams
-                home_team = driver.find_element(By.XPATH, '//*[@id="main-content"]/div[1]/div[2]/div[2]/div[1]/div/div/header/div[1]/span').text
-                away_team = driver.find_element(By.XPATH, '//*[@id="main-content"]/div[1]/div[2]/div[2]/div[1]/div/div/header/div[3]/span').text
+                home_team = driver.find_element(By.XPATH, '/html/body/main/div[1]/div[2]/div[2]/div[1]/div/div/header/div/div[1]/span').text
+                away_team = driver.find_element(By.XPATH, '/html/body/main/div[1]/div[2]/div[2]/div[1]/div/div/header/div/div[3]/span').text
                 
                 # Standardize team names
                 home_team = self.standardize_team_name(home_team)
                 away_team = self.standardize_team_name(away_team)
                 
                 # Get date
-                date_elem = driver.find_element(By.XPATH, '//*[@id="main-content"]/div[1]/div[2]/div[2]/div[1]/div/div/div/section/div[1]/div[2]/span[1]')
+                date_elem = driver.find_element(By.XPATH, '/html/body/main//div[1]/div[2]/div[2]/div[1]/div/div/div/section/div[1]/div[2]/span[1]')
                 date_text = date_elem.text.strip()
                 try:
                     match_date = datetime.strptime(date_text, '%a %d %b %Y')
@@ -376,12 +376,12 @@ class OddsCalculator:
                     match_date = datetime.strptime(date_with_year, '%a %d %b %Y')
                 
                 # Get scores
-                home_goals = int(driver.find_element(By.XPATH, '//*[@id="main-content"]/div[1]/div[2]/div[2]/div[1]/div/div/header/div[2]/div/span[1]').text)
-                away_goals = int(driver.find_element(By.XPATH, '//*[@id="main-content"]/div[1]/div[2]/div[2]/div[1]/div/div/header/div[2]/div/span[3]').text)
+                home_goals = int(driver.find_element(By.XPATH, '/html/body/main/div[1]/div[2]/div[2]/div[1]/div/div/header/div/div[2]/div/span[1]').text)
+                away_goals = int(driver.find_element(By.XPATH, '/html/body/main/div[1]/div[2]/div[2]/div[1]/div/div/header/div/div[2]/div/span[3]').text)
                 
                 # Get referee
                 try:
-                    referee = driver.find_element(By.XPATH, '//*[@id="main-content"]/div[1]/div[2]/div[2]/div[1]/div/div/div/section/div[1]/div[2]/div/span').text
+                    referee = driver.find_element(By.XPATH, '/html/body/main//div[1]/div[2]/div[2]/div[1]/div/div/div/section/div[1]/div[2]/div/span').text
                 except:
                     referee = None
                 
