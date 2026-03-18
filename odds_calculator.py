@@ -385,7 +385,7 @@ class OddsCalculator:
                 except:
                     referee = None
                 
-                # Get cards (you'll need to click on stats tab)
+                # Get cards
                 home_yellow = 0
                 away_yellow = 0
                 home_red = 0
@@ -399,8 +399,7 @@ class OddsCalculator:
                     stats_tab.click()
                     time.sleep(3)
                     
-                    # Try to get card data (these XPaths may need adjustment)
-                    # This is a simplified version - you may need to add specific XPaths for cards
+                    # Need to add stats XPATHS
                     
                 except Exception as e:
                     print(f"    Could not get detailed stats for match {match_id}")
