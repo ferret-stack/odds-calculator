@@ -6,16 +6,16 @@
     "avg_reds": 0.12
   },
   "Chris Kavanagh": {
-    "games": 120,
-    "avg_booking_points": 29.3,
+    "games": 121,
+    "avg_booking_points": 29.1,
     "avg_yellows": 2.7,
     "avg_reds": 0.08
   },
   "Michael Oliver": {
-    "games": 156,
-    "avg_booking_points": 30.4,
-    "avg_yellows": 2.8,
-    "avg_reds": 0.12
+    "games": 157,
+    "avg_booking_points": 30.3,
+    "avg_yellows": 2.7,
+    "avg_reds": 0.11
   },
   "Martin Atkinson": {
     "games": 52,
@@ -24,14 +24,14 @@
     "avg_reds": 0.08
   },
   "Anthony Taylor": {
-    "games": 165,
-    "avg_booking_points": 32.2,
+    "games": 166,
+    "avg_booking_points": 32.0,
     "avg_yellows": 2.9,
     "avg_reds": 0.12
   },
   "Stuart Attwell": {
-    "games": 140,
-    "avg_booking_points": 31.9,
+    "games": 141,
+    "avg_booking_points": 31.6,
     "avg_yellows": 3.0,
     "avg_reds": 0.09
   },
@@ -54,9 +54,9 @@
     "avg_reds": 0.19
   },
   "Paul Tierney": {
-    "games": 112,
-    "avg_booking_points": 36.4,
-    "avg_yellows": 3.4,
+    "games": 113,
+    "avg_booking_points": 36.1,
+    "avg_yellows": 3.3,
     "avg_reds": 0.11
   },
   "Lee Mason": {
@@ -126,14 +126,14 @@
     "avg_reds": 0.06
   },
   "Michael Salisbury": {
-    "games": 52,
-    "avg_booking_points": 31.2,
+    "games": 53,
+    "avg_booking_points": 30.6,
     "avg_yellows": 2.8,
-    "avg_reds": 0.12
+    "avg_reds": 0.11
   },
   "John Brooks": {
-    "games": 68,
-    "avg_booking_points": 38.3,
+    "games": 69,
+    "avg_booking_points": 37.8,
     "avg_yellows": 3.6,
     "avg_reds": 0.07
   },
@@ -174,9 +174,9 @@
     "avg_reds": 0.25
   },
   "Samuel Barrott": {
-    "games": 54,
-    "avg_booking_points": 22.8,
-    "avg_yellows": 2.2,
+    "games": 55,
+    "avg_booking_points": 22.4,
+    "avg_yellows": 2.1,
     "avg_reds": 0.04
   },
   "Simon Allison": {
@@ -234,8 +234,8 @@
     "avg_reds": 0.1
   },
   "Jarred Gillett": {
-    "games": 30,
-    "avg_booking_points": 10.3,
+    "games": 31,
+    "avg_booking_points": 10.0,
     "avg_yellows": 1.0,
     "avg_reds": 0.0
   },
@@ -252,7 +252,7 @@
     "avg_reds": 0.0
   },
   "Thomas Kirk": {
-    "games": 5,
+    "games": 6,
     "avg_booking_points": 0.0,
     "avg_yellows": 0.0,
     "avg_reds": 0.0
