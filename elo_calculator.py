@@ -124,34 +124,36 @@ def get_venue_adjusted_probabilities(home_elo, away_elo, elo_bands):
         }
 
 
-def calculate_fair_odds(home_elo, away_elo, elo_bands):
+def determine_winner(home_goals, away_goals, home_elo, away_elo):
     """
-    Calculate fair decimal odds with venue adjustment.
-    
+    Classify a result as 'stronger', 'weaker', or 'draw' relative to the
+    PRE-match ELO ratings of the two teams.
+
+    A deterministic tie-break is applied when the two teams have identical
+    ELO (elo_diff == 0): the home team is treated as the nominal "stronger"
+    side. Without this, `home_elo > away_elo` is always False on a tie and
+    every non-draw collapses to "weaker", which historically skewed Band 1.
+
     Args:
-        home_elo: ELO rating of home team
-        away_elo: ELO rating of away team
-        elo_bands: List of band dictionaries from elo_bands.json
-    
+        home_goals: Goals scored by home team
+        away_goals: Goals scored by away team
+        home_elo: Home team's PRE-match ELO
+        away_elo: Away team's PRE-match ELO
+
     Returns:
-        Dict with probabilities and fair odds for each outcome
+        'stronger', 'weaker', or 'draw'
     """
-    probs = get_venue_adjusted_probabilities(home_elo, away_elo, elo_bands)
-    
-    return {
-        'home_win': {
-            'probability': probs['home_win'],
-            'fair_odds': round(1 / probs['home_win'], 2)
-        },
-        'draw': {
-            'probability': probs['draw'],
-            'fair_odds': round(1 / probs['draw'], 2)
-        },
-        'away_win': {
-            'probability': probs['away_win'],
-            'fair_odds': round(1 / probs['away_win'], 2)
-        }
-    }
+    if home_goals == away_goals:
+        return 'draw'
+
+    # Deterministic tie-break: on equal ELO, home is the nominal stronger side.
+    home_is_stronger = home_elo >= away_elo
+
+    if home_goals > away_goals:
+        return 'stronger' if home_is_stronger else 'weaker'
+    else:
+        return 'stronger' if not home_is_stronger else 'weaker'
+
 
 def calculate_home_advantage_multipliers(matches_data):
     """

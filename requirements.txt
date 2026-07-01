@@ -1,0 +1,7 @@
+numpy>=1.24
+requests>=2.31
+# Only needed for the one-off Excel/CSV historical import (import_excel):
+pandas>=2.0
+# Only needed for live match scraping (scrape_matches):
+selenium>=4.15
+webdriver-manager>=4.0

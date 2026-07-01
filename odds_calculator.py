@@ -3,43 +3,52 @@ Premier League Odds Calculator - Complete Pipeline
 Handles data scraping, processing, and JSON generation for GitHub Pages
 """
 
-import pandas as pd
+import os
 import numpy as np
 import json
 import requests
 import time
 from datetime import datetime, timedelta, date
 from pathlib import Path
-from scipy import stats
-from io import StringIO
 from collections import defaultdict
 from elo_calculator import (
     ELOCalculator,
     calculate_form_metrics,
-    get_venue_adjusted_probabilities,
     calculate_fair_odds,
-    calculate_home_advantage_multipliers
+    calculate_home_advantage_multipliers,
+    determine_winner
 )
 
-# Selenium imports for scraping
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
-from webdriver_manager.firefox import GeckoDriverManager
+# pandas is only needed for the one-off Excel/CSV historical import. Import it
+# lazily so the ELO/stats pipeline can run without pandas installed.
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+# Selenium is only needed for live scraping. Import it lazily so the pipeline
+# (rebuild ELO, compute stats, fetch odds via the HTTP API) can run in
+# environments without a browser/driver installed.
+try:
+    from selenium import webdriver
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.firefox.service import Service as FirefoxService
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.firefox.options import Options
+    from webdriver_manager.firefox import GeckoDriverManager
+    SELENIUM_AVAILABLE = True
+except ImportError:
+    SELENIUM_AVAILABLE = False
 
 # ============================================
 # CONFIGURATION
 # ============================================
 
-# API Keys for Odds
-API_KEYS = [
-    '092215ac4ab5a37e57f22dabd54105d7',
-    '1145cefd2ec6637d0d7035eed5bf8991', 
-    'f198c4d9ff1ce050aaf452d25812f548'
-]
+# API Keys for Odds — read from the ODDS_API_KEYS env var (comma-separated).
+# NEVER hard-code keys: the previously committed keys are exposed in git
+# history and should be rotated at the-odds-api.com.
+API_KEYS = [k.strip() for k in os.environ.get('ODDS_API_KEYS', '').split(',') if k.strip()]
 
 # Team name mappings for standardization
 TEAM_NAME_CHANGES = [
@@ -69,6 +78,29 @@ TEAMS_FOR_ELO_API = [
 ]
 
 # ============================================
+# STATS-PANEL (CARDS) XPATHS
+# ============================================
+# Absolute XPATHs into the Premier League match "Stats" tab. The only path
+# confirmed against the live site is home_red (supplied from Matchweek 1 last
+# season). The other three are derived from it by convention:
+#   - the away value uses div[3] where home uses div[1] (home | separator | away)
+#   - yellow cards sit one stat-row above red cards (div[7] vs div[8])
+# These derived indices MUST be confirmed on the first live run — see the
+# debug dump in scrape_matches (set CARD_XPATH_DEBUG=1) and adjust if the
+# extracted numbers look wrong.
+_STATS_BASE = '/html/body/main/div[1]/div[2]/div[2]/div[2]/section/div/div/div/div/div'
+CARD_XPATHS = {
+    # Confirmed:
+    'home_red':    f'{_STATS_BASE}[8]/div[2]/div[1]/div[1]',
+    # Derived (verify on first live run):
+    'away_red':    f'{_STATS_BASE}[8]/div[2]/div[3]/div[1]',
+    'home_yellow': f'{_STATS_BASE}[7]/div[2]/div[1]/div[1]',
+    'away_yellow': f'{_STATS_BASE}[7]/div[2]/div[3]/div[1]',
+}
+# The parent of the stat rows, used for the optional debug dump.
+CARD_STATS_CONTAINER_XPATH = '/html/body/main/div[1]/div[2]/div[2]/div[2]/section/div/div/div/div'
+
+# ============================================
 # MAIN CALCULATOR CLASS
 # ============================================
 
@@ -88,11 +120,23 @@ class OddsCalculator:
         
         # Load existing data if available
         self.load_existing_data()
-        
-        # Selenium setup for scraping
-        self.firefox_options = Options()
-        self.firefox_options.add_argument("--headless")
-        self.service = FirefoxService(GeckoDriverManager().install())
+
+        # Selenium is set up lazily on first scrape (see _ensure_driver_setup)
+        # so the rest of the pipeline runs without a browser installed.
+        self.firefox_options = None
+        self.service = None
+
+    def _ensure_driver_setup(self):
+        """Prepare the Firefox driver/service on demand (scraping only)."""
+        if not SELENIUM_AVAILABLE:
+            raise RuntimeError(
+                "Selenium/webdriver-manager are not installed; scraping is "
+                "unavailable. Install requirements.txt to enable scraping."
+            )
+        if self.service is None:
+            self.firefox_options = Options()
+            self.firefox_options.add_argument("--headless")
+            self.service = FirefoxService(GeckoDriverManager().install())
     
     def load_existing_data(self):
         """Load existing JSON data if available"""
@@ -101,10 +145,20 @@ class OddsCalculator:
             with open(matches_file, 'r') as f:
                 self.matches_data = json.load(f)
             print(f"Loaded {len(self.matches_data)} existing matches")
+
+        # Load current ELO so that scraping records real PRE-match ratings
+        # instead of defaulting every new match to 1500 (the old Band 1 bug).
+        current_elo_file = self.data_dir / 'current_elo.json'
+        if current_elo_file.exists():
+            with open(current_elo_file, 'r') as f:
+                data = json.load(f)
+            for team, value in data.items():
+                self.current_elo[team] = value['elo'] if isinstance(value, dict) else value
+            print(f"Loaded current ELO for {len(self.current_elo)} teams")
     
     def standardize_team_name(self, team_name):
         """Standardize team names for consistency"""
-        if pd.isna(team_name):
+        if team_name is None or (pd is not None and pd.isna(team_name)):
             return None
         team_str = str(team_name)
         for old_name, new_name in TEAM_NAME_CHANGES:
@@ -116,213 +170,70 @@ class OddsCalculator:
     # IMPORT FROM EXCEL
     # ============================================
     
-    def import_excel(self, filepath):
-        """
-        One-time import of historical data from Excel/CSV
-        Run this ONCE to populate all historical matches
-        """
-        print(f"\nImporting historical data from {filepath}...")
-        
-        # Read file
-        if filepath.endswith('.csv'):
-            df = pd.read_csv(filepath)
-        else:
-            df = pd.read_excel(filepath)
-        
-        print(f"Found {len(df)} matches in file")
-        
-        imported_count = 0
-        for _, row in df.iterrows():
-            try:
-                # Calculate total goals for boolean markets
-                home_goals = int(row['Home_Goals']) if pd.notna(row['Home_Goals']) else 0
-                away_goals = int(row['Away_Goals']) if pd.notna(row['Away_Goals']) else 0
-                total_goals = home_goals + away_goals
-                
-                # Calculate booking points (10 for yellow, 25 for red)
-                home_yellow = int(row['home_yellow']) if 'home_yellow' in row and pd.notna(row['home_yellow']) else 0
-                away_yellow = int(row['away_yellow']) if 'away_yellow' in row and pd.notna(row['away_yellow']) else 0
-                home_red = int(row['home_red']) if 'home_red' in row and pd.notna(row['home_red']) else 0
-                away_red = int(row['away_red']) if 'away_red' in row and pd.notna(row['away_red']) else 0
-                
-                home_booking_points = (home_yellow * 10) + (home_red * 25)
-                away_booking_points = (away_yellow * 10) + (away_red * 25)
-                total_booking_points = home_booking_points + away_booking_points
-                
-                # Calculate ELO difference (absolute value)
-                home_elo = float(row['Home_Elo']) if pd.notna(row['Home_Elo']) else None
-                away_elo = float(row['Away_Elo']) if pd.notna(row['Away_Elo']) else None
-                elo_diff = abs(home_elo - away_elo) if home_elo and away_elo else None
-                
-                # Determine ELO band (0-50 = Band 1, 51-100 = Band 2, etc.)
-                elo_band = None
-                if elo_diff is not None:
-                    elo_band = min(int(elo_diff // 50) + 1, 10)  # Cap at band 10 for 450+
-                
-                # Determine winner
-                if home_goals > away_goals:
-                    if home_elo > away_elo:
-                        winner = "stronger"
-                    else:
-                        winner = "weaker"
-                elif away_goals > home_goals:
-                    if away_elo > home_elo:
-                        winner = "stronger"
-                    else:
-                        winner = "weaker"
-                else:
-                    winner = "draw"
-                
-                match_data = {
-                    'match_id': int(row.get('ID', row.get('match_id', imported_count + 1))),
-                    'date': pd.to_datetime(row['Date']).strftime('%Y-%m-%d'),
-                    'home_team': self.standardize_team_name(row['Home_Team']),
-                    'away_team': self.standardize_team_name(row['Away_Team']),
-                    'home_goals': home_goals,
-                    'away_goals': away_goals,
-                    'home_elo': round(home_elo) if home_elo else None,
-                    'away_elo': round(away_elo) if away_elo else None,
-                    'elo_diff': round(elo_diff) if elo_diff else None,
-                    'elo_band': elo_band,
-                    'referee': row.get('referee', None) if pd.notna(row.get('referee')) else None,
-                    'home_yellow': home_yellow,
-                    'away_yellow': away_yellow,
-                    'home_red': home_red,
-                    'away_red': away_red,
-                    'total_booking_points': total_booking_points,
-                    'winner': winner,
-                    
-                    # Goal markets (boolean)
-                    'over_05': total_goals > 0.5,
-                    'over_15': total_goals > 1.5,
-                    'over_25': total_goals > 2.5,
-                    'over_35': total_goals > 3.5,
-                    'over_45': total_goals > 4.5,
-                    'btts': home_goals > 0 and away_goals > 0,
-                    
-                    # Optional stats (may not be in older data)
-                    'home_xg': float(row['home_xg']) if 'home_xg' in row and pd.notna(row['home_xg']) else None,
-                    'away_xg': float(row['away_xg']) if 'away_xg' in row and pd.notna(row['away_xg']) else None,
-                    'home_possession': float(row['home_possession']) if 'home_possession' in row and pd.notna(row['home_possession']) else None,
-                    'away_possession': float(row['away_possession']) if 'away_possession' in row and pd.notna(row['away_possession']) else None,
-                    
-                    # Additional stats (commented out but available)
-                    # 'home_shots': int(row['home_shots']) if 'home_shots' in row and pd.notna(row['home_shots']) else None,
-                    # 'away_shots': int(row['away_shots']) if 'away_shots' in row and pd.notna(row['away_shots']) else None,
-                    # 'home_shots_target': int(row['home_shots_target']) if 'home_shots_target' in row and pd.notna(row['home_shots_target']) else None,
-                    # 'away_shots_target': int(row['away_shots_target']) if 'away_shots_target' in row and pd.notna(row['away_shots_target']) else None,
-                    # 'home_corners': int(row['home_corners']) if 'home_corners' in row and pd.notna(row['home_corners']) else None,
-                    # 'away_corners': int(row['away_corners']) if 'away_corners' in row and pd.notna(row['away_corners']) else None,
-                }
-                
-                self.matches_data.append(match_data)
-                imported_count += 1
-                
-                # Update ELO history
-                if home_elo:
-                    self.elo_history[match_data['home_team']].append({
-                        'date': match_data['date'],
-                        'elo': round(home_elo)
-                    })
-                if away_elo:
-                    self.elo_history[match_data['away_team']].append({
-                        'date': match_data['date'],
-                        'elo': round(away_elo)
-                    })
-                    
-            except Exception as e:
-                print(f"  Error importing row {_}: {e}")
-                continue
-        
-        print(f"  ✓ Imported {imported_count} matches successfully")
-        
-        # Save imported data
-        self.save_matches_data()
-        return imported_count
     
     # ============================================
     # ELO SCRAPING
     # ============================================
     
-    def update_elo_ratings(self):
+    def rebuild_elo(self):
         """
-        Update ELO ratings after processing new matches.
-        Uses local calculation instead of ClubELO API.
+        Deterministically rebuild ALL ELO ratings and history from match
+        results, every run.
+
+        Why a full rebuild rather than an incremental update:
+        - Each match record stores the PRE-match ELO of both teams (the rating
+          that actually predicted the game). The previous incremental version
+          stored POST-match ratings, mixing perspectives and biasing the ELO
+          band tables that the whole model is built on.
+        - It removes the fragile "is this match newer than the last history
+          entry?" detection, which could silently skip matches (e.g. when a
+          stray future-dated record poisoned the comparison) and leave them at
+          the 1500 default.
+
+        With only a couple of thousand matches this is fast and reproducible.
         """
-        print("\nUpdating ELO ratings...")
-        
-        # Initialize calculator
+        print("\nRebuilding ELO ratings from scratch...")
+
         calc = ELOCalculator(k_factor=20, home_advantage=100, use_mov=True)
-        
-        # Load current ELO as baseline
-        current_elo_file = self.data_dir / 'current_elo.json'
-        elo_history_file = self.data_dir / 'elo_history.json'
-        
-        if current_elo_file.exists():
-            calc.load_current_elo(current_elo_file)
-        
-        if elo_history_file.exists():
-            calc.load_elo_history(elo_history_file)
-        
-        # Find matches that need ELO processing
-        # These are matches where we have results but haven't calculated ELO yet
-        # We identify them by checking if the match date is after the last elo_history entry
-        
-        last_elo_dates = {}
-        for team, history in calc.elo_history.items():
-            if history:
-                sorted_hist = sorted(history, key=lambda x: x['date'])
-                last_elo_dates[team] = sorted_hist[-1]['date']
-        
-        # Get matches that need processing
-        new_matches = []
+
+        # Chronological order is essential for a correct rebuild.
+        self.matches_data.sort(key=lambda m: m['date'])
+
         for match in self.matches_data:
             home_team = match['home_team']
             away_team = match['away_team']
-            match_date = match['date']
-            
-            # Check if this match is newer than our last ELO update for either team
-            home_last = last_elo_dates.get(home_team, '1900-01-01')
-            away_last = last_elo_dates.get(away_team, '1900-01-01')
-            
-            if match_date > home_last or match_date > away_last:
-                new_matches.append(match)
-        
-        # Sort by date and process
-        new_matches = sorted(new_matches, key=lambda x: x['date'])
-        
-        if new_matches:
-            print(f"  Processing {len(new_matches)} new matches...")
-            
-            for match in new_matches:
-                new_home, new_away, home_change, away_change = calc.process_match(
-                    home_team=match['home_team'],
-                    away_team=match['away_team'],
-                    home_goals=match['home_goals'],
-                    away_goals=match['away_goals'],
-                    match_date=match['date']
-                )
-                
-                # Update the match record with correct ELO values
-                match['home_elo'] = new_home
-                match['away_elo'] = new_away
-                match['elo_diff'] = abs(new_home - new_away)
-                match['elo_band'] = min(int(match['elo_diff'] // 50) + 1, 10)
-                
-                print(f"    {match['date']}: {match['home_team']} ({home_change:+.1f}→{new_home}) vs "
-                    f"{match['away_team']} ({away_change:+.1f}→{new_away})")
-        else:
-            print("  No new matches to process")
-        
+
+            # PRE-match ratings: what each team was rated going INTO this game.
+            home_elo = calc.get_current_elo(home_team)
+            away_elo = calc.get_current_elo(away_team)
+            elo_diff = abs(home_elo - away_elo)
+
+            match['home_elo'] = round(home_elo)
+            match['away_elo'] = round(away_elo)
+            match['elo_diff'] = round(elo_diff)
+            match['elo_band'] = min(int(elo_diff // 50) + 1, 10)
+            match['winner'] = determine_winner(
+                match['home_goals'], match['away_goals'], home_elo, away_elo
+            )
+
+            # Advance ratings/history using this result.
+            calc.process_match(
+                home_team=home_team,
+                away_team=away_team,
+                home_goals=match['home_goals'],
+                away_goals=match['away_goals'],
+                match_date=match['date']
+            )
+
         # Store results
         self.current_elo = calc.current_elo
         self.elo_history = calc.elo_history
-        
-        # Print rankings
+
+        print(f"  Processed {len(self.matches_data)} matches")
         print("\n  Current ELO Rankings:")
         for team, elo, rank in calc.get_rankings()[:10]:
             print(f"    {rank:2d}. {team:15s} {elo}")
-        
+
         return calc
     
     # ============================================
@@ -332,7 +243,9 @@ class OddsCalculator:
     def scrape_matches(self, first_match_id, last_match_id):
         """Scrape new matches from Premier League website"""
         print(f"\nScraping matches {first_match_id} to {last_match_id}...")
-        
+
+        self._ensure_driver_setup()
+
         new_matches = []
         
         for match_id in range(first_match_id, last_match_id + 1):
@@ -371,9 +284,17 @@ class OddsCalculator:
                 try:
                     match_date = datetime.strptime(date_text, '%a %d %b %Y')
                 except ValueError:
-                    current_year = datetime.now().year
-                    date_with_year = f"{date_text} {current_year}"
-                    match_date = datetime.strptime(date_with_year, '%a %d %b %Y')
+                    # No year on the page: infer the SEASON year rather than the
+                    # calendar year. A PL season spans Aug (year N) to May
+                    # (year N+1), so months Aug-Dec belong to the season's
+                    # starting year and Jan-Jul to the following year. Using
+                    # datetime.now().year blindly produced future-dated records
+                    # (e.g. a December game stamped with next year's date).
+                    partial = datetime.strptime(date_text, '%a %d %b')
+                    today = datetime.now()
+                    season_start_year = today.year if today.month >= 8 else today.year - 1
+                    year = season_start_year if partial.month >= 8 else season_start_year + 1
+                    match_date = partial.replace(year=year)
                 
                 # Get scores
                 home_goals = int(driver.find_element(By.XPATH, '/html/body/main/div[1]/div[2]/div[2]/div[1]/div/div/header/div/div[2]/div/span[1]').text)
@@ -390,7 +311,7 @@ class OddsCalculator:
                 away_yellow = 0
                 home_red = 0
                 away_red = 0
-                
+
                 try:
                     # Click on stats tab
                     stats_tab = WebDriverWait(driver, 20).until(
@@ -398,25 +319,42 @@ class OddsCalculator:
                     )
                     stats_tab.click()
                     time.sleep(3)
-                    
-                    # Need to add stats XPATHS
-                    
+
+                    # Optional: dump the stats container so the derived XPATH
+                    # indices (away side, yellow-card row) can be confirmed on
+                    # the live site. Enable with CARD_XPATH_DEBUG=1.
+                    if os.environ.get('CARD_XPATH_DEBUG'):
+                        try:
+                            dump = driver.find_element(By.XPATH, CARD_STATS_CONTAINER_XPATH).text
+                            print(f"    [stats dump match {match_id}]\n{dump}\n    [/stats dump]")
+                        except Exception:
+                            print(f"    [stats dump unavailable for match {match_id}]")
+
+                    def _card_value(key):
+                        """Read a single card count; 0 if the element is missing."""
+                        try:
+                            return int(driver.find_element(By.XPATH, CARD_XPATHS[key]).text.strip())
+                        except Exception:
+                            return 0
+
+                    home_yellow = _card_value('home_yellow')
+                    away_yellow = _card_value('away_yellow')
+                    home_red = _card_value('home_red')
+                    away_red = _card_value('away_red')
+
                 except Exception as e:
                     print(f"    Could not get detailed stats for match {match_id}")
                 
-                # Get current ELO ratings
+                # PRE-match ELO ratings (current_elo is loaded on init, so these
+                # are real ratings, not the old 1500 default). rebuild_elo will
+                # recompute these authoritatively afterwards regardless.
                 home_elo = self.current_elo.get(home_team, 1500)
                 away_elo = self.current_elo.get(away_team, 1500)
                 elo_diff = abs(home_elo - away_elo)
                 elo_band = min(int(elo_diff // 50) + 1, 10)
-                
-                # Determine winner
-                if home_goals > away_goals:
-                    winner = "stronger" if home_elo > away_elo else "weaker"
-                elif away_goals > home_goals:
-                    winner = "stronger" if away_elo > home_elo else "weaker"
-                else:
-                    winner = "draw"
+
+                # Determine winner relative to pre-match ELO (tie-safe)
+                winner = determine_winner(home_goals, away_goals, home_elo, away_elo)
                 
                 # Calculate booking points
                 home_booking = (home_yellow * 10) + (home_red * 25)
@@ -474,12 +412,20 @@ class OddsCalculator:
     # ============================================
     
     def fetch_bookmaker_odds(self):
-        """Fetch odds from the-odds-api.com"""
+        """Fetch odds from the-odds-api.com and attach model odds / value bets."""
         print("\nFetching bookmaker odds...")
-        
+
+        if not API_KEYS:
+            print("  ✗ No API keys set. Provide ODDS_API_KEYS (comma-separated) "
+                  "to fetch bookmaker odds. Skipping.")
+            return []
+
         API_KEY = API_KEYS[0]
         base_url = 'https://api.the-odds-api.com/v4/sports/soccer_epl/odds'
-        
+
+        # ELO bands drive the model's fair odds; compute once for all fixtures.
+        elo_bands = self.calculate_elo_bands()
+
         upcoming_fixtures = []
         
         try:
@@ -607,8 +553,14 @@ class OddsCalculator:
                 }
                 
                 fixture['bookmaker_odds'] = bookmaker_odds
+
+                # Attach the model's fair odds + any value bets so the JSON
+                # carries edges server-side (the website's +EV badges read
+                # fixture.value_bets).
+                self.add_model_odds(fixture, bookmaker_odds, elo_bands)
+
                 upcoming_fixtures.append(fixture)
-                
+
                 # Add a small delay to be respectful to the API
                 time.sleep(0.5)
             
@@ -620,14 +572,69 @@ class OddsCalculator:
             traceback.print_exc()
         
         return upcoming_fixtures
-    
+
+    def add_model_odds(self, fixture, bookmaker_odds, elo_bands):
+        """
+        Compute the model's fair odds for a fixture and flag value bets.
+
+        A value bet exists where the model's probability implies shorter fair
+        odds than the bookmaker is offering, i.e. edge = model_prob * book_odds
+        - 1 > 0. Edge is stored as a percentage to match the website's display
+        and its +EV threshold slider.
+        """
+        home_elo = self.current_elo.get(fixture['home_team'])
+        away_elo = self.current_elo.get(fixture['away_team'])
+
+        # Can't model a team we've never rated.
+        if home_elo is None or away_elo is None:
+            fixture['model_odds'] = None
+            fixture['value_bets'] = []
+            return
+
+        model = calculate_fair_odds(home_elo, away_elo, elo_bands)
+        fixture['model_odds'] = {
+            'home': model['home_win']['fair_odds'],
+            'draw': model['draw']['fair_odds'],
+            'away': model['away_win']['fair_odds'],
+            'band': model['meta']['band'],
+            'elo_diff': model['meta']['elo_diff']
+        }
+
+        value_bets = []
+        market_map = {
+            'home': ('home_win', 'Home Win'),
+            'draw': ('draw', 'Draw'),
+            'away': ('away_win', 'Away Win'),
+        }
+        for book_key, (model_key, label) in market_map.items():
+            book_odds = bookmaker_odds.get(book_key)
+            if not book_odds:
+                continue
+            prob = model[model_key]['probability']
+            edge = round((prob * book_odds - 1) * 100, 1)
+            if edge > 0:
+                value_bets.append({
+                    'market': label,
+                    'model_prob': prob,
+                    'model_odds': model[model_key]['fair_odds'],
+                    'bookmaker_odds': book_odds,
+                    'edge': edge
+                })
+
+        # Best value first.
+        value_bets.sort(key=lambda b: b['edge'], reverse=True)
+        fixture['value_bets'] = value_bets
+
     # ============================================
-    # DEBUGGING
-    # ============================================    
+    # HISTORICAL IMPORT (one-off, manual)
+    # ============================================
     def import_excel(self, filepath):
 
+        if pd is None:
+            raise RuntimeError("pandas is required for import_excel; install requirements.txt.")
+
         print(f"\nImporting historical data from {filepath}...")
-        
+
         # Read file
         if filepath.endswith('.csv'):
             df = pd.read_csv(filepath)
@@ -836,20 +843,7 @@ class OddsCalculator:
                 })
         
         return bands_data
-    
-    def get_band_probabilities(self, band_number):
-        """Get probabilities for a specific band"""
-        bands = self.calculate_elo_bands()
-        for band in bands:
-            if band['band'] == band_number:
-                return {
-                    'home_win': band['home_win_pct'],
-                    'draw': band['draw_pct'],
-                    'away_win': band['away_win_pct']
-                }
-        # Default if band not found
-        return {'home_win': 0.333, 'draw': 0.333, 'away_win': 0.334}
-    
+
     def calculate_referee_stats(self):
         """Calculate statistics for each referee"""
         referee_data = {}
@@ -992,62 +986,7 @@ class OddsCalculator:
                     }
         
         return h2h_data
-    
-    def calculate_poisson(self, home_team, away_team):
-        """Calculate Poisson distribution for a match"""
-        # Get team stats
-        team_stats = self.calculate_team_stats()
-        
-        if home_team not in team_stats or away_team not in team_stats:
-            return {'matrix': []}
-        
-        home_data = team_stats[home_team]
-        away_data = team_stats[away_team]
-        
-        # League average goals
-        all_goals = [m['home_goals'] + m['away_goals'] for m in self.matches_data]
-        league_avg = np.mean(all_goals) / 2 if all_goals else 1.3
-        
-        # Calculate expected goals with home advantage
-        home_attack = home_data['last_10_avg_goals_for'] / league_avg
-        home_defense = home_data['last_10_avg_goals_against'] / league_avg
-        away_attack = away_data['last_10_avg_goals_for'] / league_avg
-        away_defense = away_data['last_10_avg_goals_against'] / league_avg
-        
-        home_expected = home_attack * away_defense * league_avg * 1.1
-        away_expected = away_attack * home_defense * league_avg * 0.9
-        
-        # Generate Poisson matrix (0-5 goals each)
-        matrix = []
-        for i in range(6):
-            row = []
-            for j in range(6):
-                prob = stats.poisson.pmf(i, home_expected) * stats.poisson.pmf(j, away_expected)
-                row.append(round(prob, 4))
-            matrix.append(row)
-        
-        return {'matrix': matrix}
-    
-    def get_expected_booking_points(self, home_team, away_team, elo_band):
-        """Get expected booking points for a fixture"""
-        # Get band average
-        bands = self.calculate_elo_bands()
-        band_avg = 40  # Default
-        for band in bands:
-            if band['band'] == elo_band:
-                band_avg = band['avg_booking_points']
-                break
-        
-        # Get team averages
-        team_stats = self.calculate_team_stats()
-        home_avg = team_stats.get(home_team, {}).get('last_10_avg_booking_points', 40)
-        away_avg = team_stats.get(away_team, {}).get('last_10_avg_booking_points', 40)
-        
-        # Weight: 50% band, 25% each team
-        expected = (band_avg * 0.5) + (home_avg * 0.25) + (away_avg * 0.25)
-        
-        return round(expected, 1)
-    
+
     # ============================================
     # SAVE JSON FILES
     # ============================================
@@ -1172,9 +1111,9 @@ if __name__ == "__main__":
     print(f"Auto-detected: Scraping matches {first_match_id} to {last_match_id}")
     calc.scrape_matches(first_match_id, last_match_id)
     
-    # 2. Update ELO ratings
-    calc.update_elo_ratings()
-    
+    # 2. Rebuild ELO ratings (pre-match ratings, deterministic, from scratch)
+    calc.rebuild_elo()
+
     # 3. Generate all JSON files
     calc.generate_all_json_files()
     
