@@ -17,6 +17,12 @@
     "avg_yellows": 2.7,
     "avg_reds": 0.11
   },
+  "Stuart Attwell": {
+    "games": 132,
+    "avg_booking_points": 31.5,
+    "avg_yellows": 2.9,
+    "avg_reds": 0.09
+  },
   "Martin Atkinson": {
     "games": 52,
     "avg_booking_points": 26.0,
@@ -29,12 +35,6 @@
     "avg_yellows": 2.9,
     "avg_reds": 0.12
   },
-  "Stuart Attwell": {
-    "games": 141,
-    "avg_booking_points": 31.6,
-    "avg_yellows": 3.0,
-    "avg_reds": 0.09
-  },
   "Craig Pawson": {
     "games": 126,
     "avg_booking_points": 35.1,
@@ -46,12 +46,6 @@
     "avg_booking_points": 37.5,
     "avg_yellows": 3.4,
     "avg_reds": 0.16
-  },
-  "Graham Scott": {
-    "games": 37,
-    "avg_booking_points": 31.8,
-    "avg_yellows": 2.7,
-    "avg_reds": 0.19
   },
   "Paul Tierney": {
     "games": 113,
@@ -76,6 +70,12 @@
     "avg_booking_points": 44.3,
     "avg_yellows": 4.1,
     "avg_reds": 0.13
+  },
+  "Graham Scott": {
+    "games": 37,
+    "avg_booking_points": 31.8,
+    "avg_yellows": 2.7,
+    "avg_reds": 0.19
   },
   "Andre Marriner": {
     "games": 57,
@@ -149,17 +149,17 @@
     "avg_yellows": 3.8,
     "avg_reds": 0.12
   },
-  "Darren Bond": {
-    "games": 22,
-    "avg_booking_points": 44.1,
-    "avg_yellows": 4.0,
-    "avg_reds": 0.18
-  },
   "Robert Madley": {
     "games": 2,
     "avg_booking_points": 57.5,
     "avg_yellows": 4.5,
     "avg_reds": 0.5
+  },
+  "Darren Bond": {
+    "games": 22,
+    "avg_booking_points": 44.1,
+    "avg_yellows": 4.0,
+    "avg_reds": 0.18
   },
   "Tony Robinson": {
     "games": 23,
@@ -179,17 +179,17 @@
     "avg_yellows": 2.1,
     "avg_reds": 0.04
   },
-  "Simon Allison": {
-    "games": 4,
-    "avg_booking_points": 47.5,
-    "avg_yellows": 4.8,
-    "avg_reds": 0.0
-  },
   "Rebecca Welch": {
     "games": 2,
     "avg_booking_points": 52.5,
     "avg_yellows": 4.0,
     "avg_reds": 0.5
+  },
+  "Simon Allison": {
+    "games": 4,
+    "avg_booking_points": 47.5,
+    "avg_yellows": 4.8,
+    "avg_reds": 0.0
   },
   "Lee Smith": {
     "games": 3,
@@ -228,10 +228,10 @@
     "avg_reds": 0.0
   },
   "Thomas Bramall": {
-    "games": 29,
-    "avg_booking_points": 9.5,
+    "games": 28,
+    "avg_booking_points": 9.8,
     "avg_yellows": 0.7,
-    "avg_reds": 0.1
+    "avg_reds": 0.11
   },
   "Jarred Gillett": {
     "games": 31,

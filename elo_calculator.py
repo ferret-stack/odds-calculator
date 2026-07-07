@@ -18,211 +18,85 @@ from pathlib import Path
 
 
 # ============================================
-# VENUE ADJUSTMENT CONSTANTS AND FUNCTIONS
+# VENUE ADJUSTMENT
 # ============================================
-
-HOME_ADVANTAGE_MULTIPLIER = 1.11
-AWAY_DISADVANTAGE_MULTIPLIER = 0.89
-DRAW_HOME_MULTIPLIER = 0.95
-DRAW_AWAY_MULTIPLIER = 1.05
+# Multipliers are MEASURED from the data by rebuild.calculate_venue_adjustment
+# and stored in venue_adjustment.json - nothing here hardcodes a venue effect.
+# Multiplier semantics: P(outcome | venue of the stronger team) / P(outcome).
 
 
-def adjust_probability_for_venue(base_prob, is_stronger_team_home, market):
+def adjust_probability_for_venue(base_prob, is_stronger_team_home, market,
+                                 venue_multipliers):
     """
-    Adjust base probability based on venue.
-    
+    Adjust a band base probability for venue.
+
     Args:
         base_prob: Raw probability from elo_bands.json
-        is_stronger_team_home: True if ELO-stronger team is the home team
+        is_stronger_team_home: True if the ELO-stronger team is at home
         market: 'stronger_win', 'weaker_win', or 'draw'
-    
+        venue_multipliers: dict from venue_adjustment.json
+
     Returns:
         Adjusted probability (not yet normalized)
     """
+    v = venue_multipliers
     if market == 'stronger_win':
-        if is_stronger_team_home:
-            adjusted = base_prob * HOME_ADVANTAGE_MULTIPLIER
-        else:
-            adjusted = base_prob * AWAY_DISADVANTAGE_MULTIPLIER
-    
+        mult = v['home_multiplier'] if is_stronger_team_home else v['away_multiplier']
     elif market == 'weaker_win':
-        if is_stronger_team_home:
-            adjusted = base_prob * AWAY_DISADVANTAGE_MULTIPLIER
-        else:
-            adjusted = base_prob * HOME_ADVANTAGE_MULTIPLIER
-    
+        # the weaker team is home exactly when the stronger team is away
+        mult = v['weaker_away_multiplier'] if is_stronger_team_home else v['weaker_home_multiplier']
     elif market == 'draw':
-        if is_stronger_team_home:
-            adjusted = base_prob * DRAW_HOME_MULTIPLIER
-        else:
-            adjusted = base_prob * DRAW_AWAY_MULTIPLIER
-    
+        mult = v['draw_home_multiplier'] if is_stronger_team_home else v['draw_away_multiplier']
     else:
-        adjusted = base_prob
-    
-    return adjusted
+        mult = 1.0
+    return base_prob * mult
 
 
-def get_venue_adjusted_probabilities(home_elo, away_elo, elo_bands):
+def get_venue_adjusted_probabilities(home_elo, away_elo, elo_bands,
+                                     venue_multipliers):
     """
-    Get match probabilities with venue adjustment applied.
-    
+    Match probabilities with venue adjustment applied.
+
     Args:
         home_elo: ELO rating of home team
         away_elo: ELO rating of away team
         elo_bands: List of band dictionaries from elo_bands.json
-    
+        venue_multipliers: dict from venue_adjustment.json
+
     Returns:
         Dict with 'home_win', 'draw', 'away_win' probabilities (sum to 1.0)
     """
-    # Calculate ELO difference and determine band
     elo_diff = abs(home_elo - away_elo)
     band_num = min(int(elo_diff // 50) + 1, 10)
-    
-    # Find band data
-    band_data = None
-    for band in elo_bands:
-        if band['band'] == band_num:
-            band_data = band
-            break
-    
-    # Fallback if band not found
+
+    band_data = next((b for b in elo_bands if b['band'] == band_num), None)
     if not band_data:
         return {'home_win': 0.333, 'draw': 0.333, 'away_win': 0.334}
-    
-    # Determine if stronger team is home
+
+    # exact-equality rule: home side is the de-facto stronger team
     is_stronger_home = home_elo >= away_elo
-    
-    # Get base probabilities from band
-    stronger_base = band_data['stronger_win_pct']
-    weaker_base = band_data['weaker_win_pct']
-    draw_base = band_data['draw_pct']
-    
-    # Apply venue adjustment
-    stronger_adj = adjust_probability_for_venue(stronger_base, is_stronger_home, 'stronger_win')
-    weaker_adj = adjust_probability_for_venue(weaker_base, is_stronger_home, 'weaker_win')
-    draw_adj = adjust_probability_for_venue(draw_base, is_stronger_home, 'draw')
-    
-    # Normalize to sum to 1.0
+
+    stronger_adj = adjust_probability_for_venue(
+        band_data['stronger_win_pct'], is_stronger_home, 'stronger_win',
+        venue_multipliers)
+    weaker_adj = adjust_probability_for_venue(
+        band_data['weaker_win_pct'], is_stronger_home, 'weaker_win',
+        venue_multipliers)
+    draw_adj = adjust_probability_for_venue(
+        band_data['draw_pct'], is_stronger_home, 'draw', venue_multipliers)
+
     total = stronger_adj + weaker_adj + draw_adj
     stronger_adj /= total
     weaker_adj /= total
     draw_adj /= total
-    
-    # Map to home/away perspective
+
     if is_stronger_home:
-        return {
-            'home_win': round(stronger_adj, 4),
-            'draw': round(draw_adj, 4),
-            'away_win': round(weaker_adj, 4)
-        }
+        home_win, away_win = stronger_adj, weaker_adj
     else:
-        return {
-            'home_win': round(weaker_adj, 4),
-            'draw': round(draw_adj, 4),
-            'away_win': round(stronger_adj, 4)
-        }
+        home_win, away_win = weaker_adj, stronger_adj
+    return {'home_win': round(home_win, 4), 'draw': round(draw_adj, 4),
+            'away_win': round(away_win, 4)}
 
-
-def calculate_fair_odds(home_elo, away_elo, elo_bands):
-    """
-    Calculate fair decimal odds with venue adjustment.
-    
-    Args:
-        home_elo: ELO rating of home team
-        away_elo: ELO rating of away team
-        elo_bands: List of band dictionaries from elo_bands.json
-    
-    Returns:
-        Dict with probabilities and fair odds for each outcome
-    """
-    probs = get_venue_adjusted_probabilities(home_elo, away_elo, elo_bands)
-    
-    return {
-        'home_win': {
-            'probability': probs['home_win'],
-            'fair_odds': round(1 / probs['home_win'], 2)
-        },
-        'draw': {
-            'probability': probs['draw'],
-            'fair_odds': round(1 / probs['draw'], 2)
-        },
-        'away_win': {
-            'probability': probs['away_win'],
-            'fair_odds': round(1 / probs['away_win'], 2)
-        }
-    }
-
-def calculate_home_advantage_multipliers(matches_data):
-    """
-    Calculate home advantage multipliers from match data.
-    Call this each time the script runs to keep multipliers current.
-    
-    Args:
-        matches_data: List of match dictionaries
-    
-    Returns:
-        Dictionary with multipliers and stats
-    """
-    from datetime import datetime
-    
-    stronger_home = {'wins': 0, 'total': 0}
-    stronger_away = {'wins': 0, 'total': 0}
-    
-    for match in matches_data:
-        home_elo = match.get('home_elo', 1500)
-        away_elo = match.get('away_elo', 1500)
-        
-        # Skip matches with missing/default ELO
-        if home_elo == 1500 or away_elo == 1500:
-            continue
-        if home_elo is None or away_elo is None:
-            continue
-        
-        home_goals = match['home_goals']
-        away_goals = match['away_goals']
-        
-        if home_elo >= away_elo:
-            # Stronger team is home
-            stronger_home['total'] += 1
-            if home_goals > away_goals:
-                stronger_home['wins'] += 1
-        else:
-            # Stronger team is away
-            stronger_away['total'] += 1
-            if away_goals > home_goals:
-                stronger_away['wins'] += 1
-    
-    # Safety check
-    if stronger_home['total'] == 0 or stronger_away['total'] == 0:
-        return {
-            'home_multiplier': 1.11,
-            'away_multiplier': 0.89,
-            'error': 'Insufficient data'
-        }
-    
-    # Calculate win rates
-    home_win_rate = stronger_home['wins'] / stronger_home['total']
-    away_win_rate = stronger_away['wins'] / stronger_away['total']
-    combined_wins = stronger_home['wins'] + stronger_away['wins']
-    combined_total = stronger_home['total'] + stronger_away['total']
-    combined_rate = combined_wins / combined_total
-    
-    # Calculate multipliers
-    home_mult = home_win_rate / combined_rate
-    away_mult = away_win_rate / combined_rate
-    
-    return {
-        'home_multiplier': round(home_mult, 3),
-        'away_multiplier': round(away_mult, 3),
-        'home_win_rate': round(home_win_rate, 4),
-        'away_win_rate': round(away_win_rate, 4),
-        'combined_rate': round(combined_rate, 4),
-        'sample_size': combined_total,
-        'stronger_home_games': stronger_home['total'],
-        'stronger_away_games': stronger_away['total'],
-        'last_updated': datetime.now().strftime('%Y-%m-%d')
-    }
 
 class ELOCalculator:
     """
@@ -574,89 +448,39 @@ def calculate_form_metrics(
 def calculate_fair_odds(
     home_team_elo: int,
     away_team_elo: int,
-    elo_bands: List[Dict]
+    elo_bands: List[Dict],
+    venue_multipliers: Dict
 ) -> Dict[str, Dict[str, float]]:
     """
-    Calculate fair odds for a fixture with home/away adjustment.
-    
+    Fair decimal odds for a fixture, venue-adjusted. The single canonical
+    implementation (the module used to carry two competing definitions).
+
     Args:
         home_team_elo: ELO rating of home team
         away_team_elo: ELO rating of away team
         elo_bands: List of band data from elo_bands.json
-    
+        venue_multipliers: dict from venue_adjustment.json
+
     Returns:
         Dictionary with adjusted probabilities and fair odds for each market
-    
-    Example:
-        >>> odds = calculate_fair_odds(2037, 1800, elo_bands)
-        >>> print(odds['home_win'])
-        {'probability': 0.71, 'fair_odds': 1.41}
     """
-    # Calculate ELO difference and band
+    probs = get_venue_adjusted_probabilities(
+        home_team_elo, away_team_elo, elo_bands, venue_multipliers)
+
     elo_diff = abs(home_team_elo - away_team_elo)
-    band_num = min(int(elo_diff // 50) + 1, 10)
-    
-    # Get band data
-    band_data = None
-    for band in elo_bands:
-        if band['band'] == band_num:
-            band_data = band
-            break
-    
-    if not band_data:
-        # Fallback to band 1 if not found
-        band_data = elo_bands[0]
-    
-    # Determine if stronger team is home or away
-    is_stronger_home = home_team_elo >= away_team_elo
-    
-    # Get base probabilities from band
-    stronger_win_base = band_data['stronger_win_pct']
-    draw_base = band_data['draw_pct']
-    weaker_win_base = band_data['weaker_win_pct']
-    
-    # Adjust for venue
-    stronger_win_adj = adjust_probability_for_venue(stronger_win_base, is_stronger_home, 'stronger_win')
-    weaker_win_adj = adjust_probability_for_venue(weaker_win_base, is_stronger_home, 'weaker_win')
-    draw_adj = adjust_probability_for_venue(draw_base, is_stronger_home, 'draw')
-    
-    # Normalize to ensure probabilities sum to 1
-    total = stronger_win_adj + draw_adj + weaker_win_adj
-    stronger_win_adj /= total
-    draw_adj /= total
-    weaker_win_adj /= total
-    
-    # Map to home/away perspective
-    if is_stronger_home:
-        home_win_prob = stronger_win_adj
-        away_win_prob = weaker_win_adj
-    else:
-        home_win_prob = weaker_win_adj
-        away_win_prob = stronger_win_adj
-    
-    draw_prob = draw_adj
-    
-    # Calculate fair odds (1 / probability)
     result = {
-        'home_win': {
-            'probability': round(home_win_prob, 4),
-            'fair_odds': round(1 / home_win_prob, 2)
-        },
-        'draw': {
-            'probability': round(draw_prob, 4),
-            'fair_odds': round(1 / draw_prob, 2)
-        },
-        'away_win': {
-            'probability': round(away_win_prob, 4),
-            'fair_odds': round(1 / away_win_prob, 2)
-        },
-        'meta': {
-            'elo_diff': elo_diff,
-            'band': band_num,
-            'stronger_team': 'home' if is_stronger_home else 'away',
-            'home_elo': home_team_elo,
-            'away_elo': away_team_elo
+        market: {
+            'probability': probs[key],
+            'fair_odds': round(1 / probs[key], 2)
         }
+        for market, key in (('home_win', 'home_win'), ('draw', 'draw'),
+                            ('away_win', 'away_win'))
     }
-    
+    result['meta'] = {
+        'elo_diff': elo_diff,
+        'band': min(int(elo_diff // 50) + 1, 10),
+        'stronger_team': 'home' if home_team_elo >= away_team_elo else 'away',
+        'home_elo': home_team_elo,
+        'away_elo': away_team_elo
+    }
     return result
