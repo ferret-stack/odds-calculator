@@ -239,21 +239,30 @@ class ELOCalculator:
         k_factor: int = 20,
         home_advantage: int = 100,
         use_mov: bool = True,
-        default_elo: int = 1500
+        default_elo: int = 1500,
+        mov_formula: str = 'fte'
     ):
         """
         Initialize the ELO calculator.
-        
+
         Args:
             k_factor: Base K-factor for ELO changes (default 20, same as ClubELO)
             home_advantage: ELO points added to home team's effective rating (default 100)
             use_mov: Whether to apply margin of victory multiplier (default True)
             default_elo: Starting ELO for new teams (default 1500)
+            mov_formula: 'fte' (FiveThirtyEight-style, what the code has always
+                run) or 'v6blog' (the 0.7 + ln(gd+1)*0.5 variant with upset bonus
+                that the V6 blog post documented). Both are kept so the
+                calibration harness can compare them; the shipped default is the
+                calibration winner.
         """
         self.k_factor = k_factor
         self.home_advantage = home_advantage
         self.use_mov = use_mov
         self.default_elo = default_elo
+        if mov_formula not in ('fte', 'v6blog'):
+            raise ValueError(f"unknown mov_formula: {mov_formula}")
+        self.mov_formula = mov_formula
         
         # Storage
         self.current_elo: Dict[str, int] = {}
@@ -293,13 +302,19 @@ class ELOCalculator:
         """
         if goal_diff == 0:
             return 1.0
-        
-        # Logarithmic scaling for goal difference
+
+        if self.mov_formula == 'v6blog':
+            base = math.log(abs(goal_diff) + 1)
+            # Upset bonus: elo_diff is winner-minus-loser, negative on an upset
+            if elo_diff < -50:
+                base *= 1.0 + abs(elo_diff) / 500
+            return 0.7 + base * 0.5
+
+        # 'fte' (FiveThirtyEight-style): logarithmic goal scaling, dampened
+        # when the winner was already rated far above the loser
         goal_factor = math.log(abs(goal_diff) + 1)
-        
-        # Dampening factor based on ELO difference
         dampening = 2.2 / ((elo_diff * 0.001) + 2.2)
-        
+
         return goal_factor * dampening
     
     def calculate_elo_change(

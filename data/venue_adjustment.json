@@ -1,11 +1,16 @@
 {
   "home_multiplier": 1.1,
-  "away_multiplier": 0.901,
-  "home_win_rate": 0.5968,
-  "away_win_rate": 0.4888,
-  "combined_rate": 0.5425,
-  "sample_size": 2131,
-  "stronger_home_games": 1059,
+  "away_multiplier": 0.897,
+  "draw_home_multiplier": 0.966,
+  "draw_away_multiplier": 1.035,
+  "weaker_home_multiplier": 1.185,
+  "weaker_away_multiplier": 0.82,
+  "home_win_rate": 0.5718,
+  "away_win_rate": 0.4664,
+  "combined_rate": 0.5198,
+  "sample_size": 2172,
+  "stronger_home_games": 1100,
   "stronger_away_games": 1072,
-  "last_updated": "2026-05-22"
+  "excluded_elo_ties": 18,
+  "last_updated": "2026-05-19"
 }
