@@ -52,10 +52,14 @@ single point of failure: a site redesign can silently kill a matchweek's update.
 league** once the foundation is proven — because with the right architecture and a
 multi-league feed, each additional league is nearly free.
 
-## Growth backlog (specs live in `docs/roadmap/`)
+## Growth backlog (specs live in `docs/roadmap/` — all execution-ready as of July 2026)
 
 - **B1** Data-layer overhaul & multi-league architecture *(next up)*
 - **B2** Blog / mobile presentation overhaul
 - **B3** Betting edge engine (EV, Kelly staking, value-bet JSON, public PnL ledger)
 - **B4** Monte Carlo season simulator (title / top-4 / relegation odds)
 - **B5** AI analysis + marketing workflow (Opus prompts + content/distribution plan)
+
+Part A (the foundation) is done — see `docs/PART_A_REPORT.md` for the
+before/after numbers and the calibration-locked model decisions the specs
+build on.
