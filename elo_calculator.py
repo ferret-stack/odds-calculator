@@ -240,7 +240,7 @@ class ELOCalculator:
         home_advantage: int = 100,
         use_mov: bool = True,
         default_elo: int = 1500,
-        mov_formula: str = 'fte'
+        mov_formula: str = 'v6blog'
     ):
         """
         Initialize the ELO calculator.

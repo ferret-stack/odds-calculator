@@ -36,8 +36,12 @@ from pathlib import Path
 from elo_calculator import ELOCalculator
 
 # Calibration-chosen defaults (see calibration.py and docs/PART_A_REPORT.md).
+# 2026-07 run over 1,432 eval matches: long/v6blog/global-venue is the best
+# cell (log-loss 0.9917); long-vs-rolling and v6blog-vs-fte are within noise
+# (paired bootstrap 0.57 / 0.55), venue-global and the new pipeline itself are
+# decisive (new beats old with P=0.999).
 DRIVER = 'long'
-MOV_FORMULA = 'fte'
+MOV_FORMULA = 'v6blog'
 K_FACTOR = 20
 HOME_ADVANTAGE = 100
 ROLLING_WINDOW_DAYS = 730
