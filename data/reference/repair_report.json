@@ -1,0 +1,2499 @@
+{
+  "duplicates_dropped": [
+    {
+      "kept": 1584,
+      "dropped": 1589,
+      "fixture": "Brentford v Bournemouth 2024-11-09"
+    },
+    {
+      "kept": 1585,
+      "dropped": 1590,
+      "fixture": "Brighton v Man City 2024-11-09"
+    },
+    {
+      "kept": 1586,
+      "dropped": 1591,
+      "fixture": "Chelsea v Arsenal 2024-11-10"
+    },
+    {
+      "kept": 1587,
+      "dropped": 1592,
+      "fixture": "Crystal Palace v Fulham 2024-11-09"
+    },
+    {
+      "kept": 1588,
+      "dropped": 1593,
+      "fixture": "Liverpool v Aston Villa 2024-11-09"
+    },
+    {
+      "kept": 1737,
+      "dropped": 1719,
+      "fixture": "Brighton v Fulham 2025-03-08"
+    },
+    {
+      "kept": 1738,
+      "dropped": 1720,
+      "fixture": "Chelsea v Leicester 2025-03-09"
+    },
+    {
+      "kept": 1739,
+      "dropped": 1721,
+      "fixture": "Crystal Palace v Ipswich 2025-03-08"
+    },
+    {
+      "kept": 1740,
+      "dropped": 1722,
+      "fixture": "Liverpool v Southampton 2025-03-08"
+    },
+    {
+      "kept": 1741,
+      "dropped": 1723,
+      "fixture": "Man Utd v Arsenal 2025-03-09"
+    },
+    {
+      "kept": 1742,
+      "dropped": 1724,
+      "fixture": "Nott'm Forest v Man City 2025-03-08"
+    },
+    {
+      "kept": 1743,
+      "dropped": 1725,
+      "fixture": "Spurs v Bournemouth 2025-03-09"
+    },
+    {
+      "kept": 1744,
+      "dropped": 1726,
+      "fixture": "West Ham v Newcastle 2025-03-10"
+    },
+    {
+      "kept": 1745,
+      "dropped": 1727,
+      "fixture": "Wolves v Everton 2025-03-08"
+    },
+    {
+      "kept": 1825,
+      "dropped": 2444838,
+      "fixture": "Man City v Bournemouth 2025-05-20"
+    }
+  ],
+  "dates_swapped": [
+    {
+      "match_id": 1,
+      "from": "2020-12-09",
+      "to": "2020-09-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 2,
+      "from": "2020-12-09",
+      "to": "2020-09-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 3,
+      "from": "2020-12-09",
+      "to": "2020-09-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 7,
+      "from": "2020-12-09",
+      "to": "2020-09-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 30,
+      "from": "2020-04-10",
+      "to": "2020-10-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 31,
+      "from": "2020-04-10",
+      "to": "2020-10-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 32,
+      "from": "2020-03-10",
+      "to": "2020-10-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 33,
+      "from": "2020-03-10",
+      "to": "2020-10-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 34,
+      "from": "2020-03-10",
+      "to": "2020-10-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 35,
+      "from": "2020-04-10",
+      "to": "2020-10-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 36,
+      "from": "2020-04-10",
+      "to": "2020-10-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 37,
+      "from": "2020-03-10",
+      "to": "2020-10-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 38,
+      "from": "2020-04-10",
+      "to": "2020-10-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 39,
+      "from": "2020-04-10",
+      "to": "2020-10-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 60,
+      "from": "2020-01-11",
+      "to": "2020-11-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 62,
+      "from": "2020-02-11",
+      "to": "2020-11-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 63,
+      "from": "2020-02-11",
+      "to": "2020-11-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 65,
+      "from": "2020-01-11",
+      "to": "2020-11-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 66,
+      "from": "2020-01-11",
+      "to": "2020-11-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 68,
+      "from": "2020-01-11",
+      "to": "2020-11-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 70,
+      "from": "2020-08-11",
+      "to": "2020-11-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 71,
+      "from": "2020-06-11",
+      "to": "2020-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 72,
+      "from": "2020-07-11",
+      "to": "2020-11-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 73,
+      "from": "2020-07-11",
+      "to": "2020-11-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 74,
+      "from": "2020-07-11",
+      "to": "2020-11-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 75,
+      "from": "2020-08-11",
+      "to": "2020-11-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 76,
+      "from": "2020-08-11",
+      "to": "2020-11-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 77,
+      "from": "2020-06-11",
+      "to": "2020-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 78,
+      "from": "2020-08-11",
+      "to": "2020-11-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 79,
+      "from": "2020-07-11",
+      "to": "2020-11-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 101,
+      "from": "2020-07-12",
+      "to": "2020-12-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 102,
+      "from": "2020-05-12",
+      "to": "2020-12-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 103,
+      "from": "2020-05-12",
+      "to": "2020-12-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 104,
+      "from": "2020-06-12",
+      "to": "2020-12-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 105,
+      "from": "2020-05-12",
+      "to": "2020-12-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 106,
+      "from": "2020-06-12",
+      "to": "2020-12-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 107,
+      "from": "2020-06-12",
+      "to": "2020-12-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 108,
+      "from": "2020-06-12",
+      "to": "2020-12-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 109,
+      "from": "2020-05-12",
+      "to": "2020-12-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 114,
+      "from": "2020-11-12",
+      "to": "2020-12-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 160,
+      "from": "2021-02-01",
+      "to": "2021-01-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 162,
+      "from": "2021-03-01",
+      "to": "2021-01-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 163,
+      "from": "2021-02-01",
+      "to": "2021-01-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 166,
+      "from": "2021-03-01",
+      "to": "2021-01-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 167,
+      "from": "2021-04-01",
+      "to": "2021-01-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 168,
+      "from": "2021-02-01",
+      "to": "2021-01-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 169,
+      "from": "2021-02-01",
+      "to": "2021-01-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 175,
+      "from": "2021-12-01",
+      "to": "2021-01-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 177,
+      "from": "2021-12-01",
+      "to": "2021-01-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 210,
+      "from": "2021-03-02",
+      "to": "2021-02-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 211,
+      "from": "2021-03-02",
+      "to": "2021-02-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 212,
+      "from": "2021-03-02",
+      "to": "2021-02-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 213,
+      "from": "2021-03-02",
+      "to": "2021-02-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 217,
+      "from": "2021-03-02",
+      "to": "2021-02-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 219,
+      "from": "2021-04-02",
+      "to": "2021-02-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 220,
+      "from": "2021-06-02",
+      "to": "2021-02-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 221,
+      "from": "2021-06-02",
+      "to": "2021-02-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 222,
+      "from": "2021-06-02",
+      "to": "2021-02-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 223,
+      "from": "2021-08-02",
+      "to": "2021-02-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 224,
+      "from": "2021-07-02",
+      "to": "2021-02-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 225,
+      "from": "2021-06-02",
+      "to": "2021-02-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 226,
+      "from": "2021-06-02",
+      "to": "2021-02-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 227,
+      "from": "2021-07-02",
+      "to": "2021-02-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 228,
+      "from": "2021-07-02",
+      "to": "2021-02-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 229,
+      "from": "2021-07-02",
+      "to": "2021-02-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 252,
+      "from": "2021-01-03",
+      "to": "2021-03-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 260,
+      "from": "2021-06-03",
+      "to": "2021-03-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 261,
+      "from": "2021-06-03",
+      "to": "2021-03-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 262,
+      "from": "2021-06-03",
+      "to": "2021-03-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 263,
+      "from": "2021-08-03",
+      "to": "2021-03-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 264,
+      "from": "2021-07-03",
+      "to": "2021-03-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 265,
+      "from": "2021-07-03",
+      "to": "2021-03-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 266,
+      "from": "2021-06-03",
+      "to": "2021-03-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 267,
+      "from": "2021-07-03",
+      "to": "2021-03-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 268,
+      "from": "2021-07-03",
+      "to": "2021-03-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 269,
+      "from": "2021-08-03",
+      "to": "2021-03-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 277,
+      "from": "2021-12-03",
+      "to": "2021-03-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 285,
+      "from": "2021-02-03",
+      "to": "2021-03-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 290,
+      "from": "2021-03-04",
+      "to": "2021-04-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 292,
+      "from": "2021-03-04",
+      "to": "2021-04-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 293,
+      "from": "2021-05-04",
+      "to": "2021-04-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 294,
+      "from": "2021-03-04",
+      "to": "2021-04-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 295,
+      "from": "2021-03-04",
+      "to": "2021-04-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 299,
+      "from": "2021-05-04",
+      "to": "2021-04-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 300,
+      "from": "2021-12-04",
+      "to": "2021-04-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 301,
+      "from": "2021-11-04",
+      "to": "2021-04-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 302,
+      "from": "2021-10-04",
+      "to": "2021-04-10",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 303,
+      "from": "2021-09-04",
+      "to": "2021-04-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 304,
+      "from": "2021-10-04",
+      "to": "2021-04-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 305,
+      "from": "2021-10-04",
+      "to": "2021-04-10",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 306,
+      "from": "2021-11-04",
+      "to": "2021-04-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 307,
+      "from": "2021-11-04",
+      "to": "2021-04-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 308,
+      "from": "2021-12-04",
+      "to": "2021-04-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 309,
+      "from": "2021-11-04",
+      "to": "2021-04-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 318,
+      "from": "2021-11-05",
+      "to": "2021-05-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 322,
+      "from": "2021-04-03",
+      "to": "2021-03-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 326,
+      "from": "2021-10-03",
+      "to": "2021-03-10",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 330,
+      "from": "2021-01-05",
+      "to": "2021-05-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 331,
+      "from": "2021-03-05",
+      "to": "2021-05-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 332,
+      "from": "2021-01-05",
+      "to": "2021-05-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 333,
+      "from": "2021-01-05",
+      "to": "2021-05-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 334,
+      "from": "2021-01-05",
+      "to": "2021-05-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 336,
+      "from": "2021-02-05",
+      "to": "2021-05-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 338,
+      "from": "2021-02-05",
+      "to": "2021-05-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 339,
+      "from": "2021-03-05",
+      "to": "2021-05-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 340,
+      "from": "2021-09-05",
+      "to": "2021-05-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 341,
+      "from": "2021-09-05",
+      "to": "2021-05-09",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 342,
+      "from": "2021-10-05",
+      "to": "2021-05-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 343,
+      "from": "2021-08-05",
+      "to": "2021-05-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 344,
+      "from": "2021-07-05",
+      "to": "2021-05-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 345,
+      "from": "2021-08-05",
+      "to": "2021-05-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 346,
+      "from": "2021-08-05",
+      "to": "2021-05-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 347,
+      "from": "2021-08-05",
+      "to": "2021-05-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 348,
+      "from": "2021-09-05",
+      "to": "2021-05-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 349,
+      "from": "2021-09-05",
+      "to": "2021-05-09",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 353,
+      "from": "2021-11-05",
+      "to": "2021-05-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 355,
+      "from": "2021-12-05",
+      "to": "2021-05-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 410,
+      "from": "2021-11-09",
+      "to": "2021-09-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 411,
+      "from": "2021-11-09",
+      "to": "2021-09-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 412,
+      "from": "2021-11-09",
+      "to": "2021-09-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 413,
+      "from": "2021-11-09",
+      "to": "2021-09-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 415,
+      "from": "2021-12-09",
+      "to": "2021-09-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 416,
+      "from": "2021-11-09",
+      "to": "2021-09-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 417,
+      "from": "2021-11-09",
+      "to": "2021-09-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 418,
+      "from": "2021-11-09",
+      "to": "2021-09-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 419,
+      "from": "2021-11-09",
+      "to": "2021-09-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 440,
+      "from": "2021-02-10",
+      "to": "2021-10-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 441,
+      "from": "2021-02-10",
+      "to": "2021-10-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 442,
+      "from": "2021-02-10",
+      "to": "2021-10-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 443,
+      "from": "2021-03-10",
+      "to": "2021-10-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 444,
+      "from": "2021-02-10",
+      "to": "2021-10-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 445,
+      "from": "2021-03-10",
+      "to": "2021-10-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 446,
+      "from": "2021-02-10",
+      "to": "2021-10-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 447,
+      "from": "2021-03-10",
+      "to": "2021-10-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 448,
+      "from": "2021-03-10",
+      "to": "2021-10-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 449,
+      "from": "2021-02-10",
+      "to": "2021-10-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 479,
+      "from": "2021-01-11",
+      "to": "2021-11-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 480,
+      "from": "2021-07-11",
+      "to": "2021-11-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 481,
+      "from": "2021-06-11",
+      "to": "2021-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 482,
+      "from": "2021-06-11",
+      "to": "2021-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 483,
+      "from": "2021-06-11",
+      "to": "2021-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 484,
+      "from": "2021-06-11",
+      "to": "2021-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 485,
+      "from": "2021-07-11",
+      "to": "2021-11-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 486,
+      "from": "2021-07-11",
+      "to": "2021-11-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 487,
+      "from": "2021-06-11",
+      "to": "2021-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 488,
+      "from": "2021-05-11",
+      "to": "2021-11-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 489,
+      "from": "2021-07-11",
+      "to": "2021-11-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 509,
+      "from": "2021-01-12",
+      "to": "2021-12-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 510,
+      "from": "2021-01-12",
+      "to": "2021-12-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 512,
+      "from": "2021-02-12",
+      "to": "2021-12-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 513,
+      "from": "2021-01-12",
+      "to": "2021-12-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 514,
+      "from": "2021-01-12",
+      "to": "2021-12-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 515,
+      "from": "2021-01-12",
+      "to": "2021-12-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 517,
+      "from": "2021-01-12",
+      "to": "2021-12-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 518,
+      "from": "2021-02-12",
+      "to": "2021-12-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 519,
+      "from": "2021-05-12",
+      "to": "2021-12-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 520,
+      "from": "2021-06-12",
+      "to": "2021-12-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 521,
+      "from": "2021-05-12",
+      "to": "2021-12-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 522,
+      "from": "2021-05-12",
+      "to": "2021-12-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 523,
+      "from": "2021-04-12",
+      "to": "2021-12-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 524,
+      "from": "2021-04-12",
+      "to": "2021-12-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 525,
+      "from": "2021-05-12",
+      "to": "2021-12-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 526,
+      "from": "2021-04-12",
+      "to": "2021-12-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 527,
+      "from": "2021-04-12",
+      "to": "2021-12-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 528,
+      "from": "2021-04-12",
+      "to": "2021-12-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 529,
+      "from": "2021-11-12",
+      "to": "2021-12-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 530,
+      "from": "2021-10-12",
+      "to": "2021-12-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 533,
+      "from": "2021-11-12",
+      "to": "2021-12-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 536,
+      "from": "2021-11-12",
+      "to": "2021-12-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 537,
+      "from": "2021-11-12",
+      "to": "2021-12-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 538,
+      "from": "2021-11-12",
+      "to": "2021-12-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 542,
+      "from": "2022-05-02",
+      "to": "2022-02-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 554,
+      "from": "2022-11-01",
+      "to": "2022-01-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 557,
+      "from": "2022-12-01",
+      "to": "2022-01-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 561,
+      "from": "2022-06-04",
+      "to": "2022-04-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 568,
+      "from": "2022-10-03",
+      "to": "2022-03-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 574,
+      "from": "2022-10-03",
+      "to": "2022-03-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 580,
+      "from": "2022-02-01",
+      "to": "2022-01-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 581,
+      "from": "2022-02-01",
+      "to": "2022-01-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 583,
+      "from": "2022-02-01",
+      "to": "2022-01-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 584,
+      "from": "2022-02-01",
+      "to": "2022-01-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 585,
+      "from": "2022-11-05",
+      "to": "2022-05-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 586,
+      "from": "2022-03-01",
+      "to": "2022-01-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 587,
+      "from": "2022-10-03",
+      "to": "2022-03-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 591,
+      "from": "2022-01-03",
+      "to": "2022-03-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 596,
+      "from": "2022-12-05",
+      "to": "2022-05-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 609,
+      "from": "2022-09-02",
+      "to": "2022-02-09",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 611,
+      "from": "2022-08-02",
+      "to": "2022-02-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 612,
+      "from": "2022-09-02",
+      "to": "2022-02-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 613,
+      "from": "2022-08-02",
+      "to": "2022-02-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 614,
+      "from": "2022-10-02",
+      "to": "2022-02-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 615,
+      "from": "2022-10-02",
+      "to": "2022-02-10",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 616,
+      "from": "2022-09-02",
+      "to": "2022-02-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 617,
+      "from": "2022-08-02",
+      "to": "2022-02-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 618,
+      "from": "2022-09-02",
+      "to": "2022-02-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 619,
+      "from": "2022-12-02",
+      "to": "2022-02-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 622,
+      "from": "2022-12-02",
+      "to": "2022-02-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 624,
+      "from": "2022-12-02",
+      "to": "2022-02-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 626,
+      "from": "2022-12-02",
+      "to": "2022-02-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 628,
+      "from": "2022-12-02",
+      "to": "2022-02-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 649,
+      "from": "2022-05-03",
+      "to": "2022-03-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 650,
+      "from": "2022-05-03",
+      "to": "2022-03-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 651,
+      "from": "2022-05-03",
+      "to": "2022-03-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 652,
+      "from": "2022-05-03",
+      "to": "2022-03-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 653,
+      "from": "2022-06-03",
+      "to": "2022-03-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 654,
+      "from": "2022-05-03",
+      "to": "2022-03-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 655,
+      "from": "2022-05-03",
+      "to": "2022-03-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 656,
+      "from": "2022-07-03",
+      "to": "2022-03-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 657,
+      "from": "2022-06-03",
+      "to": "2022-03-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 658,
+      "from": "2022-05-03",
+      "to": "2022-03-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 660,
+      "from": "2022-12-03",
+      "to": "2022-03-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 661,
+      "from": "2022-12-03",
+      "to": "2022-03-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 666,
+      "from": "2022-12-03",
+      "to": "2022-03-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 675,
+      "from": "2022-10-03",
+      "to": "2022-03-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 677,
+      "from": "2022-11-05",
+      "to": "2022-05-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 679,
+      "from": "2022-02-04",
+      "to": "2022-04-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 680,
+      "from": "2022-02-04",
+      "to": "2022-04-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 681,
+      "from": "2022-02-04",
+      "to": "2022-04-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 683,
+      "from": "2022-02-04",
+      "to": "2022-04-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 684,
+      "from": "2022-02-04",
+      "to": "2022-04-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 685,
+      "from": "2022-02-04",
+      "to": "2022-04-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 686,
+      "from": "2022-03-04",
+      "to": "2022-04-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 687,
+      "from": "2022-03-04",
+      "to": "2022-04-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 688,
+      "from": "2022-02-04",
+      "to": "2022-04-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 689,
+      "from": "2022-09-04",
+      "to": "2022-04-09",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 690,
+      "from": "2022-09-04",
+      "to": "2022-04-09",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 691,
+      "from": "2022-10-04",
+      "to": "2022-04-10",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 692,
+      "from": "2022-09-04",
+      "to": "2022-04-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 693,
+      "from": "2022-10-04",
+      "to": "2022-04-10",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 694,
+      "from": "2022-10-04",
+      "to": "2022-04-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 695,
+      "from": "2022-08-04",
+      "to": "2022-04-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 696,
+      "from": "2022-10-04",
+      "to": "2022-04-10",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 697,
+      "from": "2022-09-04",
+      "to": "2022-04-09",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 698,
+      "from": "2022-09-04",
+      "to": "2022-04-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 699,
+      "from": "2022-10-05",
+      "to": "2022-05-10",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 701,
+      "from": "2022-11-05",
+      "to": "2022-05-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 708,
+      "from": "2022-11-05",
+      "to": "2022-05-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 720,
+      "from": "2022-01-05",
+      "to": "2022-05-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 722,
+      "from": "2022-02-05",
+      "to": "2022-05-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 725,
+      "from": "2022-01-05",
+      "to": "2022-05-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 727,
+      "from": "2022-01-05",
+      "to": "2022-05-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 729,
+      "from": "2022-08-05",
+      "to": "2022-05-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 730,
+      "from": "2022-07-05",
+      "to": "2022-05-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 731,
+      "from": "2022-07-05",
+      "to": "2022-05-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 732,
+      "from": "2022-07-05",
+      "to": "2022-05-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 733,
+      "from": "2022-07-05",
+      "to": "2022-05-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 734,
+      "from": "2022-07-05",
+      "to": "2022-05-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 735,
+      "from": "2022-08-05",
+      "to": "2022-05-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 736,
+      "from": "2022-07-05",
+      "to": "2022-05-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 737,
+      "from": "2022-08-05",
+      "to": "2022-05-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 738,
+      "from": "2022-08-05",
+      "to": "2022-05-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 759,
+      "from": "2022-05-08",
+      "to": "2022-08-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 760,
+      "from": "2022-06-08",
+      "to": "2022-08-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 761,
+      "from": "2022-06-08",
+      "to": "2022-08-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 762,
+      "from": "2022-06-08",
+      "to": "2022-08-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 763,
+      "from": "2022-06-08",
+      "to": "2022-08-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 764,
+      "from": "2022-07-08",
+      "to": "2022-08-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 765,
+      "from": "2022-06-08",
+      "to": "2022-08-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 766,
+      "from": "2022-06-08",
+      "to": "2022-08-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 767,
+      "from": "2022-07-08",
+      "to": "2022-08-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 768,
+      "from": "2022-07-08",
+      "to": "2022-08-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 804,
+      "from": "2022-01-09",
+      "to": "2022-09-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 809,
+      "from": "2022-03-09",
+      "to": "2022-09-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 810,
+      "from": "2022-03-09",
+      "to": "2022-09-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 811,
+      "from": "2022-04-09",
+      "to": "2022-09-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 812,
+      "from": "2022-03-09",
+      "to": "2022-09-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 813,
+      "from": "2022-03-09",
+      "to": "2022-09-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 814,
+      "from": "2022-04-09",
+      "to": "2022-09-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 815,
+      "from": "2022-03-09",
+      "to": "2022-09-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 816,
+      "from": "2022-03-09",
+      "to": "2022-09-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 817,
+      "from": "2022-03-09",
+      "to": "2022-09-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 818,
+      "from": "2022-03-09",
+      "to": "2022-09-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 822,
+      "from": "2023-12-01",
+      "to": "2023-01-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 825,
+      "from": "2023-01-03",
+      "to": "2023-03-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 828,
+      "from": "2023-05-04",
+      "to": "2023-04-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 834,
+      "from": "2023-08-02",
+      "to": "2023-02-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 839,
+      "from": "2022-01-10",
+      "to": "2022-10-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 840,
+      "from": "2022-01-10",
+      "to": "2022-10-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 841,
+      "from": "2022-01-10",
+      "to": "2022-10-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 842,
+      "from": "2022-01-10",
+      "to": "2022-10-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 843,
+      "from": "2022-02-10",
+      "to": "2022-10-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 844,
+      "from": "2022-03-10",
+      "to": "2022-10-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 845,
+      "from": "2022-01-10",
+      "to": "2022-10-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 846,
+      "from": "2022-02-10",
+      "to": "2022-10-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 847,
+      "from": "2022-01-10",
+      "to": "2022-10-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 848,
+      "from": "2022-01-10",
+      "to": "2022-10-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 849,
+      "from": "2022-09-10",
+      "to": "2022-10-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 850,
+      "from": "2022-08-10",
+      "to": "2022-10-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 851,
+      "from": "2022-08-10",
+      "to": "2022-10-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 852,
+      "from": "2022-08-10",
+      "to": "2022-10-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 853,
+      "from": "2022-09-10",
+      "to": "2022-10-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 854,
+      "from": "2022-09-10",
+      "to": "2022-10-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 855,
+      "from": "2022-08-10",
+      "to": "2022-10-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 856,
+      "from": "2022-08-10",
+      "to": "2022-10-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 858,
+      "from": "2022-09-10",
+      "to": "2022-10-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 899,
+      "from": "2022-06-11",
+      "to": "2022-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 900,
+      "from": "2022-06-11",
+      "to": "2022-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 901,
+      "from": "2022-05-11",
+      "to": "2022-11-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 902,
+      "from": "2022-05-11",
+      "to": "2022-11-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 903,
+      "from": "2022-05-11",
+      "to": "2022-11-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 904,
+      "from": "2022-05-11",
+      "to": "2022-11-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 905,
+      "from": "2022-06-11",
+      "to": "2022-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 906,
+      "from": "2022-06-11",
+      "to": "2022-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 907,
+      "from": "2022-06-11",
+      "to": "2022-11-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 908,
+      "from": "2022-05-11",
+      "to": "2022-11-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 909,
+      "from": "2022-12-11",
+      "to": "2022-11-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 912,
+      "from": "2022-12-11",
+      "to": "2022-11-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 913,
+      "from": "2022-12-11",
+      "to": "2022-11-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 914,
+      "from": "2022-12-11",
+      "to": "2022-11-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 915,
+      "from": "2022-12-11",
+      "to": "2022-11-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 916,
+      "from": "2022-12-11",
+      "to": "2022-11-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 940,
+      "from": "2023-04-01",
+      "to": "2023-01-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 941,
+      "from": "2023-02-01",
+      "to": "2023-01-02",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 942,
+      "from": "2023-05-01",
+      "to": "2023-01-05",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 943,
+      "from": "2023-04-01",
+      "to": "2023-01-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 945,
+      "from": "2023-04-01",
+      "to": "2023-01-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 946,
+      "from": "2023-03-01",
+      "to": "2023-01-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 947,
+      "from": "2023-03-01",
+      "to": "2023-01-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 948,
+      "from": "2023-04-01",
+      "to": "2023-01-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 969,
+      "from": "2023-04-02",
+      "to": "2023-02-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 970,
+      "from": "2023-04-02",
+      "to": "2023-02-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 971,
+      "from": "2023-04-02",
+      "to": "2023-02-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 972,
+      "from": "2023-03-02",
+      "to": "2023-02-03",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 973,
+      "from": "2023-04-02",
+      "to": "2023-02-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 974,
+      "from": "2023-04-02",
+      "to": "2023-02-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 975,
+      "from": "2023-04-02",
+      "to": "2023-02-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 976,
+      "from": "2023-05-02",
+      "to": "2023-02-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 977,
+      "from": "2023-05-02",
+      "to": "2023-02-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 978,
+      "from": "2023-04-02",
+      "to": "2023-02-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 979,
+      "from": "2023-11-02",
+      "to": "2023-02-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 980,
+      "from": "2023-11-02",
+      "to": "2023-02-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 981,
+      "from": "2023-11-02",
+      "to": "2023-02-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 982,
+      "from": "2023-11-02",
+      "to": "2023-02-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 983,
+      "from": "2023-12-02",
+      "to": "2023-02-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 984,
+      "from": "2023-11-02",
+      "to": "2023-02-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 986,
+      "from": "2023-12-02",
+      "to": "2023-02-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 987,
+      "from": "2023-11-02",
+      "to": "2023-02-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 988,
+      "from": "2023-11-02",
+      "to": "2023-02-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1005,
+      "from": "2023-05-04",
+      "to": "2023-04-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1009,
+      "from": "2023-04-03",
+      "to": "2023-03-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1010,
+      "from": "2023-04-03",
+      "to": "2023-03-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1011,
+      "from": "2023-06-03",
+      "to": "2023-03-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1012,
+      "from": "2023-04-03",
+      "to": "2023-03-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1013,
+      "from": "2023-04-03",
+      "to": "2023-03-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1014,
+      "from": "2023-05-03",
+      "to": "2023-03-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1015,
+      "from": "2023-04-03",
+      "to": "2023-03-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1016,
+      "from": "2023-05-03",
+      "to": "2023-03-05",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1017,
+      "from": "2023-04-03",
+      "to": "2023-03-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1018,
+      "from": "2023-04-03",
+      "to": "2023-03-04",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1019,
+      "from": "2023-11-03",
+      "to": "2023-03-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1020,
+      "from": "2023-11-03",
+      "to": "2023-03-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1021,
+      "from": "2023-11-03",
+      "to": "2023-03-11",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1022,
+      "from": "2023-12-03",
+      "to": "2023-03-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1023,
+      "from": "2023-11-03",
+      "to": "2023-03-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1024,
+      "from": "2023-11-03",
+      "to": "2023-03-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1025,
+      "from": "2023-12-03",
+      "to": "2023-03-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1026,
+      "from": "2023-12-03",
+      "to": "2023-03-12",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1027,
+      "from": "2023-11-03",
+      "to": "2023-03-11",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1028,
+      "from": "2023-12-03",
+      "to": "2023-03-12",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1032,
+      "from": "2023-04-05",
+      "to": "2023-05-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1034,
+      "from": "2023-03-05",
+      "to": "2023-05-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1035,
+      "from": "2023-03-05",
+      "to": "2023-05-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1039,
+      "from": "2023-01-04",
+      "to": "2023-04-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1040,
+      "from": "2023-01-04",
+      "to": "2023-04-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1041,
+      "from": "2023-01-04",
+      "to": "2023-04-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1042,
+      "from": "2023-01-04",
+      "to": "2023-04-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1043,
+      "from": "2023-01-04",
+      "to": "2023-04-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1044,
+      "from": "2023-03-04",
+      "to": "2023-04-03",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1045,
+      "from": "2023-01-04",
+      "to": "2023-04-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1046,
+      "from": "2023-02-04",
+      "to": "2023-04-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1047,
+      "from": "2023-01-04",
+      "to": "2023-04-01",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1048,
+      "from": "2023-02-04",
+      "to": "2023-04-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1049,
+      "from": "2023-08-04",
+      "to": "2023-04-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1050,
+      "from": "2023-08-04",
+      "to": "2023-04-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1051,
+      "from": "2023-08-04",
+      "to": "2023-04-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1052,
+      "from": "2023-09-04",
+      "to": "2023-04-09",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1053,
+      "from": "2023-08-04",
+      "to": "2023-04-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1054,
+      "from": "2023-09-04",
+      "to": "2023-04-09",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1055,
+      "from": "2023-08-04",
+      "to": "2023-04-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1056,
+      "from": "2023-08-04",
+      "to": "2023-04-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1057,
+      "from": "2023-08-04",
+      "to": "2023-04-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1058,
+      "from": "2023-08-04",
+      "to": "2023-04-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1089,
+      "from": "2023-02-05",
+      "to": "2023-05-02",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1095,
+      "from": "2023-01-05",
+      "to": "2023-05-01",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1099,
+      "from": "2023-06-05",
+      "to": "2023-05-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1100,
+      "from": "2023-08-05",
+      "to": "2023-05-08",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1101,
+      "from": "2023-08-05",
+      "to": "2023-05-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1102,
+      "from": "2023-06-05",
+      "to": "2023-05-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1103,
+      "from": "2023-06-05",
+      "to": "2023-05-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1104,
+      "from": "2023-07-05",
+      "to": "2023-05-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1105,
+      "from": "2023-08-05",
+      "to": "2023-05-08",
+      "rule": "matchweek-vote"
+    },
+    {
+      "match_id": 1106,
+      "from": "2023-06-05",
+      "to": "2023-05-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1107,
+      "from": "2023-07-05",
+      "to": "2023-05-07",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 1108,
+      "from": "2023-06-05",
+      "to": "2023-05-06",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 284,
+      "from": "2021-04-03",
+      "to": "2021-03-04",
+      "rule": "elimination"
+    },
+    {
+      "match_id": 288,
+      "from": "2021-04-03",
+      "to": "2021-03-04",
+      "rule": "elimination"
+    }
+  ],
+  "year_shifted": [
+    {
+      "match_id": 2562075,
+      "from": "2026-12-30",
+      "to": "2025-12-30"
+    },
+    {
+      "match_id": 2562077,
+      "from": "2026-12-30",
+      "to": "2025-12-30"
+    },
+    {
+      "match_id": 2562078,
+      "from": "2026-12-30",
+      "to": "2025-12-30"
+    },
+    {
+      "match_id": 2562081,
+      "from": "2026-12-30",
+      "to": "2025-12-30"
+    },
+    {
+      "match_id": 2562082,
+      "from": "2026-12-30",
+      "to": "2025-12-30"
+    },
+    {
+      "match_id": 2562084,
+      "from": "2026-12-30",
+      "to": "2025-12-30"
+    }
+  ],
+  "unresolved": [],
+  "validation_problems": [],
+  "matches_per_season": {
+    "2020-21": 379,
+    "2021-22": 379,
+    "2022-23": 380,
+    "2023-24": 355,
+    "2024-25": 329,
+    "2025-26": 368
+  }
+}
