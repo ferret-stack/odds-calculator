@@ -26,15 +26,17 @@ Everything here is deliberately conversation-shaped, not screen/code-shaped.
 
 ## Next Week — 4 dedicated build days
 
-### Day 1 — Model & Maths Core
-*Gates everything else — do this first, no exceptions.*
-- [ ] Band 1 root-cause audit (if not already started Saturday) — codebase search for hardcoded `1500` fallbacks, confirm whether the +284 offset is applied consistently
-- [ ] Fix, then validate against historical data (before/after comparison, same method as the V6.1 rebuild validation)
-- [ ] Implement promoted-team ELO seeding: bottom-4-average, locked
-- [ ] Validate promoted teams produce sane band assignments once seeded
+### Day 1 — Model & Maths Core — DONE
+*Gated everything else — completed first, as planned.*
+- [x] Band 1 root-cause audit — found four compounding defects (unloaded `current_elo`, off-scale fallback, mislabelled ties, a silently-dead repair path), not the single hypothesized cause alone
+- [x] Fix, then validated against historical data (before/after: Band 1 stronger/weaker 29.59%/43.07% → 41.15%/33.89%; swings >50pts 775 → 0)
+- [x] Implemented promoted-team ELO seeding: bottom-4-average (1685), on its own code path, locked
+- [x] Validated promoted teams produce sane band assignments once seeded (18th–20th of field, bands 1–7)
+- Bonus: found and repaired 387 corrupt match dates (17.5% of the dataset) blocking a trustworthy chain replay
+- Flagged, not fixed: band-boundary off-by-one (2.2% of matches) — needs a decision, out of Day 1 scope since it touches every band
 
 ### Day 2 — Automated Pipeline
-*Depends on Day 1 being correct — don't start this early even if Day 1 finishes fast; validate first.*
+*Depended on Day 1 being correct — Day 1 is validated, so this is unblocked.*
 - [ ] Fix the scraper exception (cards/advanced stats) — reproduce the error, diagnose, fix
 - [ ] Build the fixture-occurrence scraper (FA Cup, Carabao Cup, European — date/competition/opponent only)
 - [ ] Build the local-triggered pipeline script: run model → identify +EV fixtures → apply Quarter/Eighth-Kelly staking → PnL tracking
