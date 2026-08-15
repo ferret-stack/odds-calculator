@@ -18,6 +18,85 @@ from pathlib import Path
 
 
 # ============================================
+# RATING SCALE CONSTANTS
+# ============================================
+
+# The published ratings carry a cosmetic offset so the scale reads like a
+# conventional ELO ladder (top team ~1750 raw -> ~2030 displayed). The ELO
+# update is translation-invariant -- expected_score depends only on the
+# difference between two ratings -- so seeding every team at
+# RAW_BASELINE_ELO + DISPLAY_OFFSET reproduces the raw chain shifted by
+# exactly the offset. That keeps the offset an explicit, single-sourced
+# constant instead of a value baked into whatever happens to be sitting in
+# current_elo.json.
+RAW_BASELINE_ELO = 1500
+DISPLAY_OFFSET = 284
+SEED_ELO = RAW_BASELINE_ELO + DISPLAY_OFFSET  # 1784 -- on the displayed scale
+
+# NOTE: 1500 is NOT a valid default on the displayed scale. A team defaulted
+# to 1500 sits 284 points below where "average" actually is, which is what
+# produced the Band 1 miscalibration. Any code needing a fallback rating must
+# take it from `league_baseline_elo()` or an explicit deliberate seed, never
+# from a bare literal.
+
+
+def league_baseline_elo(current_elo):
+    """
+    Mean rating of the teams currently rated, on the displayed scale.
+
+    This is the only legitimate generic fallback for a team with no rating.
+    It tracks whatever scale the live ratings are on, so it cannot drift out
+    of alignment the way a hardcoded literal did.
+
+    Args:
+        current_elo: Dict of {team: elo} or {team: {'elo': x, ...}}
+
+    Returns:
+        Integer rating, or SEED_ELO if there is nothing to average.
+    """
+    values = []
+    for value in (current_elo or {}).values():
+        values.append(value['elo'] if isinstance(value, dict) else value)
+    if not values:
+        return SEED_ELO
+    return round(sum(values) / len(values))
+
+
+def classify_winner(home_goals, away_goals, home_elo, away_elo):
+    """
+    Classify a result relative to the ELO-stronger side.
+
+    Returns one of:
+        'draw'     -- the match was drawn
+        'stronger' -- the higher-rated team won
+        'weaker'   -- the lower-rated team won
+        'even'     -- the two teams were rated exactly equal, so the result
+                      carries no stronger/weaker information at all
+
+    The 'even' case exists because the previous implementation wrote
+    `"stronger" if home_elo > away_elo else "weaker"`, which silently routed
+    every exact-tie match into the 'weaker' bucket. Exact ties always sit in
+    Band 1 (elo_diff == 0), so that fallthrough dumped a pile of phantom
+    upsets into Band 1 and nowhere else. Callers must exclude 'even' from
+    stronger/weaker rates rather than pick a side.
+    """
+    if home_goals == away_goals:
+        return 'draw'
+    if home_elo is None or away_elo is None:
+        return None
+    if home_elo == away_elo:
+        return 'even'
+    winner_elo = home_elo if home_goals > away_goals else away_elo
+    loser_elo = away_elo if home_goals > away_goals else home_elo
+    return 'stronger' if winner_elo > loser_elo else 'weaker'
+
+
+def elo_band(elo_diff):
+    """Band number (1-10) for an absolute ELO difference."""
+    return min(int(abs(elo_diff) // 50) + 1, 10)
+
+
+# ============================================
 # VENUE ADJUSTMENT CONSTANTS AND FUNCTIONS
 # ============================================
 
@@ -124,34 +203,84 @@ def get_venue_adjusted_probabilities(home_elo, away_elo, elo_bands):
         }
 
 
-def calculate_fair_odds(home_elo, away_elo, elo_bands):
+def calculate_elo_bands(matches_data):
     """
-    Calculate fair decimal odds with venue adjustment.
-    
-    Args:
-        home_elo: ELO rating of home team
-        away_elo: ELO rating of away team
-        elo_bands: List of band dictionaries from elo_bands.json
-    
-    Returns:
-        Dict with probabilities and fair odds for each outcome
+    Aggregate per-band statistics from the match record.
+
+    Lives here rather than on OddsCalculator so the band maths can be run and
+    validated without importing the scraping stack (selenium/pandas).
+
+    Evenly-rated matches ('even') are excluded from the stronger/draw/weaker
+    denominator. They carry no stronger/weaker information, and because an
+    exact tie means elo_diff == 0 they all land in Band 1 -- so assigning them
+    to a side, as the old if/else fallthrough did, distorted Band 1 and only
+    Band 1. Goal and card markets are unaffected by which side is stronger and
+    keep every match in the band.
     """
-    probs = get_venue_adjusted_probabilities(home_elo, away_elo, elo_bands)
-    
-    return {
-        'home_win': {
-            'probability': probs['home_win'],
-            'fair_odds': round(1 / probs['home_win'], 2)
-        },
-        'draw': {
-            'probability': probs['draw'],
-            'fair_odds': round(1 / probs['draw'], 2)
-        },
-        'away_win': {
-            'probability': probs['away_win'],
-            'fair_odds': round(1 / probs['away_win'], 2)
-        }
-    }
+    bands_data = []
+
+    for band in range(1, 11):
+        if band == 1:
+            band_range = "0-50"
+        elif band == 10:
+            band_range = "450+"
+        else:
+            band_range = f"{(band - 1) * 50 + 1}-{band * 50}"
+
+        band_matches = [m for m in matches_data if m.get('elo_band') == band]
+
+        if not band_matches:
+            bands_data.append({
+                'band': band,
+                'range': band_range,
+                'total_games': 0,
+                'evenly_rated_games': 0,
+                'stronger_win_pct': 0.333,
+                'draw_pct': 0.333,
+                'weaker_win_pct': 0.334,
+                'avg_booking_points': 40,
+                'over_05_pct': 0.9,
+                'over_15_pct': 0.75,
+                'over_25_pct': 0.5,
+                'over_35_pct': 0.25,
+                'over_45_pct': 0.1,
+                'btts_pct': 0.5
+            })
+            continue
+
+        even_matches = [m for m in band_matches if m.get('winner') == 'even']
+        rated = [m for m in band_matches if m.get('winner') != 'even']
+        if not rated:
+            rated = band_matches
+        total = len(rated)
+        goals_total = len(band_matches)
+
+        def share(predicate, population, denominator):
+            return round(sum(1 for m in population if predicate(m)) / denominator, 4)
+
+        booking_points = [m['total_booking_points'] for m in band_matches
+                          if m.get('total_booking_points') is not None]
+        avg_booking = (sum(booking_points) / len(booking_points)) if booking_points else 0
+
+        bands_data.append({
+            'band': band,
+            'range': band_range,
+            'total_games': total,
+            'evenly_rated_games': len(even_matches),
+            'stronger_win_pct': share(lambda m: m.get('winner') == 'stronger', rated, total),
+            'draw_pct': share(lambda m: m.get('winner') == 'draw', rated, total),
+            'weaker_win_pct': share(lambda m: m.get('winner') == 'weaker', rated, total),
+            'avg_booking_points': round(avg_booking, 1),
+            'over_05_pct': share(lambda m: m.get('over_05', False), band_matches, goals_total),
+            'over_15_pct': share(lambda m: m.get('over_15', False), band_matches, goals_total),
+            'over_25_pct': share(lambda m: m.get('over_25', False), band_matches, goals_total),
+            'over_35_pct': share(lambda m: m.get('over_35', False), band_matches, goals_total),
+            'over_45_pct': share(lambda m: m.get('over_45', False), band_matches, goals_total),
+            'btts_pct': share(lambda m: m.get('btts', False), band_matches, goals_total),
+        })
+
+    return bands_data
+
 
 def calculate_home_advantage_multipliers(matches_data):
     """
@@ -170,15 +299,21 @@ def calculate_home_advantage_multipliers(matches_data):
     stronger_away = {'wins': 0, 'total': 0}
     
     for match in matches_data:
-        home_elo = match.get('home_elo', 1500)
-        away_elo = match.get('away_elo', 1500)
-        
-        # Skip matches with missing/default ELO
-        if home_elo == 1500 or away_elo == 1500:
-            continue
+        home_elo = match.get('home_elo')
+        away_elo = match.get('away_elo')
+
+        # Skip matches with no rating on one side. Note: this used to also
+        # skip any match with a rating of exactly 1500, as a sentinel for the
+        # old broken default. That test discarded legitimate ratings and hid
+        # the underlying bug -- the defaults are fixed at source now, so the
+        # sentinel check is gone.
         if home_elo is None or away_elo is None:
             continue
-        
+
+        # An exact tie has no stronger side to attribute the venue effect to.
+        if home_elo == away_elo:
+            continue
+
         home_goals = match['home_goals']
         away_goals = match['away_goals']
         
@@ -239,25 +374,50 @@ class ELOCalculator:
         k_factor: int = 20,
         home_advantage: int = 100,
         use_mov: bool = True,
-        default_elo: int = 1500
+        default_elo: int = SEED_ELO
     ):
         """
         Initialize the ELO calculator.
-        
+
         Args:
             k_factor: Base K-factor for ELO changes (default 20, same as ClubELO)
             home_advantage: ELO points added to home team's effective rating (default 100)
             use_mov: Whether to apply margin of victory multiplier (default True)
-            default_elo: Starting ELO for new teams (default 1500)
+            default_elo: Starting rating for a team with no rating yet. Defaults
+                to SEED_ELO (1784), which is the displayed-scale equivalent of a
+                raw 1500. It is NOT 1500 -- that literal is 284 points below
+                league average on this scale and was the source of the Band 1
+                miscalibration.
+
+        Any team that falls back on `default_elo` is recorded in
+        `self.seeded_teams` so callers can see when a default actually fired
+        rather than discovering it later in the output.
         """
         self.k_factor = k_factor
         self.home_advantage = home_advantage
         self.use_mov = use_mov
         self.default_elo = default_elo
-        
+
         # Storage
         self.current_elo: Dict[str, int] = {}
         self.elo_history: Dict[str, List[Dict]] = defaultdict(list)
+        self.seeded_teams: Dict[str, int] = {}
+
+    def seed_team(self, team: str, elo: int, reason: str = '') -> None:
+        """
+        Deliberately set a team's starting rating.
+
+        Used for promoted teams, whose seed is a modelling decision (bottom-4
+        average), not a fallback. Distinct from `default_elo` on purpose: this
+        path is explicit and recorded, so a deliberate seed can never be
+        confused with a default that quietly fired.
+        """
+        if team in self.current_elo:
+            return
+        self.current_elo[team] = round(elo)
+        self.seeded_teams[team] = round(elo)
+        if reason:
+            print(f"    seeded {team} at {round(elo)} ({reason})")
     
     def expected_score(self, team_elo: float, opponent_elo: float, is_home: bool = False) -> float:
         """
@@ -360,10 +520,10 @@ class ELOCalculator:
         away_goals: int,
         match_date: str,
         update_history: bool = True
-    ) -> Tuple[int, int, float, float]:
+    ) -> Dict:
         """
         Process a single match and update ELO ratings.
-        
+
         Args:
             home_team: Name of home team
             away_team: Name of away team
@@ -371,14 +531,27 @@ class ELOCalculator:
             away_goals: Goals scored by away team
             match_date: Date string (YYYY-MM-DD format)
             update_history: Whether to record this in elo_history
-            
+
         Returns:
-            Tuple of (new_home_elo, new_away_elo, home_change, away_change)
+            Dict with both pre- and post-match ratings:
+                pre_home, pre_away, post_home, post_away, home_change, away_change
+
+        The PRE-match ratings are what a fixture should be graded on -- they are
+        what was knowable before kickoff. Grading a fixture on post-match
+        ratings biases band assignment by the result itself (a favourite's win
+        widens the gap, an upset narrows it), which quietly concentrates upsets
+        in Band 1. Callers must use the `pre_*` values for elo_diff and band.
         """
-        # Get current ELO (or default for new teams)
-        home_elo = self.current_elo.get(home_team, self.default_elo)
-        away_elo = self.current_elo.get(away_team, self.default_elo)
-        
+        # Get current ELO (or default for new teams). Record any team that
+        # actually lands on the default so a silent fallback is visible.
+        for team in (home_team, away_team):
+            if team not in self.current_elo:
+                self.current_elo[team] = self.default_elo
+                self.seeded_teams.setdefault(team, self.default_elo)
+
+        home_elo = self.current_elo[home_team]
+        away_elo = self.current_elo[away_team]
+
         # Calculate ELO changes
         home_change = self.calculate_elo_change(
             home_elo, away_elo, home_goals, away_goals, is_home=True
@@ -409,8 +582,15 @@ class ELOCalculator:
                 'date': match_date,
                 'elo': new_away_elo
             })
-        
-        return (new_home_elo, new_away_elo, round(home_change, 1), round(away_change, 1))
+
+        return {
+            'pre_home': home_elo,
+            'pre_away': away_elo,
+            'post_home': new_home_elo,
+            'post_away': new_away_elo,
+            'home_change': round(home_change, 1),
+            'away_change': round(away_change, 1),
+        }
     
     def load_current_elo(self, filepath: Path) -> None:
         """
@@ -456,8 +636,7 @@ class ELOCalculator:
     
     def get_elo_band(self, team1: str, team2: str) -> int:
         """Get ELO band (1-10) for a fixture."""
-        diff = self.get_elo_diff(team1, team2)
-        return min(int(diff // 50) + 1, 10)
+        return elo_band(self.get_elo_diff(team1, team2))
     
     def get_rankings(self) -> List[Tuple[str, int, int]]:
         """
