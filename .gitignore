@@ -5,3 +5,4 @@ __pycache__/
 venv/
 *.bak
 .pytest_cache/
+data/pipeline_report.json

@@ -36,11 +36,13 @@ Everything here is deliberately conversation-shaped, not screen/code-shaped.
 - Flagged, not fixed: band-boundary off-by-one (2.2% of matches) — needs a decision, out of Day 1 scope since it touches every band
 
 ### Day 2 — Automated Pipeline
-*Depended on Day 1 being correct — Day 1 is validated, so this is unblocked.*
-- [ ] Fix the scraper exception (cards/advanced stats) — reproduce the error, diagnose, fix
-- [ ] Build the fixture-occurrence scraper (FA Cup, Carabao Cup, European — date/competition/opponent only)
-- [ ] Build the local-triggered pipeline script: run model → identify +EV fixtures → apply Quarter/Eighth-Kelly staking → PnL tracking
-- [ ] Wire in Theme 3 qualitative inputs (manager styles, team news, formations, congestion signal)
+*Depended on Day 1 being correct — Day 1 re-validated at the start of Day 2, so this was unblocked.*
+- [x] Fix the scraper exception (cards/advanced stats) — reproduced, diagnosed, fixed. The extraction was never written (`# Need to add stats XPATHS`); the exception was a second, separate defect and its text was discarded by the handler
+- [x] Build the fixture-occurrence scraper (FA Cup, Carabao Cup, European — date/competition/opponent only)
+- [x] Build the local-triggered pipeline script: run model → identify +EV fixtures → apply Quarter/Eighth-Kelly staking → PnL tracking
+- [x] Wire in Theme 3 qualitative inputs (manager styles, team news, formations, congestion signal)
+- Bonus: purged 380 fabricated zero-card records that were dragging every referee average down 4–17 booking points and pinning 20 of 28 teams at a 0 booking average
+- Flagged, not fixed: the band model prices every fixture in a band identically, producing +30–41% edges against stale odds. Advisory flag added (non-blocking); the model itself is a Day 3+ decision
 
 ### Day 3 — Site & Distribution
 *Consumes Day 2's output — build the shape now, content flows once Day 2 is live.*

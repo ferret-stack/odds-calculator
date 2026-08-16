@@ -1,0 +1,9 @@
+{
+  "_comment": [
+    "Expected or most-recent formation, per team. Narrative context only.",
+    "",
+    "Example:",
+    "  \"Arsenal\": \"4-3-3\""
+  ],
+  "teams": {}
+}

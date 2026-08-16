@@ -1,0 +1,21 @@
+{
+  "_comment": [
+    "Run configuration for pipeline/run_pipeline.py.",
+    "",
+    "starting_bankroll        - used only on the first run; afterwards the",
+    "                           ledger in bankroll.json is the source of truth.",
+    "low_confidence_bands     - ELO bands thin enough that a play in them is",
+    "                           sized at Eighth-Kelly rather than Quarter.",
+    "                           Bands 9 and 10 hold 6 and 4 matches, so their",
+    "                           rates are not yet worth a full-confidence stake.",
+    "correlation_explanations - keyed 'selection_a+selection_b'. Supplying an",
+    "                           entry is how you take a correlated pair on one",
+    "                           fixture KNOWINGLY. With no entry, the pair is",
+    "                           blocked. Two +EV selections in the SAME market",
+    "                           can never be unblocked this way -- that is a",
+    "                           model-recheck signal, not a bet."
+  ],
+  "starting_bankroll": 1000.0,
+  "low_confidence_bands": [9, 10],
+  "correlation_explanations": {}
+}
