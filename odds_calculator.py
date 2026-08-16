@@ -18,7 +18,11 @@ from elo_calculator import (
     calculate_form_metrics,
     get_venue_adjusted_probabilities,
     calculate_fair_odds,
-    calculate_home_advantage_multipliers
+    calculate_home_advantage_multipliers,
+    calculate_elo_bands,
+    classify_winner,
+    elo_band as elo_band_for_diff,
+    league_baseline_elo,
 )
 
 # Selenium imports for scraping
@@ -95,12 +99,53 @@ class OddsCalculator:
         self.service = FirefoxService(GeckoDriverManager().install())
     
     def load_existing_data(self):
-        """Load existing JSON data if available"""
+        """
+        Load existing JSON data if available.
+
+        This previously loaded matches_data.json ONLY, leaving self.current_elo
+        as an empty dict. scrape_matches() runs before update_elo_ratings() in
+        the main pipeline and reads self.current_elo, so every freshly scraped
+        match was stamped with the fallback rating on both sides -- not just
+        genuinely unknown teams, but every team, every run. Loading the ratings
+        here is the fix at source.
+        """
         matches_file = self.data_dir / 'matches_data.json'
         if matches_file.exists():
             with open(matches_file, 'r') as f:
                 self.matches_data = json.load(f)
             print(f"Loaded {len(self.matches_data)} existing matches")
+
+        current_elo_file = self.data_dir / 'current_elo.json'
+        if current_elo_file.exists():
+            with open(current_elo_file, 'r') as f:
+                data = json.load(f)
+            # Accepts both {team: elo} and {team: {'elo': x, 'rank': y}}
+            self.current_elo = {
+                team: (value['elo'] if isinstance(value, dict) else value)
+                for team, value in data.items()
+            }
+            print(f"Loaded ELO ratings for {len(self.current_elo)} teams")
+
+        elo_history_file = self.data_dir / 'elo_history.json'
+        if elo_history_file.exists():
+            with open(elo_history_file, 'r') as f:
+                for team, history in json.load(f).items():
+                    self.elo_history[team] = history
+            print(f"Loaded ELO history for {len(self.elo_history)} teams")
+
+    def fallback_elo(self, team):
+        """
+        Rating to use for a team with no rating on record.
+
+        Never a bare literal: 1500 is 284 points below league average on the
+        displayed scale, and using it was what pushed phantom fixtures into
+        Band 1. This tracks the live ratings instead, and says so out loud when
+        it fires, because a fallback firing is a data problem worth seeing.
+        """
+        baseline = league_baseline_elo(self.current_elo)
+        print(f"  ! No rating on record for '{team}' -- falling back to league "
+              f"baseline {baseline}. Check team-name standardisation.")
+        return baseline
     
     def standardize_team_name(self, team_name):
         """Standardize team names for consistency"""
@@ -116,129 +161,6 @@ class OddsCalculator:
     # IMPORT FROM EXCEL
     # ============================================
     
-    def import_excel(self, filepath):
-        """
-        One-time import of historical data from Excel/CSV
-        Run this ONCE to populate all historical matches
-        """
-        print(f"\nImporting historical data from {filepath}...")
-        
-        # Read file
-        if filepath.endswith('.csv'):
-            df = pd.read_csv(filepath)
-        else:
-            df = pd.read_excel(filepath)
-        
-        print(f"Found {len(df)} matches in file")
-        
-        imported_count = 0
-        for _, row in df.iterrows():
-            try:
-                # Calculate total goals for boolean markets
-                home_goals = int(row['Home_Goals']) if pd.notna(row['Home_Goals']) else 0
-                away_goals = int(row['Away_Goals']) if pd.notna(row['Away_Goals']) else 0
-                total_goals = home_goals + away_goals
-                
-                # Calculate booking points (10 for yellow, 25 for red)
-                home_yellow = int(row['home_yellow']) if 'home_yellow' in row and pd.notna(row['home_yellow']) else 0
-                away_yellow = int(row['away_yellow']) if 'away_yellow' in row and pd.notna(row['away_yellow']) else 0
-                home_red = int(row['home_red']) if 'home_red' in row and pd.notna(row['home_red']) else 0
-                away_red = int(row['away_red']) if 'away_red' in row and pd.notna(row['away_red']) else 0
-                
-                home_booking_points = (home_yellow * 10) + (home_red * 25)
-                away_booking_points = (away_yellow * 10) + (away_red * 25)
-                total_booking_points = home_booking_points + away_booking_points
-                
-                # Calculate ELO difference (absolute value)
-                home_elo = float(row['Home_Elo']) if pd.notna(row['Home_Elo']) else None
-                away_elo = float(row['Away_Elo']) if pd.notna(row['Away_Elo']) else None
-                elo_diff = abs(home_elo - away_elo) if home_elo and away_elo else None
-                
-                # Determine ELO band (0-50 = Band 1, 51-100 = Band 2, etc.)
-                elo_band = None
-                if elo_diff is not None:
-                    elo_band = min(int(elo_diff // 50) + 1, 10)  # Cap at band 10 for 450+
-                
-                # Determine winner
-                if home_goals > away_goals:
-                    if home_elo > away_elo:
-                        winner = "stronger"
-                    else:
-                        winner = "weaker"
-                elif away_goals > home_goals:
-                    if away_elo > home_elo:
-                        winner = "stronger"
-                    else:
-                        winner = "weaker"
-                else:
-                    winner = "draw"
-                
-                match_data = {
-                    'match_id': int(row.get('ID', row.get('match_id', imported_count + 1))),
-                    'date': pd.to_datetime(row['Date']).strftime('%Y-%m-%d'),
-                    'home_team': self.standardize_team_name(row['Home_Team']),
-                    'away_team': self.standardize_team_name(row['Away_Team']),
-                    'home_goals': home_goals,
-                    'away_goals': away_goals,
-                    'home_elo': round(home_elo) if home_elo else None,
-                    'away_elo': round(away_elo) if away_elo else None,
-                    'elo_diff': round(elo_diff) if elo_diff else None,
-                    'elo_band': elo_band,
-                    'referee': row.get('referee', None) if pd.notna(row.get('referee')) else None,
-                    'home_yellow': home_yellow,
-                    'away_yellow': away_yellow,
-                    'home_red': home_red,
-                    'away_red': away_red,
-                    'total_booking_points': total_booking_points,
-                    'winner': winner,
-                    
-                    # Goal markets (boolean)
-                    'over_05': total_goals > 0.5,
-                    'over_15': total_goals > 1.5,
-                    'over_25': total_goals > 2.5,
-                    'over_35': total_goals > 3.5,
-                    'over_45': total_goals > 4.5,
-                    'btts': home_goals > 0 and away_goals > 0,
-                    
-                    # Optional stats (may not be in older data)
-                    'home_xg': float(row['home_xg']) if 'home_xg' in row and pd.notna(row['home_xg']) else None,
-                    'away_xg': float(row['away_xg']) if 'away_xg' in row and pd.notna(row['away_xg']) else None,
-                    'home_possession': float(row['home_possession']) if 'home_possession' in row and pd.notna(row['home_possession']) else None,
-                    'away_possession': float(row['away_possession']) if 'away_possession' in row and pd.notna(row['away_possession']) else None,
-                    
-                    # Additional stats (commented out but available)
-                    # 'home_shots': int(row['home_shots']) if 'home_shots' in row and pd.notna(row['home_shots']) else None,
-                    # 'away_shots': int(row['away_shots']) if 'away_shots' in row and pd.notna(row['away_shots']) else None,
-                    # 'home_shots_target': int(row['home_shots_target']) if 'home_shots_target' in row and pd.notna(row['home_shots_target']) else None,
-                    # 'away_shots_target': int(row['away_shots_target']) if 'away_shots_target' in row and pd.notna(row['away_shots_target']) else None,
-                    # 'home_corners': int(row['home_corners']) if 'home_corners' in row and pd.notna(row['home_corners']) else None,
-                    # 'away_corners': int(row['away_corners']) if 'away_corners' in row and pd.notna(row['away_corners']) else None,
-                }
-                
-                self.matches_data.append(match_data)
-                imported_count += 1
-                
-                # Update ELO history
-                if home_elo:
-                    self.elo_history[match_data['home_team']].append({
-                        'date': match_data['date'],
-                        'elo': round(home_elo)
-                    })
-                if away_elo:
-                    self.elo_history[match_data['away_team']].append({
-                        'date': match_data['date'],
-                        'elo': round(away_elo)
-                    })
-                    
-            except Exception as e:
-                print(f"  Error importing row {_}: {e}")
-                continue
-        
-        print(f"  ✓ Imported {imported_count} matches successfully")
-        
-        # Save imported data
-        self.save_matches_data()
-        return imported_count
     
     # ============================================
     # ELO SCRAPING
@@ -264,56 +186,70 @@ class OddsCalculator:
         if elo_history_file.exists():
             calc.load_elo_history(elo_history_file)
         
-        # Find matches that need ELO processing
-        # These are matches where we have results but haven't calculated ELO yet
-        # We identify them by checking if the match date is after the last elo_history entry
-        
-        last_elo_dates = {}
-        for team, history in calc.elo_history.items():
-            if history:
-                sorted_hist = sorted(history, key=lambda x: x['date'])
-                last_elo_dates[team] = sorted_hist[-1]['date']
-        
-        # Get matches that need processing
-        new_matches = []
-        for match in self.matches_data:
-            home_team = match['home_team']
-            away_team = match['away_team']
-            match_date = match['date']
-            
-            # Check if this match is newer than our last ELO update for either team
-            home_last = last_elo_dates.get(home_team, '1900-01-01')
-            away_last = last_elo_dates.get(away_team, '1900-01-01')
-            
-            if match_date > home_last or match_date > away_last:
-                new_matches.append(match)
-        
-        # Sort by date and process
-        new_matches = sorted(new_matches, key=lambda x: x['date'])
-        
+        # Find matches that need ELO processing.
+        #
+        # This used to select matches whose date was later than the team's last
+        # elo_history entry. That test is not idempotent and it self-destructs:
+        # a single match carrying a bad future date writes that date into
+        # elo_history, after which every real match compares as "already
+        # processed" and the update silently becomes a no-op forever. That is
+        # exactly what had happened -- all 2205 matches were being skipped, so
+        # the records stamped with the fallback rating were never repaired.
+        #
+        # An explicit per-match flag replaces it. It cannot be poisoned by one
+        # bad date, and a match is processed exactly once.
+        #
+        # Ordered by match_id, not date: IDs are issued per matchweek in
+        # fixture order, so ID order is true match order, and it does not
+        # depend on the dates being right. The chain is order-dependent, so
+        # replaying a match out of sequence applies its update against the
+        # wrong prior ratings.
+        new_matches = [m for m in self.matches_data if not m.get('elo_processed')]
+        new_matches = sorted(new_matches, key=lambda x: x['match_id'])
+
         if new_matches:
             print(f"  Processing {len(new_matches)} new matches...")
-            
+
             for match in new_matches:
-                new_home, new_away, home_change, away_change = calc.process_match(
+                result = calc.process_match(
                     home_team=match['home_team'],
                     away_team=match['away_team'],
                     home_goals=match['home_goals'],
                     away_goals=match['away_goals'],
                     match_date=match['date']
                 )
-                
-                # Update the match record with correct ELO values
-                match['home_elo'] = new_home
-                match['away_elo'] = new_away
-                match['elo_diff'] = abs(new_home - new_away)
-                match['elo_band'] = min(int(match['elo_diff'] // 50) + 1, 10)
-                
-                print(f"    {match['date']}: {match['home_team']} ({home_change:+.1f}→{new_home}) vs "
-                    f"{match['away_team']} ({away_change:+.1f}→{new_away})")
+
+                # Stamp the match with its PRE-match ratings. Using post-match
+                # ratings (as this did) makes band membership a function of the
+                # result: a favourite's win widens the gap and pushes the match
+                # up a band, an upset narrows it and pulls the match down into
+                # Band 1. That selection effect loads Band 1 with upsets and is
+                # a second, independent driver of the Band 1 miscalibration.
+                match['home_elo'] = result['pre_home']
+                match['away_elo'] = result['pre_away']
+                match['elo_diff'] = abs(result['pre_home'] - result['pre_away'])
+                match['elo_band'] = elo_band_for_diff(match['elo_diff'])
+
+                # Re-derive the label from the ratings just stamped. Previously
+                # the ELOs were rewritten here but `winner` was left as-is, so
+                # records ended up contradicting their own ratings.
+                match['winner'] = classify_winner(
+                    match['home_goals'], match['away_goals'],
+                    match['home_elo'], match['away_elo']
+                )
+                match['elo_processed'] = True
+
+                print(f"    {match['date']}: {match['home_team']} "
+                      f"({result['home_change']:+.1f}→{result['post_home']}) vs "
+                      f"{match['away_team']} "
+                      f"({result['away_change']:+.1f}→{result['post_away']})")
         else:
             print("  No new matches to process")
-        
+
+        if calc.seeded_teams:
+            print(f"  ! {len(calc.seeded_teams)} team(s) started from a default "
+                  f"rather than a known rating: {calc.seeded_teams}")
+
         # Store results
         self.current_elo = calc.current_elo
         self.elo_history = calc.elo_history
@@ -404,20 +340,22 @@ class OddsCalculator:
                 except Exception as e:
                     print(f"    Could not get detailed stats for match {match_id}")
                 
-                # Get current ELO ratings
-                home_elo = self.current_elo.get(home_team, 1500)
-                away_elo = self.current_elo.get(away_team, 1500)
-                elo_diff = abs(home_elo - away_elo)
-                elo_band = min(int(elo_diff // 50) + 1, 10)
-                
-                # Determine winner
-                if home_goals > away_goals:
-                    winner = "stronger" if home_elo > away_elo else "weaker"
-                elif away_goals > home_goals:
-                    winner = "stronger" if away_elo > home_elo else "weaker"
+                # Get current ELO ratings. These are the pre-match ratings --
+                # what was knowable before kickoff -- which is what the band
+                # assignment must be based on.
+                if home_team in self.current_elo:
+                    home_elo = self.current_elo[home_team]
                 else:
-                    winner = "draw"
-                
+                    home_elo = self.fallback_elo(home_team)
+                if away_team in self.current_elo:
+                    away_elo = self.current_elo[away_team]
+                else:
+                    away_elo = self.fallback_elo(away_team)
+
+                elo_diff = abs(home_elo - away_elo)
+                band = elo_band_for_diff(elo_diff)
+                winner = classify_winner(home_goals, away_goals, home_elo, away_elo)
+
                 # Calculate booking points
                 home_booking = (home_yellow * 10) + (home_red * 25)
                 away_booking = (away_yellow * 10) + (away_red * 25)
@@ -434,7 +372,7 @@ class OddsCalculator:
                     'home_elo': round(home_elo),
                     'away_elo': round(away_elo),
                     'elo_diff': round(elo_diff),
-                    'elo_band': elo_band,
+                    'elo_band': band,
                     'referee': referee,
                     'home_yellow': home_yellow,
                     'away_yellow': away_yellow,
@@ -676,24 +614,12 @@ class OddsCalculator:
                 elo_diff = abs(home_elo - away_elo) if home_elo and away_elo else None
                 
                 # Determine ELO band (0-50 = Band 1, 51-100 = Band 2, etc.)
-                elo_band = None
+                band = None
                 if elo_diff is not None:
-                    elo_band = min(int(elo_diff // 50) + 1, 10)  # Cap at band 10 for 450+
-                
-                # Determine winner
-                if home_goals > away_goals:
-                    if home_elo > away_elo:
-                        winner = "stronger"
-                    else:
-                        winner = "weaker"
-                elif away_goals > home_goals:
-                    if away_elo > home_elo:
-                        winner = "stronger"
-                    else:
-                        winner = "weaker"
-                else:
-                    winner = "draw"
-                
+                    band = elo_band_for_diff(elo_diff)  # Capped at band 10 for 450+
+
+                winner = classify_winner(home_goals, away_goals, home_elo, away_elo)
+
                 match_data = {
                     'match_id': int(row.get('ID', row.get('match_id', imported_count + 1))),
                     'date': pd.to_datetime(row['Date']).strftime('%Y-%m-%d'),
@@ -704,7 +630,7 @@ class OddsCalculator:
                     'home_elo': round(home_elo) if home_elo else None,
                     'away_elo': round(away_elo) if away_elo else None,
                     'elo_diff': round(elo_diff) if elo_diff else None,
-                    'elo_band': elo_band,
+                    'elo_band': band,
                     'referee': row.get('referee', None) if pd.notna(row.get('referee')) else None,
                     'home_yellow': home_yellow,
                     'away_yellow': away_yellow,
@@ -758,98 +684,35 @@ class OddsCalculator:
     # ============================================
     
     def calculate_elo_bands(self):
-        """Calculate statistics for each ELO band"""
-        bands_data = []
-        
-        for band in range(1, 11):  # Bands 1-10
-            if band == 1:
-                band_range = "0-50"
-                min_diff = 0
-                max_diff = 50
-            elif band == 10:
-                band_range = "450+"
-                min_diff = 450
-                max_diff = 10000
-            else:
-                min_val = (band - 1) * 50 + 1
-                max_val = band * 50
-                band_range = f"{min_val}-{max_val}"
-                min_diff = min_val
-                max_diff = max_val
-            
-            # Filter matches in this band
-            band_matches = [m for m in self.matches_data 
-                           if m.get('elo_band') == band]
-            
-            if band_matches:
-                total = len(band_matches)
-                
-                # Calculate win/draw/loss percentages
-                stronger_wins = sum(1 for m in band_matches if m.get('winner') == 'stronger')
-                draws = sum(1 for m in band_matches if m.get('winner') == 'draw')
-                weaker_wins = sum(1 for m in band_matches if m.get('winner') == 'weaker')
-                
-                # Calculate goal market percentages
-                over_05 = sum(1 for m in band_matches if m.get('over_05', False))
-                over_15 = sum(1 for m in band_matches if m.get('over_15', False))
-                over_25 = sum(1 for m in band_matches if m.get('over_25', False))
-                over_35 = sum(1 for m in band_matches if m.get('over_35', False))
-                over_45 = sum(1 for m in band_matches if m.get('over_45', False))
-                btts = sum(1 for m in band_matches if m.get('btts', False))
-                
-                # Calculate average booking points
-                booking_points = [m['total_booking_points'] for m in band_matches 
-                                 if m.get('total_booking_points') is not None]
-                avg_booking = np.mean(booking_points) if booking_points else 0
-                
-                bands_data.append({
-                    'band': band,
-                    'range': band_range,
-                    'total_games': total,
-                    'stronger_win_pct': round(stronger_wins / total, 4),
-                    'draw_pct': round(draws / total, 4),
-                    'weaker_win_pct': round(weaker_wins / total, 4),
-                    'avg_booking_points': round(avg_booking, 1),
-                    'over_05_pct': round(over_05 / total, 4),
-                    'over_15_pct': round(over_15 / total, 4),
-                    'over_25_pct': round(over_25 / total, 4),
-                    'over_35_pct': round(over_35 / total, 4),
-                    'over_45_pct': round(over_45 / total, 4),
-                    'btts_pct': round(btts / total, 4)
-                })
-            else:
-                # No data for this band yet
-                bands_data.append({
-                    'band': band,
-                    'range': band_range,
-                    'total_games': 0,
-                    'home_win_pct': 0.333,
-                    'draw_pct': 0.333,
-                    'away_win_pct': 0.334,
-                    'avg_booking_points': 40,
-                    'over_05_pct': 0.9,
-                    'over_15_pct': 0.75,
-                    'over_25_pct': 0.5,
-                    'over_35_pct': 0.25,
-                    'over_45_pct': 0.1,
-                    'btts_pct': 0.5
-                })
-        
-        return bands_data
-    
+        """
+        Calculate statistics for each ELO band.
+
+        Delegates to elo_calculator.calculate_elo_bands so the band maths can
+        be run (and validated) without pulling in the scraping stack.
+        """
+        return calculate_elo_bands(self.matches_data)
+
     def get_band_probabilities(self, band_number):
-        """Get probabilities for a specific band"""
+        """
+        Get probabilities for a specific band, in stronger/draw/weaker terms.
+
+        This previously read 'home_win_pct'/'away_win_pct', keys that only ever
+        existed on the empty-band fallback -- so it raised KeyError for every
+        band that actually had data. The bands are keyed by relative strength,
+        not by venue; mapping strength to home/away is the venue adjustment's
+        job, in get_venue_adjusted_probabilities().
+        """
         bands = self.calculate_elo_bands()
         for band in bands:
             if band['band'] == band_number:
                 return {
-                    'home_win': band['home_win_pct'],
+                    'stronger_win': band['stronger_win_pct'],
                     'draw': band['draw_pct'],
-                    'away_win': band['away_win_pct']
+                    'weaker_win': band['weaker_win_pct']
                 }
         # Default if band not found
-        return {'home_win': 0.333, 'draw': 0.333, 'away_win': 0.334}
-    
+        return {'stronger_win': 0.333, 'draw': 0.333, 'weaker_win': 0.334}
+
     def calculate_referee_stats(self):
         """Calculate statistics for each referee"""
         referee_data = {}

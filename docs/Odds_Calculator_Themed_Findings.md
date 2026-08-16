@@ -1,8 +1,10 @@
-# Odds Calculator — Themed Findings (v1)
+# Odds Calculator — Themed Findings (v1, amended after Day 1)
 
-**Headline:** 3 of 4 themes are fully build-ready. Model & Maths Core has one real gate left — the Band 1 root cause — which needs a codebase audit, not more conversation. Everything else that was open has been resolved in-session.
+**Headline:** All 4 themes are now build-ready. Model & Maths Core's one real gate — the Band 1 root cause — is closed: audited, fixed, and validated on `claude/odds-calc-band1-audit-su1rn4`.
 
-**Resolved since v1:** promoted-team ELO seeding (bottom-4-average, locked) and game congestion (split into a buildable backward-looking signal + a separate fixture-occurrence scrape, with the forward-looking rotation question correctly parked rather than built half-baked).
+**Resolved since v1:** promoted-team ELO seeding (bottom-4-average, locked and implemented) and game congestion (split into a buildable backward-looking signal + a separate fixture-occurrence scrape, with the forward-looking rotation question correctly parked rather than built half-baked).
+
+**Resolved on Day 1:** the Band 1 bug itself. See §Theme 1 below and the System Source of Truth doc for the root-cause writeup and validation numbers.
 
 ---
 
@@ -14,19 +16,19 @@ Small, humble, engaged community over monetization this season. Anti-tipster pos
 
 ## Theme 1: Model & Maths Core
 
-**Status: `[Mixed]` — core is `[Specified]`, two items are genuine gates**
+**Status: `[Specified]` — both former gates closed on Day 1**
 
 | Item | Status | Note |
 |---|---|---|
 | ELO formula, MOV multiplier, venue adjustment, band structure | `[Specified]` | Stable, documented, in production |
-| **ELO Band 1 bug** | `[Needs decision — verify expertise first]` | Root cause unconfirmed (leading hypothesis: pre-offset 1500 fallback). Needs a codebase audit before anyone can decide how to fix it — not a preference call. **This is the one remaining gate.** |
-| Promoted-team ELO seeding (Hull, Coventry, Ipswich) | `[Specified]` | **Locked:** seed at average current (post-offset) ELO of last season's bottom 4 finishers |
+| **ELO Band 1 bug** | `[Resolved]` | Four compounding defects, not one: `current_elo` never loaded at scrape time (fallback fired for every team, not just unknown ones); the fallback literal was 284 points below scale; exact ties mislabelled as weaker-team wins; the repair path had silently become a permanent no-op. Fixed and validated — Band 1 stronger/weaker went from 29.59%/43.07% (inverted) to 41.15%/33.89% (correct direction). Also surfaced and repaired 387 corrupt match dates (17.5% of the dataset) needed to replay the chain correctly. One residual flagged, not fixed: a band-boundary off-by-one affecting 2.2% of matches — needs a decision since it reassigns matches at every band edge. |
+| Promoted-team ELO seeding (Hull, Coventry, Ipswich) | `[Resolved]` | Implemented: seeded at 1685, the average current (post-offset) ELO of 2025-26's bottom 4 (Spurs, West Ham, Wolves, Burnley). Runs through its own seeding path, not the fallback fixed above. Validated: promoted teams land 18th–20th of the 2026-27 field, bands 1–7. |
 | Long vs. short ELO horizon | `[Parked]` | Doesn't block anything this week |
 | Monte Carlo season simulation | `[Parked]` | Explicit stretch goal, not this week's work |
 | OLS regression (V6.2) | `[Parked]` | Deferred, unchanged from source-of-truth doc |
 | Alternative markets/leagues | `[Parked]` | Carried from `Preparing_for_Fable`, not raised again this rattle |
 
-**Why this blocks:** Matchweek 1 will contain Band 1 fixtures — there's no way to avoid that in week 1. Everything downstream (Pipeline output, Distribution content) inherits whatever's wrong here until it's fixed.
+**Why this mattered:** Matchweek 1 will contain Band 1 fixtures — there was no way to avoid that in week 1. Pipeline and Distribution output was not trustworthy until this closed; it now is.
 
 ---
 
@@ -78,7 +80,7 @@ Small, humble, engaged community over monetization this season. Anti-tipster pos
 
 ## Dependency Map
 
-- **Theme 1 → Theme 2 (gate):** Band 1 bug and promoted-team seeding must resolve before Pipeline output is trustworthy for MW1. This is the actual critical path.
+- **Theme 1 → Theme 2 (gate, now cleared):** Band 1 bug and promoted-team seeding resolved on Day 1 — Pipeline output is trustworthy for MW1. This was the critical path; Theme 2 can now proceed.
 - **Theme 3 → Theme 2 (partial gate):** game congestion definition gates only the congestion-scoring piece of the qualitative layer, not the pipeline as a whole — Pipeline can run without it, just without that one input.
 - **Theme 2 → Theme 4 (handoff, not a gate):** Ghost results page and Distribution copy are both *built from* Pipeline output. Distribution has nothing to publish until Pipeline runs, but Distribution itself has no open decisions of its own.
 
@@ -96,8 +98,7 @@ Small, humble, engaged community over monetization this season. Anti-tipster pos
 
 ## What This Document Does Not Do
 
-- Does not resolve the Band 1 root cause — needs a codebase audit, not more conversation.
-- Does not resolve the Band 1 *fix* even once the cause is found — diagnosis and fix are two separate steps.
+- Band 1 root cause and fix are resolved as of Day 1 (see Theme 1 above) — this doc no longer tracks them as open.
 - Does not sequence any of this into a build order — that's Step 6, next.
 - Does not account for your personal time allocation around United Mortgages this week — real constraint, but it's a Step 6 scheduling input, not a system theme.
 - Does not revisit YouTube, Reddit, Monte Carlo, OLS, or alternative markets beyond confirming they're parked.

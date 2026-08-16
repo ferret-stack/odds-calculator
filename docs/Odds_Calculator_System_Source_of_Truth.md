@@ -18,25 +18,32 @@
 - Poisson score-matrix generation already exists and backs O/U and BTTS markets — this is the same infrastructure Super 6 will reuse (§4).
 - Minimum edge to act on any bet: +5% EV. Not in dispute.
 
-**Known bug — ELO Band 1:**
-- Confirmed real. Affects non-promoted teams (not a promoted-team artifact).
-- Symptom: weaker team wins more than the model expects in Band 1 fixtures; some teams show a suspicious default of 1500.
-- **Leading hypothesis, unconfirmed:** a fallback path in the codebase still hardcodes `1500` as a default rating, written before the +284 scaling offset existed. On the current scale that would land as an artificially low/miscalibrated value — concentrated exactly where small ELO differences (Band 1) would expose it. This needs a codebase audit, not a documentation decision. Flag for Claude Code: search for hardcoded `1500` and confirm every fallback path applies the same offset as the rest of the system.
+**ELO Band 1 bug — RESOLVED (Day 1, see `claude/odds-calc-band1-audit-su1rn4`):**
+- Confirmed real and fixed. Affected non-promoted teams (not a promoted-team artifact).
+- Root cause was four compounding defects, not one:
+  1. `current_elo` was never loaded at scrape time, so every scraped match fell back to 1500 on both sides.
+  2. That `1500` fallback was on the wrong scale — 284 points below league average, since the offset is baked into persisted ratings, not applied as a code step. Confirms the leading hypothesis, with the mechanism refined.
+  3. Exact ELO ties (elo_diff = 0, always Band 1) were mislabelled as weaker-team wins by an `if/else` fallthrough with no tie case.
+  4. `update_elo_ratings`'s repair path had become a permanent no-op (a corrupt date poisoned its "already processed" check), so none of the above ever self-healed.
+- Fix: load ratings at source, derive fallbacks from live ratings (never a bare literal), add an explicit `'even'` outcome excluded from band rates, replace the poisoned date filter with a per-match processed flag, stamp pre-match (not post-match) ratings so band membership isn't a function of the result.
+- Validated: Band 1 stronger/draw/weaker went from 29.59%/27.34%/43.07% (weaker team favoured) to 41.15%/24.96%/33.89% (stronger team correctly favoured). Rating-swing distribution: 775 swings >50pts before, 0 after; largest single swing 556 → 30.
+- Also found and repaired in the same pass: 387 corrupt match dates (17.5% of the dataset — day/month transpositions plus a rolled-over year), which the ELO chain's order-dependence required fixing to get a trustworthy replay.
+- Flagged, not fixed (needs a decision): the band boundary is off-by-one against its own label — `elo_diff // 50 + 1` puts a diff of exactly 50 in Band 2, though Band 1 is labelled "0-50". Affects 2.2% of matches. Left alone since it shifts every band assignment.
 
 **Open question, explicitly parked (not blocking this week):**
 - Long-horizon ELO (full 2020+ history) vs. short-horizon/rolling ELO (e.g. 2-year window) vs. running both in parallel. Raised in `Preparing_for_Fable` (never sent to Fable — that session didn't happen) and repeated in this week's rattle. Still open. Not deciding it this week.
 
 ---
 
-## 2. New Teams This Season
+## 2. New Teams This Season — RESOLVED (Day 1)
 
 Hull City, Coventry City, Ipswich Town — promoted from the Championship.
 
 **Data available:** Premier League matches only, 2020–present. No Championship data. No usable recent PL history for these three (last PL spells predate the 2020 dataset).
 
-**Recommendation (pending your confirm/override):** Seed each promoted team's initial ELO at the average current (post-offset) rating of last season's bottom 4 finishers, rather than a flat 1500. Rationale: promoted teams statistically perform like bottom-of-table sides, not average sides, and a flat 1500 default is exactly the value implicated in the Band 1 bug above — using it again here just recreates the same miscalibration on purpose. This uses only data you already have.
+**Implemented:** all three seeded at 1685 — the average current (post-offset) rating of 2025-26's bottom 4 finishers (Spurs 1744, West Ham 1733, Wolves 1648, Burnley 1615). Ipswich's stale rating from its last PL spell (1600) was replaced with this value, per the "one consistent, deliberate default" rule below.
 
-If you'd rather just flat-seed at league-average or something else, override this line — everything downstream (Band 1 fix, promoted-team seeding) should use one consistent, deliberate default, not two different accidental ones.
+This runs through its own `seed_team()` code path, separate from the generic fallback fixed in the Band 1 bug (§1) — a deliberate seed can't be confused with a default that silently fired. Validated: the three promoted teams land 18th–20th of the 2026-27 field, with fixtures spread across bands 1–7 (not artificially concentrated in Band 1, not inflated).
 
 ---
 
@@ -110,4 +117,4 @@ These aren't deleted — they're still useful for history and narrative — but 
 
 ---
 
-*Open items requiring your confirm before this is fully locked: §2 (promoted-team ELO seeding method).*
+*Open items: none blocking. §1's band-boundary off-by-one is flagged but not fixed — needs your call since it reassigns matches at every band edge, not just Band 1.*
