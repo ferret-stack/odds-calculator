@@ -32,7 +32,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
-from webdriver_manager.firefox import GeckoDriverManager
+
+from scrapers.browser import make_driver, accept_cookies
+from scrapers.match_stats import scrape_match_stats
 
 # ============================================
 # CONFIGURATION
@@ -92,12 +94,14 @@ class OddsCalculator:
         
         # Load existing data if available
         self.load_existing_data()
-        
-        # Selenium setup for scraping
-        self.firefox_options = Options()
-        self.firefox_options.add_argument("--headless")
-        self.service = FirefoxService(GeckoDriverManager().install())
-    
+
+        # Browser setup is deliberately NOT done here. It used to call
+        # GeckoDriverManager().install() -- a network round-trip -- on every
+        # construction, so the validation tools, the tests and the nightly
+        # pipeline all needed a reachable driver CDN just to read JSON.
+        # scrapers.browser.make_driver() resolves lazily, on first scrape.
+
+
     def load_existing_data(self):
         """
         Load existing JSON data if available.
@@ -278,20 +282,13 @@ class OddsCalculator:
                 continue
             
             url = f'https://www.premierleague.com/en/match/{match_id}'
-            driver = webdriver.Firefox(service=self.service, options=self.firefox_options)
-            
+            driver = make_driver()
+
             try:
                 driver.get(url)
-                driver.maximize_window()
                 time.sleep(5)
-                
-                # Accept cookies if present
-                try:
-                    WebDriverWait(driver, 10).until(
-                        EC.element_to_be_clickable((By.XPATH, '//*[@id="onetrust-accept-btn-handler"]'))
-                    ).click()
-                except:
-                    pass
+
+                accept_cookies(driver)
 
                 # Get teams
                 home_team = driver.find_element(By.XPATH, '/html/body/main/div[1]/div[2]/div[2]/div[1]/div/div/header/div/div[1]/span').text
@@ -321,25 +318,25 @@ class OddsCalculator:
                 except:
                     referee = None
                 
-                # Get cards
-                home_yellow = 0
-                away_yellow = 0
-                home_red = 0
-                away_red = 0
-                
-                try:
-                    # Click on stats tab
-                    stats_tab = WebDriverWait(driver, 20).until(
-                        EC.element_to_be_clickable((By.XPATH, '/html/body/main/div[1]/div[2]/div[2]/div[2]/div/div/div/div/div/div[1]/button[4]'))
-                    )
-                    stats_tab.click()
-                    time.sleep(3)
-                    
-                    # Need to add stats XPATHS
-                    
-                except Exception as e:
-                    print(f"    Could not get detailed stats for match {match_id}")
-                
+                # Get cards and related advanced stats.
+                #
+                # This block previously clicked the stats tab and then did
+                # nothing -- the extraction was never written -- so every
+                # scraped match stored 0 cards regardless of outcome, and the
+                # exception (when the tab lookup failed) was printed without
+                # its text. Both are fixed in scrapers/match_stats.py.
+                stats = scrape_match_stats(driver)
+
+                home_yellow = stats['home_yellow']
+                away_yellow = stats['away_yellow']
+                home_red = stats['home_red']
+                away_red = stats['away_red']
+
+                if not stats['stats_scraped']:
+                    # Report the real reason rather than a generic message.
+                    print(f"    ⚠ No advanced stats for match {match_id}: "
+                          f"{stats['stats_error']}")
+
                 # Get current ELO ratings. These are the pre-match ratings --
                 # what was knowable before kickoff -- which is what the band
                 # assignment must be based on.
@@ -356,11 +353,14 @@ class OddsCalculator:
                 band = elo_band_for_diff(elo_diff)
                 winner = classify_winner(home_goals, away_goals, home_elo, away_elo)
 
-                # Calculate booking points
-                home_booking = (home_yellow * 10) + (home_red * 25)
-                away_booking = (away_yellow * 10) + (away_red * 25)
-                total_booking = home_booking + away_booking
-                
+                # Calculate booking points. None (not 0) when stats were not
+                # read -- 0 is a real football value and must stay
+                # distinguishable from "not scraped", or unscraped matches
+                # drag every referee and team booking average toward zero.
+                home_booking = stats['home_booking_points']
+                away_booking = stats['away_booking_points']
+                total_booking = stats['total_booking_points']
+
                 # Create match data
                 match_data = {
                     'match_id': match_id,
@@ -378,7 +378,11 @@ class OddsCalculator:
                     'away_yellow': away_yellow,
                     'home_red': home_red,
                     'away_red': away_red,
+                    'home_booking_points': home_booking,
+                    'away_booking_points': away_booking,
                     'total_booking_points': total_booking,
+                    'stats_scraped': stats['stats_scraped'],
+                    'advanced_stats': stats['advanced_stats'],
                     'winner': winner,
                     'over_05': (home_goals + away_goals) > 0.5,
                     'over_15': (home_goals + away_goals) > 1.5,
@@ -714,36 +718,61 @@ class OddsCalculator:
         return {'stronger_win': 0.333, 'draw': 0.333, 'weaker_win': 0.334}
 
     def calculate_referee_stats(self):
-        """Calculate statistics for each referee"""
+        """
+        Calculate statistics for each referee.
+
+        Averages are taken over matches with CARD DATA, not over all matches
+        the referee officiated. Those are different denominators whenever a
+        scrape failed, and the old code used the wrong one: it counted every
+        match as a game and added `.get('total_booking_points', 0)`, so the
+        380 matches the broken stats scrape stored as zeros pulled every
+        referee average down -- by 4 to 17 booking points depending on how
+        much of their record fell in the affected season.
+
+        `games` remains the true appearance count; `games_with_card_data` is
+        the denominator actually used, so a thin sample is visible rather
+        than disguised as a low average.
+        """
         referee_data = {}
-        
+
         for match in self.matches_data:
             ref = match.get('referee')
-            if ref and ref != 'None':
-                if ref not in referee_data:
-                    referee_data[ref] = {
-                        'games': 0,
-                        'total_booking_points': 0,
-                        'total_yellows': 0,
-                        'total_reds': 0
-                    }
-                
-                referee_data[ref]['games'] += 1
-                referee_data[ref]['total_booking_points'] += match.get('total_booking_points', 0)
-                referee_data[ref]['total_yellows'] += match.get('home_yellow', 0) + match.get('away_yellow', 0)
-                referee_data[ref]['total_reds'] += match.get('home_red', 0) + match.get('away_red', 0)
-        
-        # Calculate averages
-        for ref, data in referee_data.items():
-            if data['games'] > 0:
-                data['avg_booking_points'] = round(data['total_booking_points'] / data['games'], 1)
-                data['avg_yellows'] = round(data['total_yellows'] / data['games'], 1)
-                data['avg_reds'] = round(data['total_reds'] / data['games'], 2)
-                # Remove totals from final output
-                del data['total_booking_points']
-                del data['total_yellows']
-                del data['total_reds']
-        
+            if not ref or ref == 'None':
+                continue
+
+            data = referee_data.setdefault(ref, {
+                'games': 0,
+                'games_with_card_data': 0,
+                'total_booking_points': 0,
+                'total_yellows': 0,
+                'total_reds': 0,
+            })
+            data['games'] += 1
+
+            bp = match.get('total_booking_points')
+            hy, ay = match.get('home_yellow'), match.get('away_yellow')
+            if bp is None or hy is None or ay is None:
+                continue
+
+            data['games_with_card_data'] += 1
+            data['total_booking_points'] += bp
+            data['total_yellows'] += hy + ay
+            data['total_reds'] += (match.get('home_red') or 0) + (match.get('away_red') or 0)
+
+        for data in referee_data.values():
+            n = data['games_with_card_data']
+            if n:
+                data['avg_booking_points'] = round(data['total_booking_points'] / n, 1)
+                data['avg_yellows'] = round(data['total_yellows'] / n, 1)
+                data['avg_reds'] = round(data['total_reds'] / n, 2)
+            else:
+                data['avg_booking_points'] = None
+                data['avg_yellows'] = None
+                data['avg_reds'] = None
+            del data['total_booking_points']
+            del data['total_yellows']
+            del data['total_reds']
+
         return referee_data
     
     def calculate_team_stats(self):
@@ -794,8 +823,12 @@ class OddsCalculator:
                 team_data[team] = {
                     'last_10_avg_goals_for': round(np.mean(goals_for), 1),
                     'last_10_avg_goals_against': round(np.mean(goals_against), 1),
-                    'last_10_avg_booking_points': round(np.mean(booking_points), 1) if booking_points else 0,
-                    'season_avg_booking_points': round(np.mean(season_booking), 1) if season_booking else 0,
+                    # None, not 0, when no match in the window carries card
+                    # data -- a team with no data must fall back to the band
+                    # average downstream, not claim a zero-booking record.
+                    'last_10_avg_booking_points': round(np.mean(booking_points), 1) if booking_points else None,
+                    'last_10_matches_with_card_data': len(booking_points),
+                    'season_avg_booking_points': round(np.mean(season_booking), 1) if season_booking else None,
                     'form': form
                 }
         
@@ -901,14 +934,20 @@ class OddsCalculator:
                 band_avg = band['avg_booking_points']
                 break
         
-        # Get team averages
+        # Get team averages. A team with no card data falls back to the band
+        # average rather than to a literal 40 or an implied 0 -- .get(k, 40)
+        # did not catch this, because the key existed and held 0.
         team_stats = self.calculate_team_stats()
-        home_avg = team_stats.get(home_team, {}).get('last_10_avg_booking_points', 40)
-        away_avg = team_stats.get(away_team, {}).get('last_10_avg_booking_points', 40)
-        
+        home_avg = team_stats.get(home_team, {}).get('last_10_avg_booking_points')
+        away_avg = team_stats.get(away_team, {}).get('last_10_avg_booking_points')
+        if home_avg is None:
+            home_avg = band_avg
+        if away_avg is None:
+            away_avg = band_avg
+
         # Weight: 50% band, 25% each team
         expected = (band_avg * 0.5) + (home_avg * 0.25) + (away_avg * 0.25)
-        
+
         return round(expected, 1)
     
     # ============================================
