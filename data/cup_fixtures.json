@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-08-16 10:17:21",
+  "scope": "date, competition, opponent -- narrative context only",
+  "competitions": [
+    "FA Cup",
+    "Carabao Cup",
+    "UEFA Champions League",
+    "UEFA Conference League",
+    "UEFA Europa League"
+  ],
+  "teams": {
+    "Arsenal": [],
+    "Liverpool": [],
+    "Man City": []
+  },
+  "errors": {}
+}
