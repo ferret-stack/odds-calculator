@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scrapers.match_stats import (
     MIN_RECOGNISED_ROWS, booking_points, build_result, empty_result,
     normalise_label, orient_triple, parse_stat_rows, parse_stat_value,
-    _best_table,
+    _best_table, _diagnose_no_match, _wait_for_stats_content,
 )
 
 
@@ -217,6 +217,117 @@ class TestBestTable(unittest.TestCase):
 
     def test_no_tables_returns_none(self):
         self.assertIsNone(_best_table([]))
+
+
+class TestScorelineNotMistakenForAStat(unittest.TestCase):
+    """
+    Regression coverage for a live failure: the raw sample reported back was
+    ('3', '-', '0') -- the scoreline, not a stat row. It got there because
+    the old list-extraction filter matched any element whose class contained
+    the substring 'stat'/'Stat', and a class like "MatchStatus" contains
+    "Stat" as a literal substring. Filtering is now done purely by whether a
+    row's text resolves to a known label, with no class-name guessing.
+    """
+
+    def test_scoreline_alone_never_recognised(self):
+        self.assertIsNone(orient_triple('3', '-', '0'))
+
+    def test_scoreline_plus_noise_does_not_clear_the_threshold(self):
+        noise_table = [('3', '-', '0'), ('Related', 'Read more', 'A story')]
+        self.assertIsNone(_best_table([noise_table]))
+
+    def test_scoreline_alongside_real_stats_is_simply_ignored(self):
+        """
+        The scoreline can appear on the same page as real stats without
+        polluting them -- it just never resolves to a label, same as any
+        other unrecognised row.
+        """
+        table = [
+            ('3', '-', '0'),
+            ('Possession %', '62', '38'),
+            ('Shots', '17', '9'),
+        ]
+        result = _best_table([table])
+        self.assertIsNotNone(result)
+        self.assertNotIn(('3', '-', '0'), result)
+        self.assertIn(('Possession %', '62', '38'), result)
+
+
+class TestWaitForStatsContent(unittest.TestCase):
+    """
+    A fixed sleep after the tab click is a guess about render timing; a
+    report with 0 tables and only the scoreline found is consistent with the
+    real panel not having rendered by the time a fixed sleep ran out.
+
+    The polling loop is tested via the injectable `probe`, rather than a
+    faked Selenium element tree -- that keeps this independent of Selenium's
+    internal traversal, and it is the loop's stop-early-or-use-the-budget
+    behaviour that matters here, not DOM mechanics already covered elsewhere.
+    """
+
+    def test_returns_true_as_soon_as_content_appears(self):
+        calls = {'n': 0}
+
+        def probe():
+            calls['n'] += 1
+            return calls['n'] >= 3  # "appears" on the 3rd check
+
+        elapsed = []
+        found = _wait_for_stats_content(
+            driver=None, timeout=5, poll_interval=0.1,
+            sleep=lambda s: elapsed.append(s), probe=probe)
+
+        self.assertTrue(found)
+        # Stopped polling once content appeared, not at the full timeout.
+        self.assertLess(sum(elapsed), 5)
+        self.assertEqual(calls['n'], 3)
+
+    def test_gives_up_at_timeout_for_a_genuinely_empty_page(self):
+        found = _wait_for_stats_content(
+            driver=None, timeout=1, poll_interval=0.5,
+            sleep=lambda s: None, probe=lambda: False)
+        self.assertFalse(found)
+
+    def test_default_probe_checks_the_real_dom_when_not_injected(self):
+        """The injectable seam must not change production behaviour."""
+        class EmptyDriver:
+            def find_elements(self, by, xpath):
+                return []
+
+        found = _wait_for_stats_content(
+            EmptyDriver(), timeout=0.1, poll_interval=0.05,
+            sleep=lambda s: None)
+        self.assertFalse(found)
+
+
+class TestDiagnoseNoMatch(unittest.TestCase):
+    """
+    The error text is the interface for diagnosing a live failure without
+    separate access to the page, so its shape is worth locking down. Pure
+    function over already-collected data -- no Selenium involved.
+    """
+
+    def test_reports_tab_opened(self):
+        msg = _diagnose_no_match(opened=True, tables=[], list_rows=[('3', '-', '0')])
+        self.assertIn('tab opened', msg)
+
+    def test_reports_tab_not_found(self):
+        msg = _diagnose_no_match(opened=False, tables=[], list_rows=[])
+        self.assertIn('Stats tab not found', msg)
+
+    def test_raw_sample_included_when_rows_found_but_unrecognised(self):
+        msg = _diagnose_no_match(opened=True, tables=[], list_rows=[('3', '-', '0')])
+        self.assertIn("('3', '-', '0')", msg)
+
+    def test_row_and_table_counts_reported(self):
+        tables = [[('Related', 'x', 'y'), ('Related', 'a', 'b')]]
+        msg = _diagnose_no_match(opened=True, tables=tables, list_rows=[('3', '-', '0')])
+        self.assertIn('3 row(s)', msg)
+        self.assertIn('1 table(s)', msg)
+
+    def test_completely_empty_page_gets_its_own_message(self):
+        msg = _diagnose_no_match(opened=False, tables=[], list_rows=[])
+        self.assertIn('no stat rows found', msg)
 
 
 if __name__ == '__main__':

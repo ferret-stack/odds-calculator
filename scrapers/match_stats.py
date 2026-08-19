@@ -211,20 +211,13 @@ def build_result(parsed, error=None):
 # Selenium-facing layer
 # ---------------------------------------------------------------------------
 
-# A table only qualifies as "the stats table" once at least this many of its
-# rows resolve to a known label. The match page can carry other 3-column
-# tables (related content, a standings widget) alongside the real one; a
-# threshold of 1 would let a coincidental match through, so this asks for
-# more than one before trusting a table's identity.
+# A table -- or, for the list layout, the whole candidate set -- only
+# qualifies as "the stats block" once at least this many of its rows resolve
+# to a known label. The match page can carry other 3-column/3-part groupings
+# (related content, a standings widget, the scoreline itself) alongside the
+# real one; a threshold of 1 would let a coincidental match through, so this
+# asks for more than one before trusting an identification.
 MIN_RECOGNISED_ROWS = 2
-
-# Candidate containers for a stat row, most specific first. The PL site has
-# rendered this block as a list, a table, and a set of divs at various points.
-ROW_XPATHS = [
-    "//*[self::li or self::tr or self::div]"
-    "[.//*[contains(@class,'stat') or contains(@class,'Stat')]]"
-    "[count(.//*[normalize-space(text())!='']) >= 3]",
-]
 
 
 def orient_triple(a, b, c):
@@ -274,23 +267,66 @@ def _raw_table_rows(driver):
 
 def _raw_list_rows(driver):
     """
-    Every 3-part row from the list/div stats layout, in visual order.
+    Every 3-part text group in the page, from list/div-based layouts.
 
-    Column order is resolved later by orient_triple(), same as the table
-    path -- this only collects the raw text, it does not guess which part is
-    the label.
+    NOT scoped by CSS class. The previous version only looked at elements
+    whose class contained the substring 'stat'/'Stat', as a guess that this
+    marked the stats block -- and that guess collided with unrelated
+    elements. A class like "MatchStatus" contains "Stat" as a literal
+    substring, and on a page where the real stats content had not rendered
+    (0 <table> candidates, in the report that found this), the scoreline's
+    status container was the only element left matching, producing the raw
+    sample ('3', '-', '0') -- the score, not a stat.
+
+    Filtering is left entirely to recognition instead, the same way
+    _best_table() already handles the <table> layout: collect every
+    plausible 3-part group structurally, and let orient_triple() plus
+    MIN_RECOGNISED_ROWS decide what is real. A lone scoreline or nav item
+    does not resolve to a known label and is dropped; a genuine stats panel,
+    with its 8-10 metrics, clears the threshold easily.
     """
     from selenium.webdriver.common.by import By
 
     rows = []
-    for xpath in ROW_XPATHS:
-        for row in driver.find_elements(By.XPATH, xpath):
-            parts = [p for p in (row.text or '').split('\n') if p.strip()]
-            if len(parts) == 3:
-                rows.append(tuple(parts))
-        if rows:
-            break
+    for el in driver.find_elements(
+            By.XPATH,
+            "//*[self::li or self::div]"
+            "[count(.//*[normalize-space(text())!='']) = 3]"):
+        parts = [p for p in (el.text or '').split('\n') if p.strip()]
+        if len(parts) == 3:
+            rows.append(tuple(parts))
     return rows
+
+
+def _wait_for_stats_content(driver, timeout, poll_interval=0.5, sleep=None,
+                            probe=None):
+    """
+    Poll briefly for candidate rows to actually be in the DOM.
+
+    A fixed sleep after the tab click is a guess about render timing, and a
+    report where 0 tables and only a scoreline were found is consistent with
+    the real panel not having rendered yet when the fixed sleep ran out. This
+    returns as soon as either a table or a list-style candidate appears, or
+    gives up silently at `timeout` -- a genuinely stats-less page (postponed
+    match) is not turned into a hang, it just uses the full budget once.
+
+    `probe` is injectable so the polling loop itself -- stop early once
+    ready, otherwise use the full budget -- can be unit tested without
+    building a fake Selenium element tree; production code always uses the
+    default, which does the real DOM check.
+    """
+    import time as _time
+    sleep = sleep or _time.sleep
+    probe = probe or (
+        lambda: bool(_raw_table_rows(driver)) or bool(_raw_list_rows(driver)))
+
+    elapsed = 0.0
+    while elapsed < timeout:
+        if probe():
+            return True
+        sleep(poll_interval)
+        elapsed += poll_interval
+    return probe()
 
 
 def _best_table(tables):
@@ -333,28 +369,54 @@ def open_stats_tab(driver, timeout=20):
         return False
 
 
-def scrape_match_stats(driver, timeout=20, settle=3, sleep=None):
+def _diagnose_no_match(opened, tables, list_rows):
+    """
+    Build the failure message when nothing recognisable was found.
+
+    Pure function over already-collected data -- kept separate from
+    scrape_match_stats() so the exact text a live failure produces (which is
+    the whole diagnostic interface: whoever hits this pastes it back) can be
+    tested with plain Python lists and bools, without building a fake
+    Selenium element tree to drive it.
+    """
+    raw = [r for t in tables for r in t] + list_rows
+    tab_note = 'tab opened' if opened else 'Stats tab not found'
+    if not raw:
+        return f'no stat rows found on page ({tab_note})'
+    sample = '; '.join(str(r) for r in raw[:5])
+    return (
+        f'{tab_note}; {len(raw)} row(s) read across {len(tables)} table(s) '
+        f'plus list layout, but none matched a known stat label. '
+        f'raw sample: {sample}')
+
+
+def scrape_match_stats(driver, timeout=20, settle=5, sleep=None):
     """
     Read the advanced stats for the match page currently loaded in `driver`.
 
     Always returns a dict in the match-record shape. On failure the card
     fields are None and `stats_error` carries the real exception text --
     it is not swallowed. When rows are found but none are recognised, the
-    error carries the raw samples too, so a report of that failure is enough
-    to fix the label/column mapping without needing separate access to the
-    page's HTML.
+    error carries whether the tab was opened, the raw row counts, and up to 5
+    raw samples, so a report of that failure is enough to fix from without
+    needing separate access to the page's HTML.
+
+    `settle` is a ceiling on how long to wait for stat content to actually
+    appear after the tab click, not a fixed sleep -- a fixed sleep is a guess
+    about render timing that a slower page or connection can simply outrun.
+    See _wait_for_stats_content().
     """
     import time as _time
     sleep = sleep or _time.sleep
 
     try:
         opened = open_stats_tab(driver, timeout=timeout)
-        if opened:
-            sleep(settle)
+        _wait_for_stats_content(driver, settle, sleep=sleep)
 
         tables = _raw_table_rows(driver)
         oriented = _best_table(tables)
 
+        list_rows = []
         if oriented is None:
             list_rows = _raw_list_rows(driver)
             list_recognised = [t for t in
@@ -363,16 +425,7 @@ def scrape_match_stats(driver, timeout=20, settle=3, sleep=None):
                 oriented = list_recognised
 
         if oriented is None:
-            raw = [r for t in tables for r in t] + list_rows
-            if not raw:
-                return empty_result(
-                    'no stat rows found on page'
-                    + ('' if opened else ' (Stats tab not found either)'))
-            sample = '; '.join(str(r) for r in raw[:5])
-            return empty_result(
-                f'{len(raw)} row(s) read across {len(tables)} table(s) '
-                f'plus list layout, but none matched a known stat label. '
-                f'raw sample: {sample}')
+            return empty_result(_diagnose_no_match(opened, tables, list_rows))
 
         return build_result(parse_stat_rows(oriented))
 
