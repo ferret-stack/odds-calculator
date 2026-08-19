@@ -13,8 +13,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scrapers.match_stats import (
-    booking_points, build_result, empty_result, normalise_label,
-    parse_stat_rows, parse_stat_value,
+    MIN_RECOGNISED_ROWS, booking_points, build_result, empty_result,
+    normalise_label, orient_triple, parse_stat_rows, parse_stat_value,
+    _best_table,
 )
 
 
@@ -140,6 +141,82 @@ class TestBuildResult(unittest.TestCase):
 
         self.assertFalse(unscraped['stats_scraped'])
         self.assertIsNone(unscraped['total_booking_points'])
+
+
+class TestOrientTriple(unittest.TestCase):
+    """
+    Covers the real-world failure: rows found, none recognised, because the
+    label wasn't in the column this module assumed.
+    """
+
+    def test_label_in_middle_column(self):
+        # (home, label, away) -- the original assumption.
+        self.assertEqual(orient_triple('2', 'Yellow cards', '4'),
+                         ('Yellow cards', '2', '4'))
+
+    def test_label_in_first_column(self):
+        # (label, home, away) -- the layout that broke the original code.
+        self.assertEqual(orient_triple('Yellow cards', '2', '4'),
+                         ('Yellow cards', '2', '4'))
+
+    def test_neither_column_recognised_returns_none(self):
+        self.assertIsNone(orient_triple('Some Widget', 'Link', 'More'))
+
+    def test_ambiguous_row_prefers_first_column(self):
+        """
+        If both columns happen to look like labels (unlikely, but the tie
+        rule should be deterministic), the first position wins.
+        """
+        result = orient_triple('Fouls', 'Corners', '3')
+        self.assertEqual(result[0], 'Fouls')
+
+
+class TestBestTable(unittest.TestCase):
+    STATS_TABLE_MIDDLE_LABEL = [
+        ('62', 'Possession %', '38'),
+        ('17', 'Shots', '9'),
+        ('2', 'Yellow cards', '4'),
+        ('0', 'Red cards', '1'),
+    ]
+    STATS_TABLE_FIRST_LABEL = [
+        ('Possession %', '62', '38'),
+        ('Shots', '17', '9'),
+        ('Yellow cards', '2', '4'),
+        ('Red cards', '0', '1'),
+    ]
+    UNRELATED_TABLE = [
+        ('Related', 'Read more', 'Arsenal beat Chelsea'),
+        ('Related', 'Read more', 'Everton sign new winger'),
+        ('Related', 'Read more', 'Transfer news roundup'),
+    ]
+
+    def test_picks_up_middle_label_layout(self):
+        result = _best_table([self.STATS_TABLE_MIDDLE_LABEL])
+        self.assertIsNotNone(result)
+        self.assertIn(('Yellow cards', '2', '4'), result)
+
+    def test_picks_up_first_label_layout(self):
+        """The layout that produced 'rows found, none matched' in the field."""
+        result = _best_table([self.STATS_TABLE_FIRST_LABEL])
+        self.assertIsNotNone(result)
+        self.assertIn(('Yellow cards', '2', '4'), result)
+
+    def test_unrelated_table_rejected(self):
+        self.assertIsNone(_best_table([self.UNRELATED_TABLE]))
+
+    def test_real_table_picked_over_unrelated_one_on_the_same_page(self):
+        result = _best_table([self.UNRELATED_TABLE, self.STATS_TABLE_FIRST_LABEL])
+        self.assertIsNotNone(result)
+        self.assertIn(('Yellow cards', '2', '4'), result)
+
+    def test_single_recognised_row_not_enough(self):
+        """Below MIN_RECOGNISED_ROWS, a table is not trusted at all."""
+        self.assertEqual(MIN_RECOGNISED_ROWS, 2)
+        one_row = [('Yellow cards', '2', '4'), ('Related', 'x', 'y')]
+        self.assertIsNone(_best_table([one_row]))
+
+    def test_no_tables_returns_none(self):
+        self.assertIsNone(_best_table([]))
 
 
 if __name__ == '__main__':

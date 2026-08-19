@@ -211,6 +211,13 @@ def build_result(parsed, error=None):
 # Selenium-facing layer
 # ---------------------------------------------------------------------------
 
+# A table only qualifies as "the stats table" once at least this many of its
+# rows resolve to a known label. The match page can carry other 3-column
+# tables (related content, a standings widget) alongside the real one; a
+# threshold of 1 would let a coincidental match through, so this asks for
+# more than one before trusting a table's identity.
+MIN_RECOGNISED_ROWS = 2
+
 # Candidate containers for a stat row, most specific first. The PL site has
 # rendered this block as a list, a table, and a set of divs at various points.
 ROW_XPATHS = [
@@ -220,38 +227,85 @@ ROW_XPATHS = [
 ]
 
 
-def _row_triples_from_table(driver):
-    """Extract (label, home, away) triples from a <table> stats layout."""
+def orient_triple(a, b, c):
+    """
+    Decide which of three cells is the row label.
+
+    A stat row has been seen on the PL site in both (label, home, away) and
+    (home, label, away) column order. Rather than commit to one -- the
+    earlier version assumed the middle cell always, and that assumption is
+    exactly what "rows found, none recognised" looks like when it is wrong --
+    both orientations are tried and whichever resolves to a label this module
+    knows is kept. Returns None if neither position matches, so an unrelated
+    3-cell row (from some other table on the page) is dropped rather than
+    silently misread as a stat.
+    """
+    if normalise_label(a) in STAT_LABELS:
+        return (a, b, c)
+    if normalise_label(b) in STAT_LABELS:
+        return (b, a, c)
+    return None
+
+
+def _raw_table_rows(driver):
+    """
+    Every 3-cell row on the page, grouped by the <table> it came from.
+
+    Deliberately not scoped to a single table by selector -- we do not know
+    PL's exact container class from here -- but grouping keeps rows from
+    different tables from being pooled together, so _best_table() can judge
+    each table's rows as a set rather than mixing an unrelated table's rows
+    into the real one.
+    """
     from selenium.webdriver.common.by import By
 
-    triples = []
-    for row in driver.find_elements(By.XPATH, '//table//tr'):
-        cells = row.find_elements(By.XPATH, './th|./td')
-        texts = [c.text.strip() for c in cells]
-        if len(texts) == 3:
-            triples.append((texts[1], texts[0], texts[2]))
-    return triples
+    tables = []
+    for table in driver.find_elements(By.XPATH, '//table'):
+        rows = []
+        for row in table.find_elements(By.XPATH, './/tr'):
+            cells = row.find_elements(By.XPATH, './th|./td')
+            texts = [c.text.strip() for c in cells]
+            if len(texts) == 3:
+                rows.append(tuple(texts))
+        if rows:
+            tables.append(rows)
+    return tables
 
 
-def _row_triples_from_list(driver):
+def _raw_list_rows(driver):
     """
-    Extract triples from the list/div stats layout.
+    Every 3-part row from the list/div stats layout, in visual order.
 
-    Each row renders as three text nodes in visual order: home value, label,
-    away value. We read the row's direct text-bearing descendants rather than
-    indexing fixed positions, so an extra wrapper element does not break it.
+    Column order is resolved later by orient_triple(), same as the table
+    path -- this only collects the raw text, it does not guess which part is
+    the label.
     """
     from selenium.webdriver.common.by import By
 
-    triples = []
+    rows = []
     for xpath in ROW_XPATHS:
         for row in driver.find_elements(By.XPATH, xpath):
             parts = [p for p in (row.text or '').split('\n') if p.strip()]
             if len(parts) == 3:
-                triples.append((parts[1], parts[0], parts[2]))
-        if triples:
+                rows.append(tuple(parts))
+        if rows:
             break
-    return triples
+    return rows
+
+
+def _best_table(tables):
+    """
+    Pick the table that is actually the stats panel, oriented and filtered.
+
+    Returns the recognised (label, home, away) triples from whichever table
+    scores highest, or None if no table clears MIN_RECOGNISED_ROWS.
+    """
+    best, best_score = None, 0
+    for rows in tables:
+        recognised = [t for t in (orient_triple(*r) for r in rows) if t]
+        if len(recognised) > best_score:
+            best, best_score = recognised, len(recognised)
+    return best if best_score >= MIN_RECOGNISED_ROWS else None
 
 
 def open_stats_tab(driver, timeout=20):
@@ -285,7 +339,10 @@ def scrape_match_stats(driver, timeout=20, settle=3, sleep=None):
 
     Always returns a dict in the match-record shape. On failure the card
     fields are None and `stats_error` carries the real exception text --
-    it is not swallowed.
+    it is not swallowed. When rows are found but none are recognised, the
+    error carries the raw samples too, so a report of that failure is enough
+    to fix the label/column mapping without needing separate access to the
+    page's HTML.
     """
     import time as _time
     sleep = sleep or _time.sleep
@@ -295,16 +352,29 @@ def scrape_match_stats(driver, timeout=20, settle=3, sleep=None):
         if opened:
             sleep(settle)
 
-        triples = _row_triples_from_table(driver)
-        if not triples:
-            triples = _row_triples_from_list(driver)
+        tables = _raw_table_rows(driver)
+        oriented = _best_table(tables)
 
-        if not triples:
+        if oriented is None:
+            list_rows = _raw_list_rows(driver)
+            list_recognised = [t for t in
+                               (orient_triple(*r) for r in list_rows) if t]
+            if len(list_recognised) >= MIN_RECOGNISED_ROWS:
+                oriented = list_recognised
+
+        if oriented is None:
+            raw = [r for t in tables for r in t] + list_rows
+            if not raw:
+                return empty_result(
+                    'no stat rows found on page'
+                    + ('' if opened else ' (Stats tab not found either)'))
+            sample = '; '.join(str(r) for r in raw[:5])
             return empty_result(
-                'no stat rows found on page'
-                + ('' if opened else ' (Stats tab not found either)'))
+                f'{len(raw)} row(s) read across {len(tables)} table(s) '
+                f'plus list layout, but none matched a known stat label. '
+                f'raw sample: {sample}')
 
-        return build_result(parse_stat_rows(triples))
+        return build_result(parse_stat_rows(oriented))
 
     except Exception as exc:
         # The whole point: keep the error text.
