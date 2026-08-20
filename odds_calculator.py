@@ -35,17 +35,18 @@ from selenium.webdriver.firefox.options import Options
 
 from scrapers.browser import make_driver, accept_cookies
 from scrapers.match_stats import scrape_match_stats
+from env_config import load_dotenv, odds_api_keys, request_with_key_failover
 
 # ============================================
 # CONFIGURATION
 # ============================================
 
-# API Keys for Odds
-API_KEYS = [
-    '092215ac4ab5a37e57f22dabd54105d7',
-    '1145cefd2ec6637d0d7035eed5bf8991', 
-    'f198c4d9ff1ce050aaf452d25812f548'
-]
+# API keys for the-odds-api.com now come from the environment, not this
+# file -- see env_config.py. Copy .env.example to .env and fill in
+# ODDS_API_KEY (and optionally ODDS_API_KEY_BACKUP). The three keys that
+# used to be hardcoded here are public in this repo's git history; rotate
+# them, they are not usable as a fallback going forward.
+load_dotenv()
 
 # Team name mappings for standardization
 TEAM_NAME_CHANGES = [
@@ -418,22 +419,28 @@ class OddsCalculator:
     def fetch_bookmaker_odds(self):
         """Fetch odds from the-odds-api.com"""
         print("\nFetching bookmaker odds...")
-        
-        API_KEY = API_KEYS[0]
+
+        keys = odds_api_keys()
+        if not keys:
+            print("  ✗ No API key configured -- set ODDS_API_KEY in .env "
+                  "(copy .env.example) or in the real environment")
+            return []
+
         base_url = 'https://api.the-odds-api.com/v4/sports/soccer_epl/odds'
-        
+
         upcoming_fixtures = []
-        
+        key_index = 0  # sticky across this run -- see request_with_key_failover()
+
         try:
             # First get the list of games with H2H odds
             h2h_params = {
-                'apiKey': API_KEY,
                 'regions': 'uk',
                 'markets': 'h2h',
                 'oddsFormat': 'decimal'
             }
-            
-            h2h_response = requests.get(base_url, params=h2h_params)
+
+            h2h_response, key_index = request_with_key_failover(
+                requests.get, base_url, h2h_params, keys, start_at=key_index)
             print(f"  API requests remaining: {h2h_response.headers.get('X-Requests-Remaining')}")
             
             if h2h_response.status_code != 200:
@@ -471,13 +478,13 @@ class OddsCalculator:
                 # Now fetch ALL additional markets for this specific game
                 event_url = f'https://api.the-odds-api.com/v4/sports/soccer_epl/events/{game["id"]}/odds'
                 event_params = {
-                    'apiKey': API_KEY,
                     'regions': 'uk',
                     'markets': 'totals,alternate_totals,btts',
                     'oddsFormat': 'decimal'
                 }
-                
-                event_response = requests.get(event_url, params=event_params)
+
+                event_response, key_index = request_with_key_failover(
+                    requests.get, event_url, event_params, keys, start_at=key_index)
                 print(f"  Fetching markets for {fixture['home_team']} vs {fixture['away_team']}")
                 print(f"    API requests remaining: {event_response.headers.get('X-Requests-Remaining')}")
                 
