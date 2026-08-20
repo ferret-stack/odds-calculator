@@ -391,9 +391,22 @@ def open_stats_tab(driver, timeout=20):
         element.click()
         return True, None
     except ElementClickInterceptedException:
-        return False, ('tab located but the click was intercepted -- it is '
-                       'covered by another element, e.g. an undismissed '
-                       'cookie banner')
+        # "Covered by another element" is only half a diagnosis, and the half
+        # that does not identify the element is the half that cost several
+        # rounds of guessing on the cookie banner. Ask the page which element
+        # is actually on top at the point the click was aimed at, and name it.
+        note = ('tab located but the click was intercepted -- it is '
+                'covered by another element')
+        try:
+            from scrapers.browser import probe_click_target
+            info = probe_click_target(driver, element)
+        except Exception:
+            info = None
+        if info and info.get('blocker'):
+            note += f'; the element on top at its centre is {info["blocker"]}'
+        else:
+            note += ', e.g. an undismissed cookie banner'
+        return False, note
     except Exception as exc:
         return False, f'{type(exc).__name__} while clicking the tab'
 
@@ -443,9 +456,11 @@ def scrape_match_stats(driver, timeout=20, settle=5, sleep=None):
     the tab. Some CMPs re-render their banner on a client-side route or tab
     change even after an earlier dismissal on page load, and that would look
     exactly like "Stats tab not found" or "click intercepted" here despite
-    accept_cookies() having already run once. cookie_banner_present() makes
-    this close to free when there is nothing to dismiss, which is the common
-    case once the banner has genuinely been accepted for the page.
+    accept_cookies() having already run once. cookie_banner_present() asks
+    whether a banner is VISIBLE, not merely present in the markup -- an
+    existence check would answer True forever, since every CMP dismisses its
+    banner by hiding it and leaving the markup behind, and this re-check would
+    then fire on every match after a perfectly successful dismissal.
     """
     import time as _time
     sleep = sleep or _time.sleep
