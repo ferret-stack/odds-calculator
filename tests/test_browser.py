@@ -1,11 +1,16 @@
 """
 Tests for the cookie-consent locator logic.
 
-Covers the reported live failure: a banner whose actual accept button did
-not match any of the three original locators (a OneTrust id and two
-button-scoped "Accept..." text matches), leaving the banner standing and
-blocking whatever it covered underneath (the Stats tab, in the reports seen
-so far).
+Covers two live-reported failures, in order:
+  1. A banner whose actual accept button did not match any of the three
+     original locators (a OneTrust id and two button-scoped "Accept..." text
+     matches), leaving the banner standing and blocking whatever it covered
+     underneath (the Stats tab).
+  2. After broadening the matching (fixing #1), the button's real text turned
+     out to be exactly "Accept All Cookies" -- so matching was never the
+     problem. The OneTrust id, which has never matched, was tried FIRST with
+     the full timeout; the phrase locator that does match got only 1 second
+     left over. Priority order was the bug, not coverage.
 """
 
 import sys
@@ -14,7 +19,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from scrapers.browser import _COOKIE_PHRASES, _phrase_condition, cookie_accept_xpaths
+from scrapers.browser import (
+    _COOKIE_PHRASES, _phrase_condition, cookie_accept_xpaths,
+    cookie_banner_present, cookie_locator_specs,
+)
 
 
 class TestCookiePhrases(unittest.TestCase):
@@ -98,6 +106,71 @@ class TestCookieAcceptXpaths(unittest.TestCase):
         doc = etree.fromstring('<button>Read more</button>')
         xpaths = cookie_accept_xpaths()
         self.assertFalse(any(doc.xpath(xp) for xp in xpaths))
+
+
+class TestCookieLocatorSpecs(unittest.TestCase):
+    """
+    The actual second bug: locator PRIORITY ORDER, confirmed by a live run
+    where the real button text ("Accept All Cookies") exactly matched our
+    top phrase, yet the banner was still never dismissed -- because the
+    never-matching OneTrust id went first and consumed the entire timeout.
+    """
+
+    def test_phrase_locators_come_before_onetrust_id(self):
+        specs = cookie_locator_specs()
+        kinds = [kind for kind, _ in specs]
+        onetrust_index = next(i for i, (k, v) in enumerate(specs)
+                              if k == 'id' and v == 'onetrust-accept-btn-handler')
+        # Every xpath (phrase) spec must precede the id spec.
+        for i, kind in enumerate(kinds):
+            if kind == 'xpath':
+                self.assertLess(i, onetrust_index,
+                               f'xpath locator at {i} should precede OneTrust id')
+
+    def test_onetrust_id_is_last(self):
+        specs = cookie_locator_specs()
+        self.assertEqual(specs[-1], ('id', 'onetrust-accept-btn-handler'))
+
+    def test_override_goes_first_when_set(self):
+        specs = cookie_locator_specs(override="//button[@id='custom']")
+        self.assertEqual(specs[0], ('xpath', "//button[@id='custom']"))
+
+    def test_override_still_precedes_onetrust_id(self):
+        specs = cookie_locator_specs(override="//button[@id='custom']")
+        self.assertEqual(specs[-1], ('id', 'onetrust-accept-btn-handler'))
+
+    def test_no_override_means_no_extra_entry(self):
+        with_override = len(cookie_locator_specs(override='//x'))
+        without_override = len(cookie_locator_specs())
+        self.assertEqual(with_override, without_override + 1)
+
+
+class TestCookieBannerPresent(unittest.TestCase):
+    """
+    Backs the defensive re-check before clicking the Stats tab: cheap when
+    there is nothing to dismiss (the common case once a banner has genuinely
+    been accepted), still able to notice a banner that came back.
+    """
+
+    class _Driver:
+        def __init__(self, html):
+            from lxml import etree
+            self._doc = etree.fromstring(html)
+
+        def find_elements(self, by, xpath):
+            return self._doc.xpath(xpath)
+
+    def test_true_when_a_matching_button_exists(self):
+        driver = self._Driver('<div><button>Accept All Cookies</button></div>')
+        self.assertTrue(cookie_banner_present(driver))
+
+    def test_false_when_nothing_matches(self):
+        driver = self._Driver('<div><button>Read more</button></div>')
+        self.assertFalse(cookie_banner_present(driver))
+
+    def test_false_on_empty_page(self):
+        driver = self._Driver('<div></div>')
+        self.assertFalse(cookie_banner_present(driver))
 
 
 if __name__ == '__main__':

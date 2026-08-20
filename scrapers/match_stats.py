@@ -438,11 +438,23 @@ def scrape_match_stats(driver, timeout=20, settle=5, sleep=None):
     appear after the tab click, not a fixed sleep -- a fixed sleep is a guess
     about render timing that a slower page or connection can simply outrun.
     See _wait_for_stats_content().
+
+    Also re-checks for the cookie consent banner immediately before clicking
+    the tab. Some CMPs re-render their banner on a client-side route or tab
+    change even after an earlier dismissal on page load, and that would look
+    exactly like "Stats tab not found" or "click intercepted" here despite
+    accept_cookies() having already run once. cookie_banner_present() makes
+    this close to free when there is nothing to dismiss, which is the common
+    case once the banner has genuinely been accepted for the page.
     """
     import time as _time
     sleep = sleep or _time.sleep
 
     try:
+        from scrapers.browser import accept_cookies, cookie_banner_present
+        if cookie_banner_present(driver):
+            accept_cookies(driver, timeout=2)
+
         opened, tab_note = open_stats_tab(driver, timeout=timeout)
         _wait_for_stats_content(driver, settle, sleep=sleep)
 
