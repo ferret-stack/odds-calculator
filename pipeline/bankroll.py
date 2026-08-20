@@ -165,6 +165,7 @@ class Ledger:
         counted = [b for b in settled if b.status != VOID]
         staked = sum(b.stake for b in counted)
         won = [b for b in counted if b.status == WON]
+        roi = round(self.realised_pnl / staked, 4) if staked else None
 
         return {
             'starting_bankroll': round(self.starting_bankroll, 2),
@@ -182,7 +183,11 @@ class Ledger:
             'total_staked': round(staked, 2),
             # ROI is profit per unit staked -- the measure that survives
             # varying stake sizes, which Kelly guarantees we will have.
-            'roi': round(self.realised_pnl / staked, 4) if staked else None,
+            # Carried twice: 'roi' is the fraction the pipeline reports
+            # against, 'roi_pct' the same number as a percentage, which is
+            # what anything display-facing wants.
+            'roi': roi,
+            'roi_pct': round(roi * 100, 2) if roi is not None else None,
             'growth': (round(self.bankroll / self.starting_bankroll - 1, 4)
                        if self.starting_bankroll else None),
         }
