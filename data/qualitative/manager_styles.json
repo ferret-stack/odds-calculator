@@ -1,0 +1,16 @@
+{
+  "_comment": [
+    "Manager style notes, per team. Narrative context for write-ups only --",
+    "nothing here moves a probability, a price or a stake.",
+    "",
+    "Forward-looking rotation risk belongs HERE, as prose, and is deliberately",
+    "not a standalone system or a numeric signal.",
+    "",
+    "Value may be a plain string or an object; a string is read as-is, an",
+    "object should carry a 'style' key.",
+    "",
+    "Example:",
+    "  \"Arsenal\": \"high press, inverted full-backs; rotates the cup XI heavily\""
+  ],
+  "teams": {}
+}

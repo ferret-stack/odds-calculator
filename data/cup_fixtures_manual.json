@@ -1,0 +1,32 @@
+{
+  "_comment": [
+    "Hand-maintained cup/European fixture occurrence, merged OVER anything",
+    "scrapers/fixture_occurrence.py scrapes. This is a first-class input, not",
+    "a fallback: the data is low-volume and narrative-only, so a broken",
+    "selector should degrade to 'stale but correct', never to wrong.",
+    "",
+    "Scope is strictly date, competition, opponent. Do not add venue, round,",
+    "kick-off time, lineups or rotation notes -- nothing downstream reads them",
+    "and rotation is parked under Manager Styles.",
+    "",
+    "Dates accept '2027-01-10' or '10 January 2027'. Competition accepts any",
+    "alias normalise_competition() knows (e.g. 'EFL Cup' -> 'Carabao Cup').",
+    "Premier League entries are ignored by design -- PL occurrence comes from",
+    "matches_data.json and listing it here would double-count."
+  ],
+  "_example": {
+    "Arsenal": [
+      {
+        "date": "2026-09-23",
+        "competition": "Carabao Cup",
+        "opponent": "Brighton"
+      },
+      {
+        "date": "2026-10-21",
+        "competition": "UEFA Champions League",
+        "opponent": "Real Madrid"
+      }
+    ]
+  },
+  "teams": {}
+}

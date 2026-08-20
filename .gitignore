@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 .env
 venv/
+*.bak
+.pytest_cache/
+data/pipeline_report.json

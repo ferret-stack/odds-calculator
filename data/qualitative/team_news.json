@@ -1,0 +1,10 @@
+{
+  "_comment": [
+    "Team news: injuries, suspensions, returns. Narrative context only.",
+    "Refresh before each run -- this is the input that goes stale fastest.",
+    "",
+    "Example:",
+    "  \"Arsenal\": \"Saka doubtful (hamstring); Timber suspended\""
+  ],
+  "teams": {}
+}
