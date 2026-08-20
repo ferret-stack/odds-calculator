@@ -305,28 +305,47 @@ class TestDiagnoseNoMatch(unittest.TestCase):
     The error text is the interface for diagnosing a live failure without
     separate access to the page, so its shape is worth locking down. Pure
     function over already-collected data -- no Selenium involved.
+
+    `tab_status` is a free-form string (what open_stats_tab() reports), not a
+    bool -- it needs to be able to say more than opened/not-opened, e.g. that
+    the tab was found but blocked by something covering it.
     """
 
     def test_reports_tab_opened(self):
-        msg = _diagnose_no_match(opened=True, tables=[], list_rows=[('3', '-', '0')])
+        msg = _diagnose_no_match('tab opened', tables=[],
+                                 list_rows=[('3', '-', '0')])
         self.assertIn('tab opened', msg)
 
     def test_reports_tab_not_found(self):
-        msg = _diagnose_no_match(opened=False, tables=[], list_rows=[])
-        self.assertIn('Stats tab not found', msg)
+        msg = _diagnose_no_match('tab not found in the DOM', tables=[], list_rows=[])
+        self.assertIn('tab not found', msg)
+
+    def test_reports_tab_blocked_by_something_covering_it(self):
+        """
+        The scenario this whole distinction exists for: the tab is present
+        but an undismissed cookie banner (or similar) is in the way.
+        """
+        msg = _diagnose_no_match(
+            'tab located but the click was intercepted -- it is covered by '
+            'another element, e.g. an undismissed cookie banner',
+            tables=[], list_rows=[('3', '-', '0')])
+        self.assertIn('intercepted', msg)
+        self.assertIn('cookie banner', msg)
 
     def test_raw_sample_included_when_rows_found_but_unrecognised(self):
-        msg = _diagnose_no_match(opened=True, tables=[], list_rows=[('3', '-', '0')])
+        msg = _diagnose_no_match('tab opened', tables=[],
+                                 list_rows=[('3', '-', '0')])
         self.assertIn("('3', '-', '0')", msg)
 
     def test_row_and_table_counts_reported(self):
         tables = [[('Related', 'x', 'y'), ('Related', 'a', 'b')]]
-        msg = _diagnose_no_match(opened=True, tables=tables, list_rows=[('3', '-', '0')])
+        msg = _diagnose_no_match('tab opened', tables=tables,
+                                 list_rows=[('3', '-', '0')])
         self.assertIn('3 row(s)', msg)
         self.assertIn('1 table(s)', msg)
 
     def test_completely_empty_page_gets_its_own_message(self):
-        msg = _diagnose_no_match(opened=False, tables=[], list_rows=[])
+        msg = _diagnose_no_match('tab not found in the DOM', tables=[], list_rows=[])
         self.assertIn('no stat rows found', msg)
 
 

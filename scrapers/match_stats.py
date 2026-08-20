@@ -348,12 +348,23 @@ def open_stats_tab(driver, timeout=20):
     """
     Click the Stats tab, located by visible text.
 
-    Returns True if a tab was clicked, False if no Stats tab was found. Does
-    not raise: some matches (postponed, abandoned) legitimately have no stats.
+    Returns (opened, note). `opened` is True only if the click actually
+    happened. `note` distinguishes WHY it did not, which matters for
+    diagnosing a failure: the tab was never in the DOM at all (the locator is
+    wrong, or the page genuinely has no stats -- e.g. a postponed match)
+    versus the tab being present but never clickable, most often because
+    something else is covering it. An undismissed cookie banner is exactly
+    that: it points at accept_cookies() as the real fix, not at this
+    function's locator.
+
+    Never raises: a stats-less match must not stop the rest of the scrape.
     """
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
+    from selenium.common.exceptions import (
+        ElementClickInterceptedException, TimeoutException,
+    )
 
     locator = (
         By.XPATH,
@@ -361,31 +372,53 @@ def open_stats_tab(driver, timeout=20):
         " | //a[normalize-space(translate(., 'STAS', 'stas'))='stats']"
         " | //*[@role='tab'][contains(translate(., 'STAS', 'stas'),'stats')]"
     )
+
     try:
-        WebDriverWait(driver, timeout).until(
-            EC.element_to_be_clickable(locator)).click()
-        return True
-    except Exception:
-        return False
+        element = WebDriverWait(driver, timeout).until(
+            EC.element_to_be_clickable(locator))
+    except TimeoutException:
+        try:
+            driver.find_element(*locator)
+            return False, ('tab present but never became clickable '
+                           '(hidden, or covered by something -- an '
+                           'undismissed cookie banner is a common cause)')
+        except Exception:
+            return False, 'tab not found in the DOM'
+    except Exception as exc:
+        return False, f'{type(exc).__name__} while locating the tab'
+
+    try:
+        element.click()
+        return True, None
+    except ElementClickInterceptedException:
+        return False, ('tab located but the click was intercepted -- it is '
+                       'covered by another element, e.g. an undismissed '
+                       'cookie banner')
+    except Exception as exc:
+        return False, f'{type(exc).__name__} while clicking the tab'
 
 
-def _diagnose_no_match(opened, tables, list_rows):
+def _diagnose_no_match(tab_status, tables, list_rows):
     """
     Build the failure message when nothing recognisable was found.
 
     Pure function over already-collected data -- kept separate from
     scrape_match_stats() so the exact text a live failure produces (which is
     the whole diagnostic interface: whoever hits this pastes it back) can be
-    tested with plain Python lists and bools, without building a fake
+    tested with plain Python lists and strings, without building a fake
     Selenium element tree to drive it.
+
+    `tab_status` is a human-readable string, not a bool -- open_stats_tab()
+    now distinguishes "not found" from "found but blocked" (an undismissed
+    cookie banner is the common cause of the latter), and that distinction is
+    exactly the information a failure report needs to carry.
     """
     raw = [r for t in tables for r in t] + list_rows
-    tab_note = 'tab opened' if opened else 'Stats tab not found'
     if not raw:
-        return f'no stat rows found on page ({tab_note})'
+        return f'no stat rows found on page ({tab_status})'
     sample = '; '.join(str(r) for r in raw[:5])
     return (
-        f'{tab_note}; {len(raw)} row(s) read across {len(tables)} table(s) '
+        f'{tab_status}; {len(raw)} row(s) read across {len(tables)} table(s) '
         f'plus list layout, but none matched a known stat label. '
         f'raw sample: {sample}')
 
@@ -410,7 +443,7 @@ def scrape_match_stats(driver, timeout=20, settle=5, sleep=None):
     sleep = sleep or _time.sleep
 
     try:
-        opened = open_stats_tab(driver, timeout=timeout)
+        opened, tab_note = open_stats_tab(driver, timeout=timeout)
         _wait_for_stats_content(driver, settle, sleep=sleep)
 
         tables = _raw_table_rows(driver)
@@ -425,7 +458,8 @@ def scrape_match_stats(driver, timeout=20, settle=5, sleep=None):
                 oriented = list_recognised
 
         if oriented is None:
-            return empty_result(_diagnose_no_match(opened, tables, list_rows))
+            tab_status = 'tab opened' if opened else (tab_note or 'Stats tab not found')
+            return empty_result(_diagnose_no_match(tab_status, tables, list_rows))
 
         return build_result(parse_stat_rows(oriented))
 

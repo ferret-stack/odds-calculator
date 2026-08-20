@@ -16,10 +16,15 @@ OddsCalculator.__init__:
    firefox to match the current local setup, so today's behaviour is unchanged.
 
 Environment overrides, all optional:
-    ODDS_BROWSER         firefox (default) | chrome
-    ODDS_DRIVER_PATH     explicit driver binary, skips the download manager
-    ODDS_BROWSER_BINARY  explicit browser binary
-    ODDS_HEADLESS        0 to run headed (default headless)
+    ODDS_BROWSER              firefox (default) | chrome
+    ODDS_DRIVER_PATH          explicit driver binary, skips the download manager
+    ODDS_BROWSER_BINARY       explicit browser binary
+    ODDS_HEADLESS             0 to run headed (default headless) -- run this
+                              way to watch a page live and inspect an element
+                              that a scraper is failing to find
+    ODDS_COOKIE_ACCEPT_XPATH  XPath for the cookie-consent accept button,
+                              when the built-in guesses in accept_cookies()
+                              do not match the button actually on the page
 """
 
 import os
@@ -110,21 +115,86 @@ def make_driver(engine=None):
         ) from exc
 
 
+# Common consent-banner phrases across CMPs (OneTrust, Cookiebot, Sourcepoint,
+# a bespoke implementation). Tried most-specific first, since the first
+# clickable match wins and a bare "accept" could in principle match before a
+# more precise "accept all cookies" if order were reversed.
+_COOKIE_PHRASES = (
+    'accept all cookies', 'accept all', 'i accept', 'accept',
+    'allow all cookies', 'allow all', 'agree to all', 'i agree', 'agree',
+    'got it',
+)
+
+_LOWER = 'abcdefghijklmnopqrstuvwxyz'
+_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+
+def _phrase_condition(phrase):
+    """The case-insensitive XPath predicate for one consent phrase."""
+    return (f"contains(translate(normalize-space(.), '{_UPPER}', '{_LOWER}'), "
+            f"'{phrase}')")
+
+
+def cookie_accept_xpaths(phrases=_COOKIE_PHRASES):
+    """
+    The ordered list of phrase-derived XPath expressions accept_cookies()
+    tries, after the override and the OneTrust id (both handled by the
+    caller -- neither is phrase-derived).
+
+    Pure and Selenium-free (`By` values are attached by the caller) so the
+    locator set itself -- phrase coverage, element scope, ordering -- can be
+    tested directly, without needing a browser to drive it.
+    """
+    xpaths = []
+    for phrase in phrases:
+        cond = _phrase_condition(phrase)
+        xpaths.append(f"//button[{cond}] | //a[{cond}] | //*[@role='button'][{cond}]")
+    return xpaths
+
+
 def accept_cookies(driver, timeout=10):
-    """Dismiss the OneTrust banner if it is showing. Never raises."""
+    """
+    Dismiss the cookie consent banner if it is showing.
+
+    Never raises -- a missing or already-dismissed banner is not an error.
+
+    Tried in order:
+      1. ODDS_COOKIE_ACCEPT_XPATH, if set -- for when a human has identified
+         the real button by hand (inspect it with ODDS_HEADLESS=0) and wants
+         to unblock a run immediately without a code change.
+      2. The classic OneTrust id.
+      3. A broad, case-insensitive match against common consent phrases,
+         against button/a/[role=button] elements -- not just <button>, since
+         a bespoke CMP is just as likely to use a styled <div role="button">
+         or an <a>.
+
+    Prints when it could NOT dismiss the banner. A banner left standing is a
+    plausible cause of a later "element not found" or "click intercepted"
+    failure elsewhere on the page (the tab it covers becomes unclickable, for
+    instance) -- staying silent here would hide the actual root cause of a
+    downstream failure that looks unrelated.
+    """
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
 
-    for locator in (
-        (By.ID, 'onetrust-accept-btn-handler'),
-        (By.XPATH, "//button[contains(., 'Accept All Cookies')]"),
-        (By.XPATH, "//button[contains(., 'Accept')]"),
-    ):
+    locators = []
+    override = os.environ.get('ODDS_COOKIE_ACCEPT_XPATH')
+    if override:
+        locators.append((By.XPATH, override))
+    locators.append((By.ID, 'onetrust-accept-btn-handler'))
+    locators += [(By.XPATH, xp) for xp in cookie_accept_xpaths()]
+
+    for locator in locators:
         try:
             WebDriverWait(driver, timeout).until(
                 EC.element_to_be_clickable(locator)).click()
             return True
         except Exception:
-            timeout = 2  # only wait the full timeout on the first attempt
+            timeout = 1  # only wait the full timeout on the first attempt
+
+    print('  ⚠ could not dismiss the cookie banner -- none of the known '
+          'accept-button patterns matched. If it is still showing under '
+          'ODDS_HEADLESS=0, inspect the real button and set '
+          'ODDS_COOKIE_ACCEPT_XPATH to an XPath for it.')
     return False
