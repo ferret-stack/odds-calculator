@@ -121,6 +121,10 @@ class StakeDecision:
     bet: bool
     reason: str
     flags: list = field(default_factory=list)
+    # Kickoff date of the match. Carried so the ledger can tell two meetings
+    # of the same fixture apart -- without it, this season's bet and last
+    # season's look identical.
+    match_date: str = ''
 
     @property
     def implied_probability(self):
@@ -141,7 +145,7 @@ class StakeDecision:
 
 
 def size_bet(fixture, market, selection, probability, odds, bankroll,
-             confidence=STANDARD, min_ev=MIN_EV):
+             confidence=STANDARD, min_ev=MIN_EV, match_date=''):
     """
     Apply the staking rule to a single selection.
 
@@ -165,7 +169,7 @@ def size_bet(fixture, market, selection, probability, odds, bankroll,
             expected_value=ev, full_kelly=kelly, confidence=confidence,
             multiplier=multiplier, stake_fraction=stake_fraction,
             stake=round(bankroll * stake_fraction, 2),
-            bet=bet, reason=reason)
+            bet=bet, reason=reason, match_date=match_date)
 
     if bankroll <= 0:
         return decision(False, 'bankroll exhausted')

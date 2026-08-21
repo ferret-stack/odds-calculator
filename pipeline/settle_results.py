@@ -41,7 +41,9 @@ import re
 import sys
 from pathlib import Path
 
-from pipeline.bankroll import LOST, PENDING, SETTLED, VOID, WON, Ledger
+from pipeline.bankroll import (
+    LOST, PENDING, SETTLED, VOID, WON, Ledger, normalise_fixture,
+)
 
 # Goal-line selections: 'over_25' -> 2.5. The ledger stores the selection key
 # the pipeline priced against, so grading reads the same vocabulary.
@@ -92,10 +94,6 @@ def grade_selection(selection, home_goals, away_goals):
 
 
 # --- results input --------------------------------------------------------
-
-def normalise_fixture(name):
-    return ' '.join(str(name).split()).casefold()
-
 
 def parse_score(entry):
     """(home_goals, away_goals) from a result entry, or None if it is a void."""
