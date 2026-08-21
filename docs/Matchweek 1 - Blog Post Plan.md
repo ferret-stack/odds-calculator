@@ -1,8 +1,11 @@
 # Matchweek 1 (2026/27) — Blog Post Plan
 
-**Status:** Gathering complete. This document is a **brief for the writing agent**, not the post.
+**Status:** Gathering complete, including the operator's pre-placement override of two selections
+(§1.1). This document is a **brief for the writing agent**, not the post.
 **Prepared:** 2026-08-21 · **Branch:** `claude/matchweek-1-blog-plan-6vo05u`
 **Target:** Ghost post, same shape as `docs/Matchweek 27/29/31/32/33/34.md`
+**Ledger state:** `data/bankroll.json` has been updated to the five-bet, £114.37 book — this reflects
+the live betting record, not just a plan.
 
 ---
 
@@ -25,17 +28,42 @@ Three things are genuinely unresolved and need the operator's call before public
 Matchweek 1 of 2026/27. **Fresh bankroll: £1,000** (last season's £100 challenge ledger was archived
 on 2026-08-21 and the new one opened at £1,000). This is the **first live run of the rebuilt
 pipeline** — the automated one that prices fixtures, sizes stakes at Quarter-Kelly and writes to the
-ledger itself. **Seven bets, all 1X2, £150.81 staked, 15.08% of bankroll.** Stake-weighted expected
-value +25.2%.
+ledger itself. The model priced **seven** +EV selections; the operator then **overrode two before
+placement** (see §1.1). The book that actually goes out is **five bets, all 1X2, £114.37 staked,
+11.44% of bankroll**, stake-weighted expected value **+27.85%**.
 
 **Recommended theme (strongest true angle):** *Band 1 was broken last season. This is the first week
-we're betting on the fix.* Five of the ten MW1 fixtures are Band 1 (ELO gap ≤50), and four of our
-seven bets sit in it. Band 1 is precisely where the model was inverted last season — it had the
+we're betting on the fix — and the first week we've overruled it.* Five of the ten MW1 fixtures are
+Band 1 (ELO gap ≤50). Band 1 is precisely where the model was inverted last season — it had the
 **weaker** team winning 43.07% and the stronger 29.59%. After the Day 1 audit it reads 41.15%
 stronger / 33.89% weaker, the right way round. Matchweek 1 hands us the maximum possible exposure to
-the thing that was most wrong. Secondary strand: **MW1 is the model's blindest week** — every "last
-10 games" figure it holds is from last season, so the honest position is that the ELO band structure
-is doing nearly all the work and the Poisson layer is running on May's data.
+the thing that was most wrong — and the two bets pulled by hand (§1.1) were both Band 1 away-side
+picks, both already flagged by the Poisson cross-check as disagreeing with the band model (§5.3).
+The override and the model's own cross-check point the same direction; that's worth saying plainly.
+Secondary strand: **MW1 is the model's blindest week** — every "last 10 games" figure it holds is
+from last season, so the honest position is that the ELO band structure is doing nearly all the work
+and the Poisson layer is running on May's data.
+
+### 1.1 Operator override — Everton/Palace and Brighton/Villa pulled before placement
+
+Two of the seven model-selected bets were removed from the book **before either was placed with a
+bookmaker** — this is a pre-placement edit to the plan, not a settled loss or a void:
+
+- **Crystal Palace away win @ Everton (3.31, +20.19% EV, was £21.85)** — removed.
+- **Aston Villa away win @ Brighton (3.09, +12.20% EV, was £14.59)** — removed.
+
+**Operator's stated reasoning:** both are the **away** side in their fixture, and both are
+higher-volatility picks than the rest of the portfolio — reducing exposure to that pair lowers the
+week's variance without giving up the book's best edges. Both stay in the "bets we're not placing"
+section rather than being silently dropped: the plan below documents them fully, including the
+Poisson cross-check that had already flagged both as disagreeing with the band model (§5.3, §6).
+
+Practical effect: total stake drops from £150.81 (15.08%) to **£114.37 (11.44%)**, and the
+stake-weighted portfolio EV *improves* to +27.85% (from +25.22%) because the two removed bets carried
+the two lowest model probabilities and the two Poisson disagreements in the portfolio.
+`data/bankroll.json` has been updated to reflect this — the ledger now holds five bets (`00002`,
+`00003`, `00005`, `00006`, `00007`); `00001` and `00004` were deleted outright, not marked void,
+since neither was ever placed with a bookmaker.
 
 ---
 
@@ -46,50 +74,59 @@ is doing nearly all the work and the Poisson layer is running on May's data.
 | Season | 2026/27, Matchweek 1 | — |
 | Starting bankroll | **£1,000.00** | `data/bankroll.json` |
 | Ledger opened | 2026-08-21 | `docs/Dev_Log_2026-27.md` |
-| Bets placed at | 2026-08-21 13:21:56 | `data/bankroll.json` |
-| Open bets | 7 | `data/bankroll.json` |
-| Committed to open bets | **£150.81** (15.08%) | `data/bankroll.json` |
-| Remaining staking bankroll | £849.19 | `data/bankroll.json` |
+| Bets priced/placed at | 2026-08-21 13:21:56 | `data/bankroll.json` |
+| Model selections | 7 | recomputed this session |
+| Bets actually on the book | **5** (two overridden pre-placement, §1.1) | `data/bankroll.json` |
+| Committed to open bets | **£114.37** (11.44%) | `data/bankroll.json` |
+| Remaining staking bankroll | £885.63 | `data/bankroll.json` |
 | Settled bets / realised P&L | 0 / £0.00 | `data/bankroll.json` |
 | Previous ledger | archived to `data/archive/bankroll-2026-05-24-test.json` (5 test bets, −£2.46) | Dev log |
 
-**Important nuance for honesty:** all seven stakes were sized off the **full £1,000** in a single
-run (the staking bankroll was £1,000 at that moment, nothing committed). If the same seven were
-priced sequentially against a shrinking staking bankroll they would come out smaller. Worth one
+**Important nuance for honesty:** all stakes were sized off the **full £1,000** in a single run (the
+staking bankroll was £1,000 at that moment, nothing committed). If the same selections were priced
+sequentially against a shrinking staking bankroll they would come out slightly smaller. Worth one
 sentence; don't over-explain it.
 
-**Exposure comparison:** last season's posts ran 4.0%–11.8% of bankroll. **15.08% is the highest
-exposure of the project so far.** That is a real change and the post should own it rather than
-skate past it — it is a consequence of Quarter-Kelly meeting three fat edges (Brentford, Fulham,
-Everton) in one week, not a deliberate loosening of the rules.
+**Exposure comparison:** last season's posts ran 4.0%–11.8% of bankroll. The model's raw seven-bet
+output would have been 15.08% — the highest of the project so far. After the operator's override
+(§1.1), the live book sits at **11.44%**, back inside last season's range and just above its top end.
+Worth a line: the override didn't just cut variance, it pulled the number back into the band the
+project has actually run at before.
 
 ---
 
-## 3. THE SEVEN BETS (verbatim from `data/bankroll.json`, re-verified against the model)
+## 3. THE FIVE BETS (verbatim from `data/bankroll.json` post-override, re-verified against the model)
 
-All seven are **1X2**, all **Quarter-Kelly (0.25)**, all confidence class **`standard`**.
+All five are **1X2**, all **Quarter-Kelly (0.25)**, all confidence class **`standard`**. Bet IDs skip
+`00001` and `00004` deliberately — those are the two overridden selections (§1.1), removed from the
+ledger rather than renumbered, so the record shows exactly what happened.
 
 | # | Fixture | KO | Selection | Odds | Implied | Model p | Fair odds | EV | Stake | % of £1,000 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 00001 | Everton v Crystal Palace | Sat 22, 14:00 | **Palace away win** | 3.31 | 30.21% | 36.31% | 2.75 | **+20.19%** | £21.85 | 2.19% |
 | 00002 | Nott'm Forest v Leeds | Sat 22, 14:00 | **Forest home win** | 2.30 | 43.48% | 45.72% | 2.19 | **+5.16%** | £9.92 | 0.99% |
 | 00003 | Brentford v Spurs | Sat 22, 16:30 | **Brentford home win** | 2.42 | 41.32% | 54.04% | 1.85 | **+30.78%** | £54.18 | 5.42% |
-| 00004 | Brighton v Aston Villa | Sun 23, 13:00 | **Villa away win** | 3.09 | 32.36% | 36.31% | 2.75 | **+12.20%** | £14.59 | 1.46% |
 | 00005 | Man City v Bournemouth | Sun 23, 13:00 | **Draw** | 4.79 | 20.88% | 22.20% | 4.50 | **+6.34%** | £4.18 | 0.42% |
 | 00006 | Newcastle v Liverpool | Sun 23, 15:30 | **Newcastle home win** | 3.82 | 26.18% | 29.47% | 3.39 | **+12.58%** | £11.15 | 1.11% |
 | 00007 | Fulham v Chelsea | Mon 24, 19:00 | **Fulham home win** | 3.66 | 27.32% | 37.48% | 2.67 | **+37.18%** | £34.94 | 3.49% |
-| | **TOTAL** | | | | | | | | **£150.81** | **15.08%** |
+| | **TOTAL** | | | | | | | | **£114.37** | **11.44%** |
 
-**Portfolio-level numbers (computed, safe to quote):**
-- Stake-weighted EV: **+25.22%**
-- Simple-average EV: **+17.78%**
-- Expected profit if the model is right: **+£38.03**
-- Expected number of winners: **2.62 of 7**
-- P(at least one winner): **96.5%** (assumes independence — fixtures are separate matches, so this is fair)
+**Overridden — priced by the model, not placed** (documented fully in §4 and §6):
+
+| Fixture | Selection | Odds | Model p | EV | Would-be stake |
+|---|---|---|---|---|---|
+| Everton v Crystal Palace | Palace away win | 3.31 | 36.31% | +20.19% | £21.85 |
+| Brighton v Aston Villa | Villa away win | 3.09 | 36.31% | +12.20% | £14.59 |
+
+**Portfolio-level numbers, five-bet book (computed, safe to quote):**
+- Stake-weighted EV: **+27.85%**
+- Simple-average EV: **+18.41%**
+- Expected profit if the model is right: **+£31.85**
+- Expected number of winners: **1.89 of 5**
+- P(at least one winner): **91.4%** (assumes independence — fixtures are separate matches, so this is fair)
 
 **Suggested "type" labels** (matching house convention — PREMIUM / VALUE / SOLID / LONGSHOT):
 - 🔥 PREMIUM: Fulham (+37.2%), Brentford (+30.8%)
-- 💎 VALUE: Everton/Palace (+20.2%), Newcastle (+12.6%), Brighton/Villa (+12.2%)
+- 💎 VALUE: Newcastle (+12.6%)
 - 💰 SOLID: Man City draw (+6.3%), Forest (+5.2%)
 
 ---
@@ -98,6 +135,7 @@ All seven are **1X2**, all **Quarter-Kelly (0.25)**, all confidence class **`sta
 
 Everything here is verified. ELO ratings are post-offset (displayed) values from `data/current_elo.json`.
 Form ratings and ΔELO come from `elo_history.json` via `calculate_form_metrics`; GF/GA are last-10 averages.
+Includes the two overridden selections (§1.1) alongside the five live bets, clearly marked.
 
 ### 00003 — Brentford v Spurs · Brentford home @ 2.42 · +30.78% · £54.18 (biggest stake)
 - **ELO:** Brentford 1819 (10th) v Spurs 1750 (16th) · diff **69** · **Band 2** (523-game sample: 49.33 / 24.47 / 26.20)
@@ -127,7 +165,9 @@ Form ratings and ΔELO come from `elo_history.json` via `calculate_form_metrics`
   21.79% right behind — the two lowest-scoring outcomes on the entire card.
 - **Advisory flag fired:** edge ≥20%.
 
-### 00001 — Everton v Crystal Palace · Palace away @ 3.31 · +20.19% · £21.85
+### ⛔ OVERRIDDEN — Everton v Crystal Palace · Palace away @ 3.31 · +20.19% · was £21.85 (bet_id 00001, removed)
+- **Status: priced by the model, pulled by the operator before placement.** Higher-volatility,
+  away-side pick — reduce exposure. Never staked with a bookmaker. See §1.1.
 - **ELO:** Everton 1778 (14th) v Palace 1780 (13th) · diff **2** — the closest fixture of the week · **Band 1**
 - **Model:** home 37.48% / draw 26.21% / away 36.31%. Market: 46.08 / 29.59 / 30.21 (overround 105.88%)
 - **The edge:** two teams two ELO points apart, and the book gives the home side a 16-point
@@ -138,7 +178,8 @@ Form ratings and ΔELO come from `elo_history.json` via `calculate_form_metrics`
 - **Poisson: DISAGREES.** Everton 1.835 xG v Palace 1.276 xG → home 50.53% / draw 22.84% / away
   **26.63%**, which makes the bet −11.9% EV on the Poisson view. Modal score **1-1 (10.43%)**.
 - **Advisory flag fired:** edge ≥20%.
-- **Write this one honestly** — it's the clearest case in the portfolio where the two models fight.
+- **Write this one honestly** — it's the clearest case in the portfolio where the two models fought,
+  and it's exactly the fixture the operator chose to pull. The override and the cross-check agree.
 
 ### 00006 — Newcastle v Liverpool · Newcastle home @ 3.82 · +12.58% · £11.15
 - **ELO:** Newcastle 1826 (7th) v Liverpool 1895 (3rd) · diff **69** · **Band 2**
@@ -152,15 +193,19 @@ Form ratings and ΔELO come from `elo_history.json` via `calculate_form_metrics`
 - **Poisson: agrees strongly.** Newcastle 1.591 v Liverpool 1.301 → home **44.18%** / draw 24.53% /
   away 31.29% (+68.8% EV on this price). Modal score **1-1 (11.48%)**.
 
-### 00004 — Brighton v Aston Villa · Villa away @ 3.09 · +12.20% · £14.59
+### ⛔ OVERRIDDEN — Brighton v Aston Villa · Villa away @ 3.09 · +12.20% · was £14.59 (bet_id 00004, removed)
+- **Status: priced by the model, pulled by the operator before placement.** Higher-volatility,
+  away-side pick — reduce exposure. Never staked with a bookmaker. See §1.1.
 - **ELO:** Brighton 1823 (8th) v Villa 1859 (5th) · diff **36** · **Band 1**
 - **Model:** home 37.48% / draw 26.21% / away 36.31%. Market: 45.45 / 28.09 / 32.36 (overround 105.91%)
 - **Form:** Brighton **3.3/10 declining** (ΔELO L5 −18). Villa 5.4/10 stable (ΔELO L5 +1, L10 −17).
   1.8 GF / 1.9 GA — Villa score and concede freely.
-- **H2H (11):** **Villa 8**, Brighton 2, 1 draw. Last: Villa 1-0 Brighton (2026-02-11). *H2H supports this bet.*
+- **H2H (11):** **Villa 8**, Brighton 2, 1 draw. Last: Villa 1-0 Brighton (2026-02-11). *H2H supports this bet
+  — the one dissent from the pattern; the override held anyway on volatility grounds, not on this data.*
 - **Poisson: DISAGREES, hardest of the seven.** Brighton 2.034 xG (highest on the card) v Villa 1.239
-  → home 55.77% / draw 21.33% / away **22.90%** (−29.2% EV). Modal score **2-1 (9.71%)**; the Super 6
-  tie-break rule pulls the pick down to 1-1 (9.55%).
+  → home 55.77% / draw 21.33% / away **22.90%** (−29.2% EV) — the single largest band/Poisson gap in
+  the whole slate. Modal score **2-1 (9.71%)**; the Super 6 tie-break rule pulls the pick down to
+  1-1 (9.55%).
 
 ### 00005 — Man City v Bournemouth · Draw @ 4.79 · +6.34% · £4.18 (smallest stake)
 - **ELO:** Man City 1987 (2nd) v Bournemouth 1830 (6th) · diff **157** · **Band 4** (282 games: 57.80 / 24.11 / 18.09)
@@ -241,26 +286,39 @@ Two further caveats the post should carry:
 
 ### 5.3 The cross-check table — the centrepiece of the section
 
+The five bets actually on the book:
+
 | Bet | Odds | Band model p | Band EV | Poisson p | Poisson EV | Verdict |
 |---|---|---|---|---|---|---|
-| Palace away @ Everton | 3.31 | 36.31% | +20.19% | 26.63% | **−11.85%** | ❌ Conflict |
 | Forest home v Leeds | 2.30 | 45.72% | +5.16% | 55.48% | **+27.60%** | ✅ Reinforces |
 | Brentford home v Spurs | 2.42 | 54.04% | +30.78% | 45.98% | **+11.27%** | ⚠️ Softens |
-| Villa away @ Brighton | 3.09 | 36.31% | +12.20% | 22.90% | **−29.23%** | ❌ Conflict |
 | Draw, City v Bournemouth | 4.79 | 22.20% | +6.34% | 30.79% | **+47.48%** | ✅ Reinforces |
 | Newcastle home v Liverpool | 3.82 | 29.47% | +12.58% | 44.18% | **+68.77%** | ✅ Reinforces |
 | Fulham home v Chelsea | 3.66 | 37.48% | +37.18% | 47.39% | **+73.44%** | ✅ Reinforces |
 
-**Scoreboard: Poisson reinforces 4, softens 1, contradicts 2.** That is a genuinely interesting
-result and the post is stronger for reporting it straight. A useful framing: the two conflicts
-(Everton/Palace, Brighton/Villa) are both **Band 1 away-team bets where the home side has the better
-recent scoring record**. The band model can't see that, by construction — it prices the band, not
-the teams.
+**Scoreboard on the live book: Poisson reinforces 4, softens 1, contradicts 0.** Every bet still on
+the ledger has Poisson agreeing with the direction of the band model, even where it disagrees on the
+size of the edge (Brentford).
+
+The two selections the operator pulled before placement are exactly the two the cross-check disagreed
+with:
+
+| Bet (overridden, not placed) | Odds | Band model p | Band EV | Poisson p | Poisson EV | Verdict |
+|---|---|---|---|---|---|---|
+| Palace away @ Everton | 3.31 | 36.31% | +20.19% | 26.63% | **−11.85%** | ❌ Conflict |
+| Villa away @ Brighton | 3.09 | 36.31% | +12.20% | 22.90% | **−29.23%** | ❌ Conflict |
+
+Worth stating plainly: **the operator's override and the model's own cross-check landed on the same
+two fixtures independently.** The override was made on a volatility/exposure basis (§1.1), not by
+reading this table — but the table is a good after-the-fact sanity check on that call, and the post
+should say so rather than claim more foresight than there was. A useful framing for why these two, and
+not others, disagree: both are **Band 1 away-team bets where the home side has the better recent
+scoring record**. The band model can't see that, by construction — it prices the band, not the teams.
 
 Optional extra column if you want it — a 50/50 blend of the two models, which is *not* a live model
 output but is arithmetically honest if labelled as an illustration:
-Palace +4.17%, Forest +16.38%, Brentford +21.03%, Villa **−8.52%**, City draw +26.91%,
-Newcastle +40.67%, Fulham +55.31%.
+Forest +16.38%, Brentford +21.03%, City draw +26.91%, Newcastle +40.67%, Fulham +55.31%
+(and, for the overridden pair: Palace +4.17%, Villa **−8.52%**).
 
 ### 5.4 Poisson expected goals and modal scorelines — full slate
 
@@ -306,8 +364,40 @@ this season the automated pipeline doesn't price them yet. Say that plainly.
 
 ## 6. Bets we're avoiding / no-bet fixtures
 
-Three of the ten fixtures produced no bet. Each is a different reason, and the variety is a good
-section.
+Five of the ten fixtures produced no live bet: two the model itself refused or fell short on, one the
+market priced correctly, and **two the operator pulled by hand after the model cleared them.** The
+variety is a good section, and the override pair deserves its own subsection rather than being folded
+in with the model's own no-bets — the reasoning is different in kind (a risk-management call, not a
+pricing one).
+
+### 🔻 Overridden by the operator — Everton/Palace and Brighton/Villa
+
+Both cleared the model's +5% floor, both were priced and would have been placed by the pipeline —
+these are not "the model said no" fixtures. They were pulled **before either bet was placed with a
+bookmaker**, on the operator's judgement that they were the two highest-volatility, away-side picks in
+the portfolio and reducing exposure to that pair was worth more than keeping their edges.
+
+- **Crystal Palace away win @ Everton, 3.31, +20.19% EV, would-be £21.85.** Poisson disagreed with
+  this one outright (−11.9% EV on the Poisson view; see §5.3), and Everton's H2H record over Palace
+  (7 wins to 1 in 12 meetings) ran against it too.
+- **Aston Villa away win @ Brighton, 3.09, +12.20% EV, would-be £14.59.** The largest single
+  band-vs-Poisson gap in the whole slate (−29.2% EV on the Poisson view), though notably H2H (Villa 8
+  wins to Brighton's 2) actually supported the bet — the override held on volatility grounds, not
+  because every signal agreed.
+
+Both are documented in full in §4, both remain visible in this plan as **priced-but-not-placed**, and
+`data/bankroll.json` has been edited to remove them outright — since neither reached a bookmaker, they
+are deleted from the ledger rather than marked void. This is a deliberate departure from a settled
+result: the post should be clear these are not losses, pushes, or bets that were later cashed out —
+they simply never happened.
+
+**Editorial note for the write-up:** this is worth a genuinely reflective paragraph, not a footnote.
+It's the first week the operator has overridden the model pre-placement rather than just skipping a
+model-rejected fixture, and it happens to line up with what the model's own Poisson cross-check found
+independently. Say both things: the override was a risk call, not a forecast, and it turned out the
+two picks pulled were also the two the cross-check most disagreed with.
+
+### Fixtures the model itself found nothing in
 
 ### ❌ Hull City v Man Utd — blocked by a sanity check (best story of the three)
 - Sat 22, 11:30. Hull City 1685 (seeded, 20th) v Man Utd 1888 (4th) · diff 203 · **Band 5** (163-game sample)
@@ -364,7 +454,10 @@ The 1X2 model is **band + venue**, not fixture-specific. Look at three of this w
 
 **Identical.** All three are Band 1 fixtures with the stronger side away, so all three get the same
 probability triplet — every difference in EV comes purely from the price. (Forest v Leeds is Band 1
-too but has the stronger team at *home*, hence 45.72 / 23.94 / 30.34.)
+too but has the stronger team at *home*, hence 45.72 / 23.94 / 30.34.) Worth noting: two of these
+three identical-probability picks (Everton/Palace, Brighton/Villa) are the pair the operator pulled
+before placement (§1.1) — only Fulham stayed on the book, and it's the one of the three where Poisson
+agreed most emphatically (§5.3).
 
 This is the known coarseness of the model, flagged in `docs/Odds_Calculator_Executable_Plan.md` as an
 open Day 3+ decision. It is why Poisson is worth running as a cross-check, and it is why the
@@ -374,14 +467,21 @@ open Day 3+ decision. It is why Poisson is worth running as a cross-check, and i
 Any edge ≥ **+20%** raises a non-blocking advisory: against a sharp market, an edge that large is more
 often a stale price or a too-coarse band than genuine value. It fired on:
 Fulham home +37.2%, Brentford home +30.8%, Hull home +30.3%, Hull draw +23.6%, Palace away +20.2%.
-**Three of those are bets we've taken.** Report it.
+**Two of those (Fulham, Brentford) are on the live book.** Hull's pair was blocked by a separate
+sanity check regardless (§6); Palace's was one of the two the operator pulled (§1.1) — so every
+fixture that tripped this advisory ended up either blocked, overridden, or is Fulham/Brentford, both
+of which the Poisson cross-check also backs (§5.3). Report the flag as-is; it's a useful marker that
+the two overridden bets weren't the only aggressive-looking numbers in the slate, just the two that
+also lost the cross-check.
 
 ### 7.3 The staking rule, stated once
 - **+5% EV minimum.** Below that, no action.
 - **Quarter-Kelly (0.25 × full Kelly) as a ceiling** for standard plays. **Eighth-Kelly (0.125)** for
   hedges and low-confidence plays (Bands 9 and 10, which hold only 6 and 4 matches respectively).
 - Not Half-Kelly. Older repo documents say Half-Kelly; they're superseded.
-- All seven bets this week are standard-confidence Quarter-Kelly.
+- All five live bets this week are standard-confidence Quarter-Kelly (as were the two overridden
+  selections before they were pulled — the override was a judgement call layered on top of the
+  staking rule, not a change to it).
 - Full Kelly f* = (p·d − 1) / (d − 1). Stake = bankroll × multiplier × f*.
 
 ---
@@ -392,11 +492,11 @@ Fulham home +37.2%, Brentford home +30.8%, Hull home +30.3%, Hull draw +23.6%, P
 |---|---|---|---|---|---|---|---|---|
 | Arsenal v Coventry City | Fri 21, 19:00 | 2013 | 1685 | 328 | 7 | 1.20 / 6.81 / 14.41 | 104.96% | No edge |
 | Hull City v Man Utd | Sat 22, 11:30 | 1685 | 1888 | 203 | 5 | 8.70 / 4.95 / 1.36 | 105.23% | **Blocked** |
-| Everton v Crystal Palace | Sat 22, 14:00 | 1778 | 1780 | 2 | 1 | 2.17 / 3.38 / 3.31 | 105.88% | **BET away** |
+| Everton v Crystal Palace | Sat 22, 14:00 | 1778 | 1780 | 2 | 1 | 2.17 / 3.38 / 3.31 | 105.88% | **Overridden** (was BET away) |
 | Ipswich v Sunderland | Sat 22, 14:00 | 1685 | 1728 | 43 | 1 | 2.72 / 3.30 / 2.61 | 105.38% | Below floor |
 | Nott'm Forest v Leeds | Sat 22, 14:00 | 1798 | 1752 | 46 | 1 | 2.30 / 3.34 / 3.10 | 105.68% | **BET home** |
 | Brentford v Spurs | Sat 22, 16:30 | 1819 | 1750 | 69 | 2 | 2.42 / 3.59 / 2.75 | 105.54% | **BET home** |
-| Brighton v Aston Villa | Sun 23, 13:00 | 1823 | 1859 | 36 | 1 | 2.20 / 3.56 / 3.09 | 105.91% | **BET away** |
+| Brighton v Aston Villa | Sun 23, 13:00 | 1823 | 1859 | 36 | 1 | 2.20 / 3.56 / 3.09 | 105.91% | **Overridden** (was BET away) |
 | Man City v Bournemouth | Sun 23, 13:00 | 1987 | 1830 | 157 | 4 | 1.46 / 4.79 / 5.99 | 106.06% | **BET draw** |
 | Newcastle v Liverpool | Sun 23, 15:30 | 1826 | 1895 | 69 | 2 | 3.82 / 3.84 / 1.87 | 105.70% | **BET home** |
 | Fulham v Chelsea | Mon 24, 19:00 | 1790 | 1822 | 32 | 1 | 3.66 / 3.75 / 1.88 | 107.18% | **BET home** |
@@ -488,14 +588,18 @@ recurring refrain is *the framework working as intended*.
 | --- | --- | --- | --- | --- | --- |
 | 🔥 Fulham Win vs Chelsea | 3.66 | +37.2% | Quarter-Kelly | 3.5% | PREMIUM |
 | 🔥 Brentford Win vs Spurs | 2.42 | +30.8% | Quarter-Kelly | 5.4% | PREMIUM |
-| 💎 Crystal Palace Win @ Everton | 3.31 | +20.2% | Quarter-Kelly | 2.2% | VALUE |
 | 💎 Newcastle Win vs Liverpool | 3.82 | +12.6% | Quarter-Kelly | 1.1% | VALUE |
-| 💎 Aston Villa Win @ Brighton | 3.09 | +12.2% | Quarter-Kelly | 1.5% | VALUE |
 | 💰 Man City / Bournemouth Draw | 4.79 | +6.3% | Quarter-Kelly | 0.4% | SOLID |
 | 💰 Nott'm Forest Win vs Leeds | 2.30 | +5.2% | Quarter-Kelly | 1.0% | SOLID |
-| **TOTAL** | — | **+25.2% (wtd)** | — | **15.1%** | — |
+| **TOTAL** | — | **+27.9% (wtd)** | — | **11.4%** | — |
 
-**Length:** MW32 (~2,100 words) is the right target. MW33/34 are shorter, MW29 longer.
+Consider a short note beneath the table naming the two overridden picks and their would-be sizing
+(Crystal Palace Win @ Everton, 3.31, +20.2%, would-be 2.2%; Aston Villa Win @ Brighton, 3.09, +12.2%,
+would-be 1.5%) so the table is legible against the "seven bets" the model actually found, not just
+the five that made the book.
+
+**Length:** MW32 (~2,100 words) is the right target. MW33/34 are shorter, MW29 longer. The override
+section (§1.1/§6) adds genuine new material this week, so err toward the longer end.
 
 ---
 
@@ -512,7 +616,9 @@ These cannot be resolved from the repo. **Do not fabricate answers.**
    recap entirely and open on the reset.
 2. **The bigger-picture table.** Last season's table can't continue — different bankroll, different
    base. **Recommendation:** start a fresh 2026/27 table with a single MW1 row
-   (`MW1 | £1,000.00 | 7 | — | £150.81 | — | —`) and one line pointing back at last season.
+   (`MW1 | £1,000.00 | 5 | — | £114.37 | — | —`) and one line pointing back at last season. If the
+   table format allows a notes column, use it to record the two overridden selections rather than
+   showing "7" bets and confusing the reader about what was actually staked.
 3. **Super 6.** Sky picks the six fixtures and we don't know which. §5.4 has modal scorelines for the
    eight fixtures where Poisson is available; Arsenal v Coventry and Hull v Man Utd cannot be given
    one. **Recommendation:** include the section only if the operator confirms the slate, and note the
@@ -528,7 +634,7 @@ These cannot be resolved from the repo. **Do not fabricate answers.**
 
 ## 11. Do-not-do list
 
-- ❌ Don't present Poisson as the source of the seven bets. It isn't. (§5.2)
+- ❌ Don't present Poisson as the source of the bets. It isn't. (§5.2)
 - ❌ Don't bet or imply bets on over/under or BTTS. The pipeline doesn't price them. (§5.5)
 - ❌ Don't use any card/booking-point figures. The card data is known-unreliable — 380 fabricated
   zero-card rows were purged this month and the historical rows still on disk were never repaired.
@@ -538,8 +644,13 @@ These cannot be resolved from the repo. **Do not fabricate answers.**
 - ❌ Don't describe the promoted sides' quality. Hull City, Coventry City and Ipswich are on a **seeded
   rating**, and the post should say so rather than characterise them.
 - ❌ Don't claim last season's results beyond MW34 (see §10.1).
-- ❌ Don't round away the awkward numbers. 15.08% exposure, two Poisson conflicts, five advisory
-  flags — those are the post's credibility.
+- ❌ Don't round away the awkward numbers. Two Poisson conflicts, five advisory flags, the model's
+  raw 15.08% exposure before the override — those are the post's credibility.
+- ❌ Don't call the two overridden bets "losses," "voids," or present them as settled in any way.
+  They were never placed. Say "overridden," "pulled," or "not placed" — not "we lost on."
+- ❌ Don't imply the override was model-driven. It was the operator's risk-management judgement
+  (higher volatility, away-side exposure), made independently of the Poisson cross-check — the fact
+  that the cross-check agrees afterward is a good observation, not the stated reason for the call.
 
 ---
 
@@ -547,7 +658,7 @@ These cannot be resolved from the repo. **Do not fabricate answers.**
 
 | Claim type | File |
 |---|---|
-| The seven bets, stakes, EV, bankroll | `data/bankroll.json` |
+| The five live bets (and the two overridden ones), stakes, EV, bankroll | `data/bankroll.json` |
 | Fixtures, kick-off times, bookmaker odds | `data/upcoming_fixtures.json` |
 | ELO ratings and ranks | `data/current_elo.json` |
 | Band base rates and sample sizes | `data/elo_bands.json` |
@@ -564,4 +675,8 @@ These cannot be resolved from the repo. **Do not fabricate answers.**
 
 All model figures in this document were regenerated on 2026-08-21 by re-running
 `python3 -m pipeline.run_pipeline --dry-run` and an independent Poisson recomputation against the
-same data files; the dry run reproduced all seven selections and their EVs exactly.
+same data files; the dry run reproduced all seven model selections and their EVs exactly. Two of
+those seven (Everton/Palace, Brighton/Villa) were subsequently removed from `data/bankroll.json` by
+the operator, pre-placement, per §1.1 — the five-bet portfolio totals in §3 were recomputed directly
+from the edited ledger and cross-checked by hand (£114.37 staked, +27.85% stake-weighted EV,
+1.89 expected winners, 91.4% P(≥1 winner)).
