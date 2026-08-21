@@ -63,8 +63,24 @@ TEAM_NAME_CHANGES = [
     ['Nottingham Forest', "Nott'm Forest"],
     ['Forest', "Nott'm Forest"],
     ['Ipswich Town', 'Ipswich'],
-    ['Leeds United', 'Leeds']
+    ['Leeds United', 'Leeds'],
 
+    # Promoted for 2026/27. These two map SHORT -> LONG, the opposite
+    # direction to every rule above, because the seeded key is the long form:
+    # tools/rebuild_elo.py writes 'Hull City' and 'Coventry City' into
+    # current_elo.json verbatim (only 'Ipswich Town' is shortened there), and
+    # pipeline.run_pipeline.price_fixture looks the rating up by exact key.
+    #
+    # Without these, a feed emitting 'Hull' or 'Coventry' gets None from
+    # price_fixture and the fixture is dropped as "no ELO rating for one or
+    # both teams" -- on a team that does have a rating. Matching on the bare
+    # town name accepts every spelling the feed might use ('Hull',
+    # 'Hull City', 'Hull City AFC') and canonicalises all of them to the one
+    # key the ratings are stored under, so this does not depend on guessing
+    # which form the feed emits. No other club name contains either token,
+    # so neither rule can capture a different side.
+    ['Hull', 'Hull City'],
+    ['Coventry', 'Coventry City'],
 ]
 
 # Teams for ELO API (without spaces)
