@@ -1,0 +1,29 @@
+# Runtime dependencies.
+#
+# odds_calculator.py imports pandas, numpy, scipy and selenium at module
+# level, so all four are needed to import it at all -- even for the parts
+# that never touch a browser (calculate_poisson, the ELO maths, the
+# pipeline). There is no lazy-import split, so there is no lighter subset.
+#
+# Versions are the minimums this was verified against, not upper bounds.
+#
+# Install:  pip install -r requirements.txt
+
+pandas>=3.0.5
+numpy>=2.4.6
+scipy>=1.17.1
+
+# HTTP: the odds feed (odds_calculator.py) and the Super 6 narrative call
+# to a local Ollama instance (tools/super6_picks.py).
+requests>=2.33.1
+
+# Scraping. webdriver_manager is imported lazily inside scrapers/browser.py
+# as a geckodriver fallback, so it is only needed if the system has no
+# driver on PATH.
+selenium>=4.47.0
+webdriver-manager
+
+# Test suite (tests/): pytest as the runner, lxml for the HTML fixtures
+# in test_browser.py and test_cookie_dismissal.py.
+pytest
+lxml

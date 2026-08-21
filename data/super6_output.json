@@ -1,0 +1,208 @@
+{
+  "generated_at": "2026-08-21 11:18:00",
+  "source": "data/upcoming_fixtures.json",
+  "tie_break_rule": {
+    "tolerance": 0.005,
+    "note": "Scorelines within the tolerance of the argmax count as tied. Among those: fewest total goals, then highest probability, then lowest home and away goals."
+  },
+  "narrative_model": {
+    "provider": "ollama",
+    "model": "llama3.2:3b",
+    "endpoint": "http://localhost:11434/api/generate",
+    "note": "Placeholder integration -- one call, no retries. A failed call yields a null narrative, never a failed run."
+  },
+  "picks": [
+    {
+      "fixture": "Crystal Palace vs Arsenal",
+      "home_team": "Crystal Palace",
+      "away_team": "Arsenal",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "aa1e33369fe2c3eb75c2414a4f3a46b3",
+      "scoreline": "0-1",
+      "home_goals": 0,
+      "away_goals": 1,
+      "probability": 0.185891,
+      "argmax_scoreline": "0-1",
+      "tie_break_applied": false,
+      "tied_candidates": [],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    },
+    {
+      "fixture": "Man City vs Aston Villa",
+      "home_team": "Man City",
+      "away_team": "Aston Villa",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "353fa2742803b8f3add6a41e0caba1c9",
+      "scoreline": "2-0",
+      "home_goals": 2,
+      "away_goals": 0,
+      "probability": 0.093924,
+      "argmax_scoreline": "2-0",
+      "tie_break_applied": false,
+      "tied_candidates": [
+        {
+          "scoreline": "3-0",
+          "probability": 0.090914
+        }
+      ],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    },
+    {
+      "fixture": "Nott'm Forest vs Bournemouth",
+      "home_team": "Nott'm Forest",
+      "away_team": "Bournemouth",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "e40f21dfd23441c1f799a508301076e9",
+      "scoreline": "1-0",
+      "home_goals": 1,
+      "away_goals": 0,
+      "probability": 0.133793,
+      "argmax_scoreline": "1-0",
+      "tie_break_applied": false,
+      "tied_candidates": [
+        {
+          "scoreline": "1-1",
+          "probability": 0.128825
+        }
+      ],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    },
+    {
+      "fixture": "Liverpool vs Brentford",
+      "home_team": "Liverpool",
+      "away_team": "Brentford",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "8ea09320592f3f17537cb019c34a25c2",
+      "scoreline": "2-1",
+      "home_goals": 2,
+      "away_goals": 1,
+      "probability": 0.090527,
+      "argmax_scoreline": "2-1",
+      "tie_break_applied": false,
+      "tied_candidates": [],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    },
+    {
+      "fixture": "Brighton vs Man Utd",
+      "home_team": "Brighton",
+      "away_team": "Man Utd",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "af2482d669bae9c726c7c55401fbf4de",
+      "scoreline": "1-0",
+      "home_goals": 1,
+      "away_goals": 0,
+      "probability": 0.117777,
+      "argmax_scoreline": "1-1",
+      "tie_break_applied": true,
+      "tied_candidates": [
+        {
+          "scoreline": "1-1",
+          "probability": 0.119295
+        }
+      ],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    },
+    {
+      "fixture": "Burnley vs Wolves",
+      "home_team": "Burnley",
+      "away_team": "Wolves",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "6d3c84cfb97cc1ac6ce46c00ccae4cee",
+      "scoreline": "1-1",
+      "home_goals": 1,
+      "away_goals": 1,
+      "probability": 0.127274,
+      "argmax_scoreline": "1-1",
+      "tie_break_applied": false,
+      "tied_candidates": [],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    },
+    {
+      "fixture": "Sunderland vs Chelsea",
+      "home_team": "Sunderland",
+      "away_team": "Chelsea",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "95d90d1340fc44c36643ca64392eaa97",
+      "scoreline": "1-0",
+      "home_goals": 1,
+      "away_goals": 0,
+      "probability": 0.138775,
+      "argmax_scoreline": "1-0",
+      "tie_break_applied": false,
+      "tied_candidates": [],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    },
+    {
+      "fixture": "Spurs vs Everton",
+      "home_team": "Spurs",
+      "away_team": "Everton",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "713dee4536db5739571e6f07c99bde00",
+      "scoreline": "1-1",
+      "home_goals": 1,
+      "away_goals": 1,
+      "probability": 0.103394,
+      "argmax_scoreline": "1-1",
+      "tie_break_applied": false,
+      "tied_candidates": [],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    },
+    {
+      "fixture": "Fulham vs Newcastle",
+      "home_team": "Fulham",
+      "away_team": "Newcastle",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "cf99e3729dc9016030ba4441c30e24b7",
+      "scoreline": "0-0",
+      "home_goals": 0,
+      "away_goals": 0,
+      "probability": 0.18512,
+      "argmax_scoreline": "0-0",
+      "tie_break_applied": false,
+      "tied_candidates": [],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    },
+    {
+      "fixture": "West Ham vs Leeds",
+      "home_team": "West Ham",
+      "away_team": "Leeds",
+      "date": "2026-05-24",
+      "time": "15:00",
+      "game_id": "248a61b6e090c670c2ab20ae1c23ea66",
+      "scoreline": "0-1",
+      "home_goals": 0,
+      "away_goals": 1,
+      "probability": 0.200654,
+      "argmax_scoreline": "0-1",
+      "tie_break_applied": false,
+      "tied_candidates": [],
+      "narrative": null,
+      "narrative_error": "ConnectionError: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/generate (Caused by NewConnectionError(\"HTTPConnection(host='localhost', port=11434): Failed to e"
+    }
+  ],
+  "skipped_fixtures": [],
+  "totals": {
+    "fixtures": 10,
+    "skipped": 0,
+    "narratives_generated": 0,
+    "narratives_failed": 10
+  }
+}
