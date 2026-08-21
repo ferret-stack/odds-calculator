@@ -1,7 +1,8 @@
 """
 End-to-end local pipeline. Run it by hand; it never runs itself.
 
-    python3 -m pipeline.run_pipeline [--dry-run] [--bankroll N] [--data DIR]
+    python3 -m pipeline.run_pipeline [--dry-run] [--force]
+                                    [--bankroll N] [--data DIR]
 
 Stages
 ------
@@ -23,6 +24,13 @@ anywhere -- so dropping it on a VM later needs no code change.
 --dry-run prices and reports without writing bets to the ledger. That is the
 mode to run first; the ledger is the one piece of state a mistaken run is
 awkward to unwind.
+
+Runs are idempotent by default. Before a bet is written the ledger is checked
+for one already standing on the same fixture + market + selection + match
+date, in any status, and a hit is SKIPPED rather than duplicated. Re-running
+against the same fixtures is therefore safe: it prices, reports, and writes
+nothing new. --force overrides that for a deliberate re-price, and is logged
+whenever it is used. It never overrides a bet that has already been settled.
 """
 
 import argparse
@@ -33,7 +41,7 @@ from pathlib import Path
 
 from elo_calculator import calculate_fair_odds
 from pipeline import qualitative as qual
-from pipeline.bankroll import Ledger
+from pipeline.bankroll import PENDING, Ledger, normalise_fixture
 from pipeline.staking import (
     HEDGE, LOW_CONFIDENCE, STANDARD, apply_sanity_checks, size_bet,
 )
@@ -120,7 +128,7 @@ def find_edges(fixtures, current_elo, elo_bands, bankroll, config):
             decisions.append(size_bet(
                 fixture=name, market=market, selection=selection,
                 probability=probability, odds=price, bankroll=bankroll,
-                confidence=confidence))
+                confidence=confidence, match_date=fixture.get('date', '')))
 
     return decisions, skipped
 
@@ -140,13 +148,102 @@ def attach_context(fixtures, matches, data_dir):
     }
 
 
+# --- stage 6: placement ---------------------------------------------------
+
+def place_bets(ledger, decisions, force=False, commit=True):
+    """
+    Decide which struck bets reach the ledger, refusing duplicates.
+
+    Returns (placed, skipped, forced), where `placed` holds the decisions that
+    were (or would be) written. With commit=False nothing is mutated -- the
+    same decisions are made and reported, which is what lets --dry-run show
+    the collisions BEFORE the live run rather than after it.
+
+    The default is to refuse. A selection already on the book is skipped with
+    its reason; it is never overwritten and never silently doubled. --force
+    re-prices a PENDING duplicate: a new bet is appended and the old one is
+    marked superseded, so the book shows one position rather than two.
+
+    A duplicate of a SETTLED bet is refused even under --force. Re-pricing a
+    match that has already been graded is an error every time, and a flag
+    should not put it one keystroke away.
+    """
+    placed, skipped, forced = [], [], []
+    struck_this_run = {}
+
+    for d in (d for d in decisions if d.bet):
+        key = (normalise_fixture(d.fixture), d.market, d.selection,
+               d.match_date)
+        record = {
+            'fixture': d.fixture, 'market': d.market,
+            'selection': d.selection, 'match_date': d.match_date,
+            'odds': d.bookmaker_odds, 'stake': d.stake,
+        }
+
+        # A repeat inside ONE run is always a mistake in the fixture list, not
+        # a re-price. --force must not turn it into a supersede chain.
+        if key in struck_this_run:
+            skipped.append(dict(
+                record, existing_bet_id=struck_this_run[key],
+                existing_status=PENDING,
+                reason='duplicate selection within this same run'))
+            continue
+
+        existing = ledger.find_duplicate(
+            d.fixture, d.market, d.selection, d.match_date)
+
+        if existing is None:
+            bet = ledger.place(d) if commit else None
+            struck_this_run[key] = bet.bet_id if bet else '(dry-run)'
+            placed.append(d)
+            continue
+
+        record.update(existing_bet_id=existing.bet_id,
+                      existing_status=existing.status,
+                      existing_odds=existing.odds)
+
+        if existing.status != PENDING:
+            skipped.append(dict(
+                record,
+                reason=f'already on the book as {existing.bet_id}, settled '
+                       f'{existing.status}; --force does not apply to a '
+                       f'graded bet'))
+        elif not force:
+            skipped.append(dict(
+                record,
+                reason=f'already on the book as {existing.bet_id} '
+                       f'({existing.status}); re-run with --force to re-price'))
+        else:
+            bet = (ledger.place(d, supersedes=existing.bet_id) if commit
+                   else None)
+            struck_this_run[key] = bet.bet_id if bet else '(dry-run)'
+            placed.append(d)
+            forced.append(dict(record,
+                               bet_id=bet.bet_id if bet else '(dry-run)'))
+
+    return placed, skipped, forced
+
+
 # --- reporting ------------------------------------------------------------
 
-def build_report(decisions, findings, contexts, skipped, ledger, dry_run):
-    placed = [d for d in decisions if d.bet]
+def build_report(decisions, findings, contexts, skipped, ledger, dry_run,
+                 placed=None, duplicates=None, forced=None, force=False):
+    # `placed` is what survived the duplicate guard, not simply everything
+    # with bet=True -- those differ exactly when a re-run hits the book.
+    placed = [d for d in decisions if d.bet] if placed is None else placed
+    duplicates = duplicates or []
+    forced = forced or []
     return {
         'generated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'dry_run': dry_run,
+        # The durable record of what the idempotency guard did. Kept in the
+        # report rather than only on stdout so a skipped bet is auditable
+        # after the terminal has scrolled away.
+        'duplicate_check': {
+            'force': force,
+            'skipped': duplicates,
+            'forced': forced,
+        },
         'staking_rule': {
             'standard': 'Quarter-Kelly (0.25) -- ceiling',
             'hedge_or_low_confidence': 'Eighth-Kelly (0.125)',
@@ -184,6 +281,8 @@ def build_report(decisions, findings, contexts, skipped, ledger, dry_run):
         'totals': {
             'priced': len(decisions),
             'bets_placed': len(placed),
+            'bets_skipped_as_duplicates': len(duplicates),
+            'bets_forced': len(forced),
             'total_stake': round(sum(d.stake for d in placed), 2),
         },
     }
@@ -213,6 +312,22 @@ def print_report(report, decisions, findings, contexts, ledger):
             print(f'  {marker}  [{f.kind}] {f.fixture}')
             print(f'      {f.detail}')
 
+    dup = report['duplicate_check']
+    if dup['skipped'] or dup['forced']:
+        print('\n' + '=' * 72)
+        print('DUPLICATE CHECK')
+        print('=' * 72)
+        for f in dup['forced']:
+            print(f"  ! FORCED   {f['fixture']} / {f['market']} / "
+                  f"{f['selection']}")
+            print(f"      re-priced {f['existing_odds']} -> {f['odds']}; "
+                  f"bet {f['bet_id']} supersedes {f['existing_bet_id']}")
+        for s in dup['skipped']:
+            print(f"  ✗ SKIPPED  {s['fixture']} / {s['market']} / "
+                  f"{s['selection']}"
+                  + (f" ({s['match_date']})" if s['match_date'] else ''))
+            print(f"      {s['reason']}")
+
     print('\n' + '=' * 72)
     print('QUALITATIVE CONTEXT')
     print(f'({qual.CONGESTION_CAVEAT})')
@@ -226,12 +341,18 @@ def print_report(report, decisions, findings, contexts, ledger):
     print('\n' + '=' * 72)
     print(f"  priced {t['priced']} selection(s), "
           f"{t['bets_placed']} bet(s), total stake {t['total_stake']:.2f}")
+    if t['bets_skipped_as_duplicates']:
+        print(f"  {t['bets_skipped_as_duplicates']} skipped as duplicate(s) "
+              f"-- already on the book")
+    if t['bets_forced']:
+        print(f"  {t['bets_forced']} forced re-price(s) under --force")
     print('=' * 72)
 
 
 # --- entry point ----------------------------------------------------------
 
-def run(data_dir='data', bankroll=None, dry_run=False, config=None):
+def run(data_dir='data', bankroll=None, dry_run=False, force=False,
+        config=None):
     data_dir = Path(data_dir)
     config = config or load_json(data_dir / 'pipeline_config.json', default={})
 
@@ -249,6 +370,11 @@ def run(data_dir='data', bankroll=None, dry_run=False, config=None):
     staking_bankroll = ledger.staking_bankroll
     print(f'Pricing {len(fixtures)} fixture(s) against a staking bankroll of '
           f'{staking_bankroll:.2f}' + ('   [DRY RUN]' if dry_run else ''))
+    if force:
+        print('  [--force] duplicate guard overridden: a selection already on '
+              'the book\n            will be RE-PRICED, and the standing bet '
+              'marked superseded.\n            Settled bets are still '
+              'refused.')
 
     decisions, skipped = find_edges(
         fixtures, current_elo, elo_bands, staking_bankroll, config)
@@ -260,17 +386,24 @@ def run(data_dir='data', bankroll=None, dry_run=False, config=None):
     decisions, findings = apply_sanity_checks(decisions, explanations)
 
     contexts = attach_context(fixtures, matches, data_dir)
-    report = build_report(decisions, findings, contexts, skipped, ledger, dry_run)
+
+    # The guard runs in both modes. Under --dry-run nothing is committed, but
+    # the collisions are still found and reported -- seeing them before the
+    # live run is the entire point of having a dry run.
+    placed, duplicates, forced = place_bets(
+        ledger, decisions, force=force, commit=not dry_run)
+
+    report = build_report(decisions, findings, contexts, skipped, ledger,
+                          dry_run, placed=placed, duplicates=duplicates,
+                          forced=forced, force=force)
 
     print_report(report, decisions, findings, contexts, ledger)
 
     if not dry_run:
-        for d in decisions:
-            if d.bet:
-                ledger.place(d)
         ledger.save()
-        print(f'\n  {len([d for d in decisions if d.bet])} bet(s) written to '
-              f'{ledger.path}')
+        print(f'\n  {len(placed)} bet(s) written to {ledger.path}')
+        if duplicates:
+            print(f'  {len(duplicates)} skipped, already on the book')
     else:
         print('\n  --dry-run: ledger untouched')
 
@@ -289,10 +422,14 @@ def main():
                     help='override the ledger starting bankroll')
     ap.add_argument('--dry-run', action='store_true',
                     help='price and report without writing bets to the ledger')
+    ap.add_argument('--force', action='store_true',
+                    help='re-price selections already on the book, superseding '
+                         'the standing bet. Never applies to a settled bet.')
     args = ap.parse_args()
 
     try:
-        run(data_dir=args.data, bankroll=args.bankroll, dry_run=args.dry_run)
+        run(data_dir=args.data, bankroll=args.bankroll, dry_run=args.dry_run,
+            force=args.force)
     except FileNotFoundError as exc:
         print(f'ERROR: required data file missing: {exc}', file=sys.stderr)
         return 1

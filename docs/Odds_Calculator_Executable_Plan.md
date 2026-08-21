@@ -41,6 +41,7 @@ Everything here is deliberately conversation-shaped, not screen/code-shaped.
 - [x] Build the fixture-occurrence scraper (FA Cup, Carabao Cup, European — date/competition/opponent only)
 - [x] Build the local-triggered pipeline script: run model → identify +EV fixtures → apply Quarter/Eighth-Kelly staking → PnL tracking
 - [x] Wire in Theme 3 qualitative inputs (manager styles, team news, formations, congestion signal)
+- [x] Settlement (`python3 -m pipeline.settle_results`): pending bets graded against real results from a manual results file, `Ledger.settle()` finally called from outside its own test. `data/bankroll.json` written live for the first time; `realised_pnl` / `strike_rate` / `roi` populate
 - Bonus: purged 380 fabricated zero-card records that were dragging every referee average down 4–17 booking points and pinning 20 of 28 teams at a 0 booking average
 - Flagged, not fixed: the band model prices every fixture in a band identically, producing +30–41% edges against stale odds. Advisory flag added (non-blocking); the model itself is a Day 3+ decision
 
