@@ -1,0 +1,33 @@
+{
+  "_comment": [
+    "Manual match results, read by pipeline/settle_results.py.",
+    "",
+    "One entry per fixture. The fixture name must be the one the ledger",
+    "recorded ('Home v Away'); matching ignores case and extra spacing.",
+    "",
+    "  {'fixture': 'Spurs v Everton', 'score': '1-0'}",
+    "  {'fixture': 'Spurs v Everton', 'home_goals': 1, 'away_goals': 0}",
+    "  {'fixture': 'Spurs v Everton', 'status': 'void', 'notes': 'abandoned'}",
+    "",
+    "'source' is not read by the code. It is here because a settled ledger is",
+    "a financial record: every scoreline in it should be traceable to where it",
+    "was read from, and a wrong entry here silently restates the PnL.",
+    "",
+    "These ten entries are the 2025/26 final matchday, 24 May 2026, checked",
+    "against ESPN and at least one independent source each. Verify before",
+    "trusting the ledger; a mistake is correctable with",
+    "  python3 -m pipeline.settle_results --set BET_ID=STATUS"
+  ],
+  "results": [
+    {"fixture": "Crystal Palace v Arsenal", "date": "2026-05-24",
+     "score": "1-2", "source": "ESPN gameId 740968; FOX Sports"},
+    {"fixture": "Nott'm Forest v Bournemouth", "date": "2026-05-24",
+     "score": "1-1", "source": "ESPN gameId 740972; GiveMeSport; FOX Sports"},
+    {"fixture": "Brighton v Man Utd", "date": "2026-05-24",
+     "score": "0-3", "source": "ESPN gameId 740966; manutd.com match report"},
+    {"fixture": "Spurs v Everton", "date": "2026-05-24",
+     "score": "1-0", "source": "ESPN gameId 740974; Sky Sports"},
+    {"fixture": "West Ham v Leeds", "date": "2026-05-24",
+     "score": "3-0", "source": "ESPN gameId 740971; footballdatabase.eu"}
+  ]
+}
