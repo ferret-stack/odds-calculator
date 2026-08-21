@@ -920,7 +920,7 @@ class OddsCalculator:
         home_expected = home_attack * away_defense * league_avg * 1.1
         away_expected = away_attack * home_defense * league_avg * 0.9
         
-        # Generate Poisson matrix (0-10 goals each).
+        # Generate Poisson matrix (0-15 goals each).
         #
         # This grid ran 0-5, which truncated the joint distribution without
         # renormalizing it: every scoreline with 6+ goals on either side was
@@ -928,16 +928,26 @@ class OddsCalculator:
         # scaled with expected goals -- worst observed was 7.5% of the mass
         # missing on a high-xG fixture -- which distorts scoreline
         # probabilities relative to each other, not just in aggregate.
-        # Extending to 0-10 captures that tail rather than rescaling a
-        # truncated grid. Note the fix is the grid extent, not the rounding:
-        # at expected goals above ~3.5 a 0-10 grid would itself start
-        # truncating more than 0.001, and would need widening again.
+        # The grid captures the tail rather than rescaling a truncated one,
+        # so widening it never disturbs the probabilities already present.
+        #
+        # Two separate error sources have to stay under the 0.001 tolerance,
+        # and which one binds depends on the grid size:
+        #   - Truncation, which shrinks as the grid widens. At 0-10 it alone
+        #     exceeded 0.001 once expected goals passed ~3.5; by 0-15 it is
+        #     under 0.0006 even at 6 goals a side.
+        #   - Rounding, which *grows* with the grid, since every cell carries
+        #     up to half an ulp and there are now 256 of them. At 4dp that
+        #     noise alone breached 0.001 in the high-xG range, which would
+        #     have made the wider grid's headroom illusory -- hence 6dp.
+        # Widening the grid further therefore means revisiting the rounding
+        # too, not just the range.
         matrix = []
-        for i in range(11):
+        for i in range(16):
             row = []
-            for j in range(11):
+            for j in range(16):
                 prob = stats.poisson.pmf(i, home_expected) * stats.poisson.pmf(j, away_expected)
-                row.append(round(prob, 4))
+                row.append(round(prob, 6))
             matrix.append(row)
         
         return {'matrix': matrix}
