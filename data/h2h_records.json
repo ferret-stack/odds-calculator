@@ -143,6 +143,14 @@
     "last_result": "Ipswich 0-4 Arsenal",
     "last_date": "2025-04-20"
   },
+  "Arsenal_Coventry City": {
+    "total_games": 1,
+    "Arsenal_wins": 1,
+    "Coventry City_wins": 0,
+    "draws": 0,
+    "last_result": "Arsenal 3-0 Coventry City",
+    "last_date": "2026-08-21"
+  },
   "Arsenal_West Brom": {
     "total_games": 2,
     "Arsenal_wins": 2,
@@ -240,12 +248,12 @@
     "last_date": "2026-05-24"
   },
   "Bournemouth_Man City": {
-    "total_games": 8,
+    "total_games": 9,
     "Bournemouth_wins": 0,
-    "Man City_wins": 7,
+    "Man City_wins": 8,
     "draws": 1,
-    "last_result": "Bournemouth 1-1 Man City",
-    "last_date": "2026-05-19"
+    "last_result": "Man City 2-1 Bournemouth",
+    "last_date": "2026-08-23"
   },
   "Man City_Newcastle": {
     "total_games": 12,
@@ -448,12 +456,12 @@
     "last_date": "2026-01-24"
   },
   "Liverpool_Newcastle": {
-    "total_games": 12,
+    "total_games": 13,
     "Liverpool_wins": 9,
     "Newcastle_wins": 0,
-    "draws": 3,
-    "last_result": "Liverpool 4-1 Newcastle",
-    "last_date": "2026-01-31"
+    "draws": 4,
+    "last_result": "Newcastle 2-2 Liverpool",
+    "last_date": "2026-08-23"
   },
   "Brighton_Liverpool": {
     "total_games": 11,
@@ -743,6 +751,14 @@
     "last_result": "Man Utd 3-2 Ipswich",
     "last_date": "2025-02-26"
   },
+  "Hull City_Man Utd": {
+    "total_games": 1,
+    "Hull City_wins": 1,
+    "Man Utd_wins": 0,
+    "draws": 0,
+    "last_result": "Hull City 2-0 Man Utd",
+    "last_date": "2026-08-22"
+  },
   "Man Utd_West Brom": {
     "total_games": 2,
     "Man Utd_wins": 1,
@@ -832,12 +848,12 @@
     "last_date": "2026-01-25"
   },
   "Aston Villa_Brighton": {
-    "total_games": 11,
+    "total_games": 12,
     "Aston Villa_wins": 8,
-    "Brighton_wins": 2,
+    "Brighton_wins": 3,
     "draws": 1,
-    "last_result": "Aston Villa 1-0 Brighton",
-    "last_date": "2026-02-11"
+    "last_result": "Brighton 4-0 Aston Villa",
+    "last_date": "2026-08-23"
   },
   "Aston Villa_Chelsea": {
     "total_games": 12,
@@ -1496,12 +1512,12 @@
     "last_date": "2026-05-04"
   },
   "Chelsea_Fulham": {
-    "total_games": 10,
-    "Chelsea_wins": 6,
+    "total_games": 11,
+    "Chelsea_wins": 7,
     "Fulham_wins": 3,
     "draws": 1,
-    "last_result": "Fulham 2-1 Chelsea",
-    "last_date": "2026-01-07"
+    "last_result": "Fulham 2-3 Chelsea",
+    "last_date": "2026-08-24"
   },
   "Chelsea_Crystal Palace": {
     "total_games": 12,
@@ -1672,12 +1688,12 @@
     "last_date": "2026-03-21"
   },
   "Brentford_Spurs": {
-    "total_games": 10,
-    "Brentford_wins": 1,
+    "total_games": 11,
+    "Brentford_wins": 2,
     "Spurs_wins": 5,
     "draws": 4,
-    "last_result": "Brentford 0-0 Spurs",
-    "last_date": "2026-01-01"
+    "last_result": "Brentford 3-0 Spurs",
+    "last_date": "2026-08-22"
   },
   "Brentford_West Ham": {
     "total_games": 9,
@@ -1792,12 +1808,12 @@
     "last_date": "2025-12-30"
   },
   "Leeds_Nott'm Forest": {
-    "total_games": 4,
-    "Leeds_wins": 2,
+    "total_games": 5,
+    "Leeds_wins": 3,
     "Nott'm Forest_wins": 2,
     "draws": 0,
-    "last_result": "Leeds 3-1 Nott'm Forest",
-    "last_date": "2026-02-06"
+    "last_result": "Nott'm Forest 0-1 Leeds",
+    "last_date": "2026-08-22"
   },
   "Nott'm Forest_Spurs": {
     "total_games": 7,
@@ -1992,12 +2008,12 @@
     "last_date": "2025-04-26"
   },
   "Crystal Palace_Everton": {
-    "total_games": 12,
+    "total_games": 13,
     "Crystal Palace_wins": 1,
-    "Everton_wins": 7,
+    "Everton_wins": 8,
     "draws": 4,
-    "last_result": "Crystal Palace 2-2 Everton",
-    "last_date": "2026-05-10"
+    "last_result": "Everton 2-0 Crystal Palace",
+    "last_date": "2026-08-22"
   },
   "Crystal Palace_Leeds": {
     "total_games": 8,
@@ -2494,6 +2510,14 @@
     "draws": 3,
     "last_result": "Southampton 0-1 West Ham",
     "last_date": "2024-12-26"
+  },
+  "Ipswich_Sunderland": {
+    "total_games": 1,
+    "Ipswich_wins": 1,
+    "Sunderland_wins": 0,
+    "draws": 0,
+    "last_result": "Ipswich 2-1 Sunderland",
+    "last_date": "2026-08-22"
   },
   "Sunderland_Wolves": {
     "total_games": 2,
