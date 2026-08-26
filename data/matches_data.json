@@ -68501,5 +68501,11 @@
     "over_45": false,
     "btts": false,
     "elo_processed": true
+  },
+  {
+    "match_id": 2645194,
+    "date": "2026-08-20",
+    "home_team": "Season",
+    "away_team": "Start"
   }
 ]

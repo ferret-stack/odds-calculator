@@ -19,15 +19,15 @@
     "  python3 -m pipeline.settle_results --set BET_ID=STATUS"
   ],
   "results": [
-    {"fixture": "Crystal Palace v Arsenal", "date": "2026-05-24",
+    {"fixture": "Nott'm Forest v Leeds", "date": "2026-08-21",
      "score": "1-2", "source": "ESPN gameId 740968; FOX Sports"},
-    {"fixture": "Nott'm Forest v Bournemouth", "date": "2026-05-24",
+    {"fixture": "Newcastle v Liverpool", "date": "2026-05-24",
      "score": "1-1", "source": "ESPN gameId 740972; GiveMeSport; FOX Sports"},
-    {"fixture": "Brighton v Man Utd", "date": "2026-05-24",
-     "score": "0-3", "source": "ESPN gameId 740966; manutd.com match report"},
-    {"fixture": "Spurs v Everton", "date": "2026-05-24",
-     "score": "1-0", "source": "ESPN gameId 740974; Sky Sports"},
-    {"fixture": "West Ham v Leeds", "date": "2026-05-24",
-     "score": "3-0", "source": "ESPN gameId 740971; footballdatabase.eu"}
+    {"fixture": "Man City v Bournemouth", "date": "2026-08-21",
+     "score": "2-1", "source": "ESPN gameId 740966; manutd.com match report"},
+    {"fixture": "Brentford v Spurs", "date": "2026-08-21",
+     "score": "3-0", "source": "ESPN gameId 740974; Sky Sports"},
+    {"fixture": "Fulham v Chelsea", "date": "2026-08-21",
+     "score": "2-3", "source": "ESPN gameId 740971; footballdatabase.eu"}
   ]
 }
