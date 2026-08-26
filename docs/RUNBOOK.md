@@ -28,7 +28,7 @@ python3 -m pytest tests/ -q
 
 ---
 
-## 1. The command you actually asked about
+## 1. The command to run the pipeline
 
 `pipeline.run_pipeline` on its own is not a command -- it is a module path.
 Python needs `-m` to run it:
@@ -78,7 +78,7 @@ python3 -m pipeline.run_pipeline --dry-run
 python3 -m pipeline.run_pipeline
 
 # d. AFTER the matches finish: type up results, then settle
-#    (edit data/results.json first -- see section 4)
+#    (edit data/results.json first -- see section 5)
 python3 -m pipeline.settle_results --dry-run
 python3 -m pipeline.settle_results
 
@@ -89,11 +89,68 @@ git push -u origin main
 ```
 
 Step (a) is the only step that opens a browser and calls the odds API; it takes
-minutes, the rest take seconds.
+minutes, the rest take seconds. It needs Firefox installed (geckodriver is
+downloaded automatically if it is not on PATH). Env vars if your setup differs:
+
+```bash
+ODDS_BROWSER=chrome        # firefox (default) | chrome
+ODDS_HEADLESS=0            # run headed, so you can watch it work
+ODDS_DRIVER_PATH=/path/to/geckodriver
+ODDS_BROWSER_BINARY=/path/to/firefox
+```
+
+`odds_calculator.py` auto-detects which matches to scrape: it takes the highest
+match ID already in `matches_data.json` and scrapes the next 10. So it wants
+running once per matchweek, in order -- not twice, and not skipped.
 
 ---
 
-## 3. How to know the bankroll was updated
+## 3. What a run actually prints
+
+Real output from `--dry-run` against the current data, trimmed. This is the
+shape to expect:
+
+```
+Pricing 10 fixture(s) against a staking bankroll of 885.63   [DRY RUN]
+
+======================================================================
+BANKROLL
+======================================================================
+  starting bankroll   : 1000.00
+  open bets           : 5 (114.37 committed)
+  staking bankroll    : 885.63
+
+======================================================================
+SELECTIONS
+======================================================================
+  · Arsenal v Coventry City   home: NO BET -- edge -2.90% below the 5% floor
+  · Hull City v Man Utd       home: NO BET -- blocked by sanity check:
+                                    same_market_multiple_ev
+  ✓ Brentford v Spurs         home @ 2.42 | p=0.5404 EV=+0.3078 (+30.78%)
+                                | full Kelly=0.2167 x 0.25 (standard)
+                                = 0.0542 | stake 47.99
+
+======================================================================
+DUPLICATE CHECK
+======================================================================
+  ✗ SKIPPED  Brentford v Spurs / 1x2 / home (2026-08-22)
+      already on the book as 00003 (pending); re-run with --force to re-price
+```
+
+Reading it:
+
+- `·` priced, no bet. `✓` a selection that cleared the +5% EV floor.
+- A `✓` in SELECTIONS is **not** a bet placed. Check DUPLICATE CHECK: a `✓` that
+  reappears there as SKIPPED is already on the book and was not written again.
+- `blocked by sanity check: same_market_multiple_ev` means two +EV selections
+  landed in the same market on one fixture. That is deliberately unblockable --
+  it is a signal to re-check the model, not a bet.
+- The closing line is the one that matters: `N bet(s) written to
+  data/bankroll.json`, or `--dry-run: ledger untouched`.
+
+---
+
+## 4. How to know the bankroll was updated
 
 Three checks, cheapest first.
 
@@ -144,19 +201,29 @@ So: **placing** bets moves `staking_bankroll` and `bets_open`.
 
 ---
 
-## 4. Settling results (closing the loop)
+## 5. Settling results (closing the loop)
 
 Settlement is a separate command on purpose -- pricing happens before kickoff,
 grading after full time.
 
-Edit `data/results.json` and add one entry per finished fixture. The fixture
-name must be the one the ledger recorded (`Home v Away`); case and spacing do
-not matter:
+Edit `data/results.json` and append one entry per finished fixture to the
+`results` list. The fixture name must be the one the ledger recorded
+(`Home v Away`); case and spacing do not matter:
 
 ```json
-{"fixture": "Nott'm Forest v Leeds", "score": "2-1"}
-{"fixture": "Spurs v Everton", "status": "void", "notes": "abandoned"}
+{
+  "results": [
+    {"fixture": "Nott'm Forest v Leeds", "date": "2026-08-22", "score": "2-1",
+     "source": "ESPN gameId 740968"},
+    {"fixture": "Spurs v Everton", "date": "2026-08-22", "status": "void",
+     "notes": "abandoned"}
+  ]
+}
 ```
+
+`source` is not read by the code -- it is there so a scoreline can be traced
+back to where you got it. `score` may also be given as `home_goals` /
+`away_goals`.
 
 Then:
 
@@ -184,7 +251,7 @@ python3 -c "import json;[print(b['bet_id'],b['status'],b['fixture'],b['selection
 
 ---
 
-## 5. Supporting tools
+## 6. Supporting tools
 
 ```bash
 python3 tools/validate_elo.py            # ELO output vs recorded results
@@ -197,12 +264,26 @@ python3 tools/super6_picks.py            # Super 6 picks (needs a local Ollama)
 
 Every one of these takes `--help`, and the destructive ones take `--dry-run`.
 
+`validate_poisson.py` and `odds_calculator.py` import pandas/numpy/scipy, so
+they need the full `requirements.txt` install. `validate_elo.py`,
+`rebuild_elo.py`, `repair_card_data.py` and the whole `pipeline/` package run on
+the standard library alone -- useful to know when you are on a machine where the
+heavy install failed: you can still price, settle and read the ledger.
+
 ---
 
-## 6. Deploying
+## 7. Deploying
 
-There is no deploy server and no CI workflow. "Deploy" here means: the JSON in
-`data/` is the published artefact, so pushing it to GitHub is the deployment.
+There is no deploy server, no CI workflow and no GitHub Pages branch in *this*
+repository. Pushing here commits the record -- the ledger, the refreshed data
+files, the write-up -- and that is the part this repo owns.
+
+The public calculator is served from a **different** repository
+(`ferret-stack/boolean`, at ferret-stack.github.io/boolean/odds-calculator/).
+How the JSON in `data/` gets from here to there is not described anywhere in
+this repo, so it is not written down here either rather than guessed at. If it
+is a manual copy, that step belongs in this section -- worth adding the next
+time you do it.
 
 ```bash
 git status                    # see what the run changed
@@ -218,7 +299,7 @@ commit `.env`.
 
 ---
 
-## 7. Habits worth keeping
+## 8. Habits worth keeping
 
 - `--dry-run` first, every time, on both `run_pipeline` and `settle_results`.
 - Both scripts **exit non-zero on failure**, so a red error line means nothing
