@@ -228,6 +228,25 @@ class OddsCalculator:
         new_matches = [m for m in self.matches_data if not m.get('elo_processed')]
         new_matches = sorted(new_matches, key=lambda x: x['match_id'])
 
+        # A record can be unprocessed *and* scoreless -- e.g. a fixture that
+        # was appended before full-time (or by some other path that never
+        # got the goals fields written) sitting in matches_data.json with no
+        # elo_processed flag. That is a data problem, not a reason to crash
+        # the whole update and leave every other pending match unprocessed
+        # again. Split it out, report it loudly (never a bare KeyError), and
+        # replay only the matches that actually have a result.
+        unscoreable = [m for m in new_matches
+                       if 'home_goals' not in m or 'away_goals' not in m]
+        if unscoreable:
+            print(f"  ! Skipping {len(unscoreable)} unprocessed match(es) "
+                  f"with no recorded score (not yet played, or an "
+                  f"incomplete record):")
+            for m in unscoreable:
+                print(f"      match {m.get('match_id', '?')} "
+                      f"({m.get('date', '?')}): "
+                      f"{m.get('home_team', '?')} vs {m.get('away_team', '?')}")
+            new_matches = [m for m in new_matches if m not in unscoreable]
+
         if new_matches:
             print(f"  Processing {len(new_matches)} new matches...")
 
