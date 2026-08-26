@@ -25,6 +25,9 @@ Environment overrides, all optional:
     ODDS_COOKIE_ACCEPT_XPATH  XPath for the cookie-consent accept button,
                               when the built-in guesses in accept_cookies()
                               do not match the button actually on the page
+    ODDS_AD_CLOSE_XPATH       XPath for an ad-overlay close button, when the
+                              built-in guesses in dismiss_ad_overlay() do not
+                              match the button actually on the page
 """
 
 import os
@@ -151,6 +154,55 @@ def cookie_accept_xpaths(phrases=_COOKIE_PHRASES):
         xpaths.append(f"//button[{cond}] | //a[{cond}] | //*[@role='button'][{cond}]")
     return xpaths
 
+
+
+# A "sheet takeover" ad: a full-screen overlay (div.sheet__backdrop) with a
+# dedicated close button, unrelated to cookie consent -- confirmed against a
+# live capture, aria-label="Close Advert", classes
+# "... sheet__close-btn js-sheet-takeover-close-button". Phrases first
+# (semantic, survives a class rename); the two classes as a second,
+# independent signal in case the ad vendor's aria-label wording changes.
+_AD_CLOSE_ARIA_PHRASES = (
+    'close advert', 'close ad', 'close advertisement', 'dismiss advert',
+)
+_AD_CLOSE_CLASSES = ('sheet__close-btn', 'js-sheet-takeover-close-button')
+
+
+def _class_condition(cls):
+    """XPath predicate matching one class in a space-separated @class list."""
+    return f"contains(concat(' ', normalize-space(@class), ' '), ' {cls} ')"
+
+
+def ad_close_xpaths(phrases=_AD_CLOSE_ARIA_PHRASES, classes=_AD_CLOSE_CLASSES):
+    """
+    The ordered list of XPath expressions dismiss_ad_overlay() tries, after
+    the override (handled by the caller). Matches on @aria-label rather than
+    text content -- this button, like most icon-only close buttons, has no
+    visible text -- then falls back to the BEM classes actually seen on the
+    element. Pure and Selenium-free, mirroring cookie_accept_xpaths().
+    """
+    xpaths = []
+    for phrase in phrases:
+        cond = (f"contains(translate(normalize-space(@aria-label), "
+                f"'{_UPPER}', '{_LOWER}'), '{phrase}')")
+        xpaths.append(f"//button[{cond}] | //*[@role='button'][{cond}]")
+    for cls in classes:
+        xpaths.append(f"//button[{_class_condition(cls)}]")
+    return xpaths
+
+
+def ad_close_locator_specs(override=None):
+    """
+    The ordered list of (kind, value) locator specs dismiss_ad_overlay()
+    tries. kind is always 'xpath' here -- there is no equivalent of the
+    OneTrust id for ad overlays. Order is specificity: a human-set override
+    first, then aria-label phrases, then the class fallbacks.
+    """
+    specs = []
+    if override:
+        specs.append(('xpath', override))
+    specs += [('xpath', xp) for xp in ad_close_xpaths()]
+    return specs
 
 
 def cookie_locator_specs(override=None):
@@ -331,23 +383,21 @@ def _is_displayed(element):
         return False
 
 
-def visible_cookie_buttons(driver, specs=None, limit=3):
+def _visible_candidates(driver, specs, limit=3):
     """
-    Every consent-accept candidate on the page that could really take a click.
+    Every candidate matching `specs` that could really take a click.
 
     Returns a list of (locator_description, element, info), in locator
-    priority order, de-duplicated -- one button matches several of the phrase
-    locators (the text "accept all cookies" contains "accept all", which
-    contains "accept"), and clicking the same element four times is not four
-    attempts at anything.
+    priority order, de-duplicated -- one button can match several locators
+    (the text "accept all cookies" contains "accept all", which contains
+    "accept"), and clicking the same element four times is not four attempts
+    at anything.
 
     Phantoms are dropped here, which is the whole point: they are what a
-    plain find_element() would have handed back first.
+    plain find_element() would have handed back first. Shared by
+    visible_cookie_buttons() and visible_ad_close_buttons() -- the "is this
+    really clickable" question is the same question for both overlays.
     """
-    if specs is None:
-        specs = cookie_locator_specs(
-            override=os.environ.get('ODDS_COOKIE_ACCEPT_XPATH'))
-
     found = []
     for kind, value in specs:
         by = BY_XPATH if kind == 'xpath' else BY_ID
@@ -370,6 +420,14 @@ def visible_cookie_buttons(driver, specs=None, limit=3):
     return found
 
 
+def visible_cookie_buttons(driver, specs=None, limit=3):
+    """Every consent-accept candidate on the page that could really take a click."""
+    if specs is None:
+        specs = cookie_locator_specs(
+            override=os.environ.get('ODDS_COOKIE_ACCEPT_XPATH'))
+    return _visible_candidates(driver, specs, limit=limit)
+
+
 def cookie_banner_present(driver):
     """
     Is a consent banner currently showing and in the way?
@@ -382,6 +440,25 @@ def cookie_banner_present(driver):
     has to mean "visible and clickable", not "present in the markup".
     """
     return bool(visible_cookie_buttons(driver, limit=1))
+
+
+def visible_ad_close_buttons(driver, specs=None, limit=3):
+    """Every ad-overlay close candidate on the page that could really take a click."""
+    if specs is None:
+        specs = ad_close_locator_specs(
+            override=os.environ.get('ODDS_AD_CLOSE_XPATH'))
+    return _visible_candidates(driver, specs, limit=limit)
+
+
+def ad_overlay_present(driver):
+    """
+    Is a dismissible ad overlay (a "sheet takeover") currently showing?
+
+    Same "visible and clickable, not merely in the markup" contract as
+    cookie_banner_present() -- see there for why an existence check would
+    lie forever after a successful dismissal.
+    """
+    return bool(visible_ad_close_buttons(driver, limit=1))
 
 
 def _click(driver, element, scripted=False):
@@ -453,18 +530,24 @@ def describe_cookie_failure(observations):
     return '\n'.join(lines)
 
 
-def accept_cookies(driver, timeout=10, verify=2.0, attempts=3,
-                   sleep=None, now=None):
+def _dismiss_via_escalation(driver, get_candidates, still_present,
+                            describe_failure, no_match_message,
+                            timeout=10, verify=2.0, attempts=3,
+                            sleep=None, now=None):
     """
-    Dismiss the cookie consent banner if it is showing. Never raises.
+    Click through `get_candidates()` until `still_present()` says the overlay
+    is actually gone. Never raises. Shared by accept_cookies() and
+    dismiss_ad_overlay() -- both are "an overlay is covering something we
+    need to click, find its dismiss button and prove the click worked", and
+    this is that once, not twice.
 
     Success is defined by the PAGE, not by the click call: every click is
-    followed by a re-check that a clickable banner is no longer there, and
+    followed by a re-check that a clickable candidate is no longer there, and
     only that re-check returns True. A click that WebDriver accepted and the
-    page ignored is now a failure with a diagnosis attached, where before it
-    was a silent success -- see the section comment above.
+    page ignored is a failure with a diagnosis attached, not a silent
+    success -- see the section comment above `probe_click_target`.
 
-    The escalation per candidate, in order, stopping the moment the banner
+    The escalation per candidate, in order, stopping the moment the overlay
     actually goes:
       1. a native coordinate click -- unless the probe already showed the
          candidate is covered, in which case a coordinate click provably
@@ -478,9 +561,9 @@ def accept_cookies(driver, timeout=10, verify=2.0, attempts=3,
     `timeout` bounds the wait for a clickable candidate to appear; every
     locator is re-checked in priority order on each poll, so a locator that
     never matches costs a poll rather than a share of the budget. `verify`
-    bounds each wait for the banner to actually disappear (CMPs animate out).
-    `sleep`/`now` are injectable so the retry behaviour is testable without
-    real time passing.
+    bounds each wait for the overlay to actually disappear (some animate
+    out). `sleep`/`now` are injectable so the retry behaviour is testable
+    without real time passing.
     """
     import time as _time
     sleep = sleep or _time.sleep
@@ -488,18 +571,15 @@ def accept_cookies(driver, timeout=10, verify=2.0, attempts=3,
 
     deadline = now() + timeout
     while True:
-        candidates = visible_cookie_buttons(driver)
+        candidates = get_candidates()
         if candidates or now() >= deadline:
             break
         sleep(0.25)
 
     if not candidates:
-        # Nothing clickable matched. Either there is no banner (the common,
+        # Nothing clickable matched. Either there is no overlay (the common,
         # harmless case) or there is one our patterns do not describe.
-        print('  ⚠ could not dismiss the cookie banner -- none of the known '
-              'accept-button patterns matched a visible element. If a banner '
-              'is still showing under ODDS_HEADLESS=0, inspect the real '
-              'button and set ODDS_COOKIE_ACCEPT_XPATH to an XPath for it.')
+        print(no_match_message)
         return False
 
     observations = []
@@ -519,12 +599,101 @@ def accept_cookies(driver, timeout=10, verify=2.0, attempts=3,
             if delivered:
                 gone_by = now() + verify
                 while True:
-                    if not cookie_banner_present(driver):
+                    if not still_present():
                         return True
                     if now() >= gone_by:
                         break
                     sleep(0.2)
             sleep(0.5)
 
-    print(describe_cookie_failure(observations))
+    print(describe_failure(observations))
     return False
+
+
+def accept_cookies(driver, timeout=10, verify=2.0, attempts=3,
+                   sleep=None, now=None):
+    """
+    Dismiss the cookie consent banner if it is showing. Never raises.
+
+    See _dismiss_via_escalation() for the click-then-verify mechanics this
+    delegates to -- the interesting behaviour lives there now, shared with
+    dismiss_ad_overlay().
+    """
+    no_match_message = (
+        '  ⚠ could not dismiss the cookie banner -- none of the known '
+        'accept-button patterns matched a visible element. If a banner '
+        'is still showing under ODDS_HEADLESS=0, inspect the real '
+        'button and set ODDS_COOKIE_ACCEPT_XPATH to an XPath for it.')
+    return _dismiss_via_escalation(
+        driver,
+        get_candidates=lambda: visible_cookie_buttons(driver),
+        still_present=lambda: cookie_banner_present(driver),
+        describe_failure=describe_cookie_failure,
+        no_match_message=no_match_message,
+        timeout=timeout, verify=verify, attempts=attempts,
+        sleep=sleep, now=now)
+
+
+def describe_ad_dismiss_failure(observations):
+    """
+    The message for an ad overlay that survived every click delivered to it.
+
+    Mirrors describe_cookie_failure() -- same diagnostic shape, ad-specific
+    wording, since whoever hits this pastes it back and "consent handler"
+    would be a lie for a button that has nothing to do with cookies.
+    """
+    lines = ['  ⚠ could not dismiss the ad overlay -- a matching close '
+             'button was found and clicked, and it is STILL showing '
+             'afterwards. WebDriver accepted the click; the page ignored it.']
+    for note in observations:
+        label = note.get('target') or note.get('locator')
+        if note.get('text'):
+            label = f'{label} ("{note["text"]}")'
+        outcome = ', '.join(f'{how}:{result}'
+                            for how, result in note['clicks']) or 'not clicked'
+        line = f'      {label} [{note["state"]}] -> {outcome}'
+        if note['state'] == 'covered' and note.get('blocker'):
+            line += f'; covered at its centre by {note["blocker"]}'
+        lines.append(line)
+
+    if observations and all(n['state'] == 'covered' for n in observations):
+        lines.append('    Every match was covered by another element, so no '
+                     'coordinate click could reach it. The scripted click '
+                     'bypassed that and still changed nothing, which points '
+                     'at the covering element above, not at the button.')
+    else:
+        lines.append('    A click WebDriver delivered that changes nothing '
+                     'means the element it landed on carries no close '
+                     'handler: either a duplicate copy of the overlay, or the '
+                     'real button before its JS hydrated. Inspect the element '
+                     'named above under ODDS_HEADLESS=0 and set '
+                     'ODDS_AD_CLOSE_XPATH to target the real one.')
+    return '\n'.join(lines)
+
+
+def dismiss_ad_overlay(driver, timeout=10, verify=2.0, attempts=3,
+                       sleep=None, now=None):
+    """
+    Close a "sheet takeover" ad overlay if one is showing. Never raises.
+
+    Same shape and same mechanics as accept_cookies() -- see
+    _dismiss_via_escalation() -- targeting the ad's own close button
+    (aria-label="Close Advert", confirmed against a live capture) instead of
+    a cookie consent button. Unrelated overlays: this exists because
+    accept_cookies() correctly does NOT match an ad close button, and an
+    ElementClickInterceptedException whose blocker is div.sheet__backdrop is
+    not a cookie-banner failure at all.
+    """
+    no_match_message = (
+        '  ⚠ could not dismiss the ad overlay -- none of the known close-'
+        'button patterns matched a visible element. If an overlay is still '
+        'showing under ODDS_HEADLESS=0, inspect the real button and set '
+        'ODDS_AD_CLOSE_XPATH to an XPath for it.')
+    return _dismiss_via_escalation(
+        driver,
+        get_candidates=lambda: visible_ad_close_buttons(driver),
+        still_present=lambda: ad_overlay_present(driver),
+        describe_failure=describe_ad_dismiss_failure,
+        no_match_message=no_match_message,
+        timeout=timeout, verify=verify, attempts=attempts,
+        sleep=sleep, now=now)
