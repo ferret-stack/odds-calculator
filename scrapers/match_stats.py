@@ -353,9 +353,18 @@ def open_stats_tab(driver, timeout=20):
     diagnosing a failure: the tab was never in the DOM at all (the locator is
     wrong, or the page genuinely has no stats -- e.g. a postponed match)
     versus the tab being present but never clickable, most often because
-    something else is covering it. An undismissed cookie banner is exactly
-    that: it points at accept_cookies() as the real fix, not at this
+    something else is covering it. An undismissed cookie banner is one cause
+    of that; a "sheet takeover" ad overlay (div.sheet__backdrop, confirmed
+    against a live capture) is another, and unrelated to cookies -- it points
+    at dismiss_ad_overlay() as the fix, not at accept_cookies() or at this
     function's locator.
+
+    On an intercepted click this retries ONCE, after attempting to dismiss
+    whatever the probe named as the blocker. The ad overlay is timing-
+    dependent -- it can render between scrape_match_stats()'s own pre-click
+    check and the click landing a moment later -- so a report of "covered by
+    div.sheet__backdrop" on one run and no error at all on the next, same
+    match, same code, is expected, not a flake to chase.
 
     Never raises: a stats-less match must not stop the rest of the scrape.
     """
@@ -402,10 +411,24 @@ def open_stats_tab(driver, timeout=20):
             info = probe_click_target(driver, element)
         except Exception:
             info = None
-        if info and info.get('blocker'):
-            note += f'; the element on top at its centre is {info["blocker"]}'
+        blocker = info.get('blocker') if info else None
+        if blocker:
+            note += f'; the element on top at its centre is {blocker}'
         else:
             note += ', e.g. an undismissed cookie banner'
+
+        # The blocker named above is diagnosis, not yet a fix. If it looks
+        # like the ad "sheet" overlay, try to close it and retry the click
+        # once -- the overlay renders on its own timer and can appear between
+        # scrape_match_stats()'s pre-click check and the click landing.
+        if blocker and 'sheet' in blocker.lower():
+            try:
+                from scrapers.browser import dismiss_ad_overlay
+                dismiss_ad_overlay(driver, timeout=3)
+                element.click()
+                return True, None
+            except Exception:
+                pass  # fall through to the diagnosis already built above
         return False, note
     except Exception as exc:
         return False, f'{type(exc).__name__} while clicking the tab'
@@ -452,23 +475,31 @@ def scrape_match_stats(driver, timeout=20, settle=5, sleep=None):
     about render timing that a slower page or connection can simply outrun.
     See _wait_for_stats_content().
 
-    Also re-checks for the cookie consent banner immediately before clicking
-    the tab. Some CMPs re-render their banner on a client-side route or tab
-    change even after an earlier dismissal on page load, and that would look
-    exactly like "Stats tab not found" or "click intercepted" here despite
-    accept_cookies() having already run once. cookie_banner_present() asks
-    whether a banner is VISIBLE, not merely present in the markup -- an
-    existence check would answer True forever, since every CMP dismisses its
-    banner by hiding it and leaving the markup behind, and this re-check would
-    then fire on every match after a perfectly successful dismissal.
+    Also re-checks for the cookie consent banner AND the ad "sheet takeover"
+    overlay immediately before clicking the tab. Some CMPs re-render their
+    banner on a client-side route or tab change even after an earlier
+    dismissal on page load, and the ad overlay is on its own render timer
+    independent of page load entirely -- either would look exactly like
+    "Stats tab not found" or "click intercepted" here despite the
+    corresponding dismissal already having run once. cookie_banner_present()
+    and ad_overlay_present() both ask whether their overlay is VISIBLE, not
+    merely present in the markup -- an existence check would answer True
+    forever, since both dismiss by hiding the markup rather than removing it,
+    and this re-check would then fire on every match after a perfectly
+    successful dismissal.
     """
     import time as _time
     sleep = sleep or _time.sleep
 
     try:
-        from scrapers.browser import accept_cookies, cookie_banner_present
+        from scrapers.browser import (
+            accept_cookies, ad_overlay_present, cookie_banner_present,
+            dismiss_ad_overlay,
+        )
         if cookie_banner_present(driver):
             accept_cookies(driver, timeout=2)
+        if ad_overlay_present(driver):
+            dismiss_ad_overlay(driver, timeout=2)
 
         opened, tab_note = open_stats_tab(driver, timeout=timeout)
         _wait_for_stats_content(driver, settle, sleep=sleep)
