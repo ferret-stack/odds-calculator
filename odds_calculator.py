@@ -827,9 +827,20 @@ class OddsCalculator:
         elo_history = dict(self.elo_history)
         
         for team in self.current_elo.keys():
-            # Get last 10 matches for this team
+            # Get last 10 *scored* matches for this team.
+            #
+            # matches_data can hold a record for this team with no result yet
+            # -- a fixture appended before kickoff, or a scrape artifact like
+            # the "Season"/"Start" record seen in a live data file -- and
+            # nothing about matching on team name guarantees home_goals/
+            # away_goals are present. That is the same class of bug fixed in
+            # update_elo_ratings() (see the 2026-08-26 dev log entry, KeyError:
+            # 'home_goals'): skip scoreless records here too rather than
+            # indexing into a result that doesn't exist.
             team_matches = []
             for match in reversed(self.matches_data):
+                if 'home_goals' not in match or 'away_goals' not in match:
+                    continue
                 if match['home_team'] == team or match['away_team'] == team:
                     team_matches.append(match)
                     if len(team_matches) >= 10:
@@ -942,8 +953,14 @@ class OddsCalculator:
         home_data = team_stats[home_team]
         away_data = team_stats[away_team]
         
-        # League average goals
-        all_goals = [m['home_goals'] + m['away_goals'] for m in self.matches_data]
+        # League average goals.
+        #
+        # Same scoreless-record hazard as calculate_team_stats() above: not
+        # every record in matches_data is guaranteed to carry home_goals/
+        # away_goals (an unplayed fixture, a scrape artifact), so this must
+        # skip those rather than KeyError on the whole matrix.
+        all_goals = [m['home_goals'] + m['away_goals'] for m in self.matches_data
+                     if 'home_goals' in m and 'away_goals' in m]
         league_avg = np.mean(all_goals) / 2 if all_goals else 1.3
         
         # Calculate expected goals with home advantage
