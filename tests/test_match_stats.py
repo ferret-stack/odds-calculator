@@ -15,7 +15,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scrapers.match_stats import (
     MIN_RECOGNISED_ROWS, booking_points, build_result, empty_result,
     normalise_label, orient_triple, parse_stat_rows, parse_stat_value,
-    _best_table, _diagnose_no_match, _wait_for_stats_content,
+    _best_table, _diagnose_no_match, _stats_content_ready,
+    _wait_for_stats_content,
 )
 
 
@@ -251,6 +252,61 @@ class TestScorelineNotMistakenForAStat(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertNotIn(('3', '-', '0'), result)
         self.assertIn(('Possession %', '62', '38'), result)
+
+
+class TestStatsContentReady(unittest.TestCase):
+    """
+    Regression coverage for a live failure reported after the scoreline fix
+    above: "tab opened; 2 row(s) read across 0 table(s) plus list layout,
+    but none matched a known stat label. raw sample: ('2', '-', '0');
+    ('Sat 22 Aug', 'Hill Dickinson Stadium', 'Paul Tierney')".
+
+    The poll's default probe used to be `bool(_raw_table_rows(driver)) or
+    bool(_raw_list_rows(driver))` -- true as soon as ANY 3-part group
+    existed, recognised or not. But the scoreline and the kickoff/venue/
+    referee line are themselves valid 3-part groups, and both render on the
+    match page before the Stats-tab panel does. So the poll was satisfied by
+    that furniture on its first check and stopped immediately, handing
+    scrape_match_stats() a DOM that had the scoreline and match info but not
+    yet the real stats table. _stats_content_ready() is the fix: it applies
+    the same MIN_RECOGNISED_ROWS recognition test the final decision already
+    uses, so furniture that never resolves to a known label does not end the
+    poll early.
+    """
+
+    class _FakeElement:
+        def __init__(self, text):
+            self.text = text
+
+    class _FakeDriver:
+        def __init__(self, list_texts=()):
+            self._list_texts = list_texts
+
+        def find_elements(self, by, xpath):
+            if xpath == '//table':
+                return []
+            if 'self::li or self::div' in xpath:
+                return [TestStatsContentReady._FakeElement(t)
+                        for t in self._list_texts]
+            return []
+
+    def test_scoreline_and_match_info_alone_are_not_ready(self):
+        driver = self._FakeDriver(list_texts=[
+            '2\n-\n0',
+            'Sat 22 Aug\nHill Dickinson Stadium\nPaul Tierney',
+        ])
+        self.assertFalse(_stats_content_ready(driver))
+
+    def test_real_stats_panel_is_ready(self):
+        driver = self._FakeDriver(list_texts=[
+            '2\n-\n0',
+            'Possession %\n62\n38',
+            'Shots\n17\n9',
+        ])
+        self.assertTrue(_stats_content_ready(driver))
+
+    def test_completely_empty_page_is_not_ready(self):
+        self.assertFalse(_stats_content_ready(self._FakeDriver()))
 
 
 class TestWaitForStatsContent(unittest.TestCase):

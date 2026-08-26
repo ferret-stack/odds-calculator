@@ -298,17 +298,50 @@ def _raw_list_rows(driver):
     return rows
 
 
+def _stats_content_ready(driver):
+    """
+    Whether RECOGNISABLE stat rows are present yet -- not just any 3-part
+    grouping.
+
+    This is the fix for the regression the previous version of this poll
+    introduced. Its probe was `bool(_raw_table_rows(driver)) or
+    bool(_raw_list_rows(driver))`: true the instant ANY 3-part row exists,
+    recognised or not. But the scoreline ('2', '-', '0') and the kickoff/
+    venue/referee line ('Sat 22 Aug', 'Hill Dickinson Stadium', 'Paul
+    Tierney') are themselves valid 3-part groups, and both render on the
+    match page before the Stats-tab panel does. So the poll was satisfied by
+    that furniture on its very first check, stopped immediately, and handed
+    scrape_match_stats() a DOM that had the scoreline but not yet the stats
+    table -- exactly the "tab opened; N row(s) read ... none matched a known
+    stat label" failure, with raw samples that are visibly not stats.
+
+    This probe applies the same recognition test _best_table() and the list
+    fallback already use for the real decision: a candidate only counts once
+    it clears MIN_RECOGNISED_ROWS, so scoreline/venue/referee furniture (1-2
+    stray 3-part groups, never resolving to a known label) keeps the poll
+    waiting for the panel that actually has 8-10 recognisable metrics.
+    """
+    tables = _raw_table_rows(driver)
+    if _best_table(tables) is not None:
+        return True
+    list_rows = _raw_list_rows(driver)
+    list_recognised = [t for t in (orient_triple(*r) for r in list_rows) if t]
+    return len(list_recognised) >= MIN_RECOGNISED_ROWS
+
+
 def _wait_for_stats_content(driver, timeout, poll_interval=0.5, sleep=None,
                             probe=None):
     """
-    Poll briefly for candidate rows to actually be in the DOM.
+    Poll briefly for RECOGNISABLE stat rows to actually be in the DOM.
 
     A fixed sleep after the tab click is a guess about render timing, and a
-    report where 0 tables and only a scoreline were found is consistent with
-    the real panel not having rendered yet when the fixed sleep ran out. This
-    returns as soon as either a table or a list-style candidate appears, or
-    gives up silently at `timeout` -- a genuinely stats-less page (postponed
-    match) is not turned into a hang, it just uses the full budget once.
+    report where 0 tables and only a scoreline/venue line were found is
+    consistent with the real panel not having rendered yet when the fixed
+    sleep -- or an under-selective poll -- ran out. This returns as soon as a
+    table or list-style candidate that clears MIN_RECOGNISED_ROWS appears
+    (see _stats_content_ready()), or gives up silently at `timeout` -- a
+    genuinely stats-less page (postponed match) is not turned into a hang, it
+    just uses the full budget once.
 
     `probe` is injectable so the polling loop itself -- stop early once
     ready, otherwise use the full budget -- can be unit tested without
@@ -317,8 +350,7 @@ def _wait_for_stats_content(driver, timeout, poll_interval=0.5, sleep=None,
     """
     import time as _time
     sleep = sleep or _time.sleep
-    probe = probe or (
-        lambda: bool(_raw_table_rows(driver)) or bool(_raw_list_rows(driver)))
+    probe = probe or (lambda: _stats_content_ready(driver))
 
     elapsed = 0.0
     while elapsed < timeout:
