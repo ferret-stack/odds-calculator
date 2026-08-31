@@ -21,8 +21,8 @@
   "results": [
     {"fixture": "Nott'm Forest v Leeds", "date": "2026-08-21",
      "score": "1-2", "source": "ESPN gameId 740968; FOX Sports"},
-    {"fixture": "Newcastle v Liverpool", "date": "2026-05-24",
-     "score": "1-1", "source": "ESPN gameId 740972; GiveMeSport; FOX Sports"},
+    {"fixture": "Newcastle v Liverpool", "date": "2026-08-23",
+     "score": "2-2", "source": "matches_data.json match_id 2645203; corrected 2026-08-31 from a mistyped 1-1 dated 2026-05-24"},
     {"fixture": "Man City v Bournemouth", "date": "2026-08-21",
      "score": "2-1", "source": "ESPN gameId 740966; manutd.com match report"},
     {"fixture": "Brentford v Spurs", "date": "2026-08-21",
