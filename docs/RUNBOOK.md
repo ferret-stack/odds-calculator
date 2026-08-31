@@ -78,11 +78,9 @@ python3 -m pipeline.run_pipeline --dry-run
 python3 -m pipeline.run_pipeline
 
 # d. AFTER the matches finish: re-scrape (step a) so the results are in
-#    matches_data.json, then fill in the results document and settle
-python3 tools/fill_results.py --dry-run
-python3 tools/fill_results.py
-python3 -m pipeline.settle_results --dry-run
-python3 -m pipeline.settle_results
+#    matches_data.json, then settle straight off it -- see section 5a
+python3 -m pipeline.settle_results --from-matches --dry-run
+python3 -m pipeline.settle_results --from-matches
 
 # e. Deploy: commit the updated data files and push
 git add data/ docs/
@@ -249,56 +247,38 @@ Other options:
 A bet with no result in either source is **left pending and reported**.
 Settlement never infers a result from silence.
 
-### 5a. Filling the results document from the scrape
+### 5a. Settling without typing anything up
 
+Most weeks you do not need to touch `results.json` at all.
 `odds_calculator.py` already scrapes every finished fixture, scoreline
-included, into `data/matches_data.json`. Retyping those scorelines into
-`data/results.json` is transcription, and a typo there silently restates the
-PnL of a settled bet. So don't type them:
+included, into `data/matches_data.json`. `--from-matches` tells settlement to
+read that store, so the scorelines never get retyped:
 
 ```bash
-python3 tools/fill_results.py --dry-run    # show what it would write
-python3 tools/fill_results.py              # write it
-```
-
-It fills in exactly the fixtures the ledger is waiting on -- every pending
-bet, matched to the first scrape of that fixture on or after the date the bet
-was struck, which is the same rule settlement itself uses. Each entry it
-writes is stamped with the `match_id` it was read from, so a settled bet still
-traces back to a record.
-
-| Flag | What it does |
-|---|---|
-| `--all` | Write every scraped fixture from the pending bets' date onwards, not just the ones a bet is waiting on |
-| `--overwrite` | Replace entries already in the file with the scraped scoreline |
-| `--dry-run` | Report what would be written, write nothing |
-
-What it deliberately will **not** do:
-
-- **Overwrite an entry already in the file.** A scoreline you typed, or a void
-  you ruled, outranks the scrape; those are reported as kept, and only
-  `--overwrite` replaces them. If the file and the scrape disagree, the report
-  says so (`<< scrape says 2-1`) and leaves your entry standing.
-- **Invent a result.** A fixture with no scrape on or after the bet date is
-  listed as still needing typing up, and nothing is written for it.
-- **Mark anything void.** An abandoned or postponed match has no scrape to
-  read, so it stays a manual entry -- see the format above.
-
-Order matters: this reads `matches_data.json`, so re-run step (a) for the
-finished matchweek before running it, or there is nothing to read.
-
-**If you don't want the document at all,** settlement can grade straight from
-the scrape and skip the file:
-
-```bash
+python3 -m pipeline.settle_results --from-matches --dry-run
 python3 -m pipeline.settle_results --from-matches
 ```
 
-Same records, same matching rule, nothing written up in between. The tradeoff
-is the audit trail: `--from-matches` leaves no readable, correctable,
-committable record of what each bet was graded on beyond the ledger's own
-notes. `fill_results.py` is the middle path -- the typing is automatic, the
-document still exists, and you can correct it before settling.
+Each bet is matched to the first scrape of its fixture **on or after the date
+the bet was struck** -- so last season's meeting of the same two teams can
+never settle this season's bet. A fixture with no such scrape stays pending
+and is named in the report.
+
+Order matters: this reads `matches_data.json`, so run step (a) for the
+finished matchweek first, or there is nothing to read.
+
+**The results file still wins where it has an entry.** Settlement checks it
+before the scrape, and without a date check, so `results.json` is where you
+overrule the scrape -- an abandonment to void, a fixture the scraper got
+wrong. It is also where a stale entry hides: one typed in with the wrong
+scoreline beats the correct scraped one, silently and permanently. If you are
+not deliberately overruling something, leave the file empty of that fixture
+and let `--from-matches` do it.
+
+That is a real risk, not a hypothetical: the `Newcastle v Liverpool` entry sat
+in this file as `1-1` when the match finished `2-2`. It cost nothing on a 1x2
+bet -- a draw either way -- but the same typo on an over/under would have
+graded the bet backwards (1-1 under 2.5, 2-2 over).
 
 Find a bet's ID:
 
@@ -316,7 +296,6 @@ python3 tools/validate_poisson.py        # Poisson probabilities sum/consistency
 python3 tools/rebuild_elo.py --dry-run   # rebuild ratings from match history
 python3 tools/rebuild_elo.py             # ...for real (writes data/)
 python3 tools/repair_card_data.py --dry-run
-python3 tools/fill_results.py --dry-run  # fill results.json from the scrape
 python3 tools/super6_picks.py            # Super 6 picks (needs a local Ollama)
 ```
 
