@@ -77,8 +77,10 @@ python3 tools/validate_poisson.py
 python3 -m pipeline.run_pipeline --dry-run
 python3 -m pipeline.run_pipeline
 
-# d. AFTER the matches finish: type up results, then settle
-#    (edit data/results.json first -- see section 5)
+# d. AFTER the matches finish: re-scrape (step a) so the results are in
+#    matches_data.json, then fill in the results document and settle
+python3 tools/fill_results.py --dry-run
+python3 tools/fill_results.py
 python3 -m pipeline.settle_results --dry-run
 python3 -m pipeline.settle_results
 
@@ -206,6 +208,10 @@ So: **placing** bets moves `staking_bankroll` and `bets_open`.
 Settlement is a separate command on purpose -- pricing happens before kickoff,
 grading after full time.
 
+Most of this is now filled in for you -- see 5a. What follows is the format,
+which still matters for the entries the scrape cannot supply (an abandonment,
+a matchweek not scraped yet) and for correcting one it got wrong.
+
 Edit `data/results.json` and append one entry per finished fixture to the
 `results` list. The fixture name must be the one the ledger recorded
 (`Home v Away`); case and spacing do not matter:
@@ -243,6 +249,57 @@ Other options:
 A bet with no result in either source is **left pending and reported**.
 Settlement never infers a result from silence.
 
+### 5a. Filling the results document from the scrape
+
+`odds_calculator.py` already scrapes every finished fixture, scoreline
+included, into `data/matches_data.json`. Retyping those scorelines into
+`data/results.json` is transcription, and a typo there silently restates the
+PnL of a settled bet. So don't type them:
+
+```bash
+python3 tools/fill_results.py --dry-run    # show what it would write
+python3 tools/fill_results.py              # write it
+```
+
+It fills in exactly the fixtures the ledger is waiting on -- every pending
+bet, matched to the first scrape of that fixture on or after the date the bet
+was struck, which is the same rule settlement itself uses. Each entry it
+writes is stamped with the `match_id` it was read from, so a settled bet still
+traces back to a record.
+
+| Flag | What it does |
+|---|---|
+| `--all` | Write every scraped fixture from the pending bets' date onwards, not just the ones a bet is waiting on |
+| `--overwrite` | Replace entries already in the file with the scraped scoreline |
+| `--dry-run` | Report what would be written, write nothing |
+
+What it deliberately will **not** do:
+
+- **Overwrite an entry already in the file.** A scoreline you typed, or a void
+  you ruled, outranks the scrape; those are reported as kept, and only
+  `--overwrite` replaces them. If the file and the scrape disagree, the report
+  says so (`<< scrape says 2-1`) and leaves your entry standing.
+- **Invent a result.** A fixture with no scrape on or after the bet date is
+  listed as still needing typing up, and nothing is written for it.
+- **Mark anything void.** An abandoned or postponed match has no scrape to
+  read, so it stays a manual entry -- see the format above.
+
+Order matters: this reads `matches_data.json`, so re-run step (a) for the
+finished matchweek before running it, or there is nothing to read.
+
+**If you don't want the document at all,** settlement can grade straight from
+the scrape and skip the file:
+
+```bash
+python3 -m pipeline.settle_results --from-matches
+```
+
+Same records, same matching rule, nothing written up in between. The tradeoff
+is the audit trail: `--from-matches` leaves no readable, correctable,
+committable record of what each bet was graded on beyond the ledger's own
+notes. `fill_results.py` is the middle path -- the typing is automatic, the
+document still exists, and you can correct it before settling.
+
 Find a bet's ID:
 
 ```bash
@@ -259,6 +316,7 @@ python3 tools/validate_poisson.py        # Poisson probabilities sum/consistency
 python3 tools/rebuild_elo.py --dry-run   # rebuild ratings from match history
 python3 tools/rebuild_elo.py             # ...for real (writes data/)
 python3 tools/repair_card_data.py --dry-run
+python3 tools/fill_results.py --dry-run  # fill results.json from the scrape
 python3 tools/super6_picks.py            # Super 6 picks (needs a local Ollama)
 ```
 
