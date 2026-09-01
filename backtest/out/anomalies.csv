@@ -1,0 +1,22 @@
+kind,date,fixture,detail
+empty_band,2020-09-12,Fulham v Arsenal,band 1 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2020-09-12,Crystal Palace v Southampton,band 1 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2020-09-12,Liverpool v Leeds,band 1 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2020-09-12,West Ham v Newcastle,band 1 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+degenerate_band,2020-09-13,West Brom v Leicester,"band 1 rates sum to zero (every match in it is evenly rated); calculate_fair_odds would divide by zero, so this fixture was not priced"
+degenerate_band,2020-09-13,Tottenham v Everton,"band 1 rates sum to zero (every match in it is evenly rated); calculate_fair_odds would divide by zero, so this fixture was not priced"
+degenerate_band,2020-09-14,Sheffield United v Wolves,"band 1 rates sum to zero (every match in it is evenly rated); calculate_fair_odds would divide by zero, so this fixture was not priced"
+degenerate_band,2020-09-14,Brighton v Chelsea,"band 1 rates sum to zero (every match in it is evenly rated); calculate_fair_odds would divide by zero, so this fixture was not priced"
+degenerate_band,2020-09-19,Everton v West Brom,"band 1 rates sum to zero (every match in it is evenly rated); calculate_fair_odds would divide by zero, so this fixture was not priced"
+degenerate_band,2020-09-19,Leeds v Fulham,"band 1 rates sum to zero (every match in it is evenly rated); calculate_fair_odds would divide by zero, so this fixture was not priced"
+degenerate_band,2020-09-19,Man United v Crystal Palace,"band 1 rates sum to zero (every match in it is evenly rated); calculate_fair_odds would divide by zero, so this fixture was not priced"
+degenerate_band,2020-09-19,Arsenal v West Ham,"band 1 rates sum to zero (every match in it is evenly rated); calculate_fair_odds would divide by zero, so this fixture was not priced"
+empty_band,2020-10-24,Liverpool v Sheffield United,band 2 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2020-12-17,Sheffield United v Man United,band 3 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2020-12-27,Liverpool v West Brom,band 4 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2021-05-01,Crystal Palace v Man City,band 5 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2021-12-04,Watford v Man City,band 6 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2022-02-09,Man City v Brentford,band 7 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2022-04-23,Man City v Watford,band 8 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2023-08-27,Sheffield United v Man City,band 9 had no completed matches; priced from the 0.333/0.333/0.334 fallback
+empty_band,2024-08-24,Man City v Ipswich,band 10 had no completed matches; priced from the 0.333/0.333/0.334 fallback
