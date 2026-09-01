@@ -17,8 +17,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from pipeline import staking
 from pipeline.staking import (
-    EIGHTH_KELLY, HEDGE, LOW_CONFIDENCE, MIN_EV, QUARTER_KELLY, STANDARD,
-    apply_sanity_checks, expected_value, full_kelly_fraction, size_bet,
+    EIGHTH_KELLY, HEDGE, IMPLAUSIBLE_EDGE, LARGE_EDGE, LOW_CONFIDENCE, MIN_EV,
+    QUARTER_KELLY, STANDARD, apply_sanity_checks, expected_value,
+    full_kelly_fraction, size_bet,
 )
 
 
@@ -201,16 +202,71 @@ class TestSanityChecks(unittest.TestCase):
         self.assertTrue(all(d.bet for d in decisions))
         self.assertEqual([f for f in findings if f.blocks], [])
 
-    def test_implausible_edge_is_flagged_but_not_blocked(self):
-        """Advisory only -- the operator's rules do not call for blocking it."""
+    def test_implausible_edge_is_sized_down_but_not_blocked(self):
+        """
+        A large edge is staked at Eighth-Kelly, not refused.
+
+        The check was once advisory only and changed nothing about the stake;
+        that is the defect this asserts against. It still does not block --
+        the bet is taken, at half the size.
+        """
         decisions = [self._bet('A v B', 'home', p=0.60, odds=2.50)]  # +50% EV
         decisions, findings = apply_sanity_checks(decisions)
 
         self.assertTrue(decisions[0].bet)
         self.assertGreater(decisions[0].stake, 0)
+        self.assertEqual(decisions[0].confidence, LARGE_EDGE)
+        self.assertEqual(decisions[0].multiplier, EIGHTH_KELLY)
+        self.assertIn('implausible_edge', decisions[0].flags)
+
         flagged = [f for f in findings if f.kind == 'implausible_edge']
         self.assertEqual(len(flagged), 1)
         self.assertFalse(flagged[0].blocks)
+        self.assertIn('Eighth-Kelly', flagged[0].detail)
+
+    def test_large_edge_stake_is_exactly_half_the_old_quarter_kelly(self):
+        """The fix halves the stake and changes nothing else about it."""
+        big = self._bet('A v B', 'home', p=0.60, odds=2.50)
+        # implausible_edge raised out of reach reproduces the pre-fix sizing.
+        pre_fix = size_bet('A v B', 'm', 'home', 0.60, 2.50, 1000.0,
+                           implausible_edge=1.0)
+
+        self.assertEqual(pre_fix.confidence, STANDARD)
+        self.assertEqual(pre_fix.multiplier, QUARTER_KELLY)
+        # Compared on stake_fraction, which is exact; `stake` is rounded to
+        # pence, so half a rounded stake is not the rounded half stake.
+        self.assertAlmostEqual(big.stake_fraction,
+                               pre_fix.stake_fraction / 2, places=12)
+        self.assertAlmostEqual(big.full_kelly, pre_fix.full_kelly, places=12)
+
+    def test_threshold_is_inclusive_from_above(self):
+        """
+        The comparison is `>=`, so an edge at the threshold is sized down.
+
+        Asserted from the unambiguous side. An edge the operator would call
+        "exactly +20%" is not a single float: p*d - 1 for p=0.60, d=2.00
+        evaluates to 0.19999999999999996 and for p=0.40, d=3.00 to
+        0.20000000000000018, so the two land on opposite sides of the
+        threshold. That is inherent to comparing a computed EV against a
+        literal, it is the same behaviour the +5% MIN_EV floor has always
+        had, and it is left alone here deliberately -- moving it is a policy
+        decision about the threshold, not part of fixing the flag.
+        """
+        just_above = size_bet('A v B', 'm', 'home', 0.40, 3.00, 1000.0)
+        self.assertGreaterEqual(just_above.expected_value, IMPLAUSIBLE_EDGE)
+        self.assertEqual(just_above.multiplier, EIGHTH_KELLY)
+        self.assertEqual(just_above.confidence, LARGE_EDGE)
+
+        just_below = size_bet('A v B', 'm', 'home', 0.60, 2.00, 1000.0)
+        self.assertLess(just_below.expected_value, IMPLAUSIBLE_EDGE)
+        self.assertEqual(just_below.multiplier, QUARTER_KELLY)
+
+    def test_large_edge_never_raises_an_eighth_kelly_play(self):
+        """The downgrade only ever moves down. A hedge stays a hedge."""
+        d = size_bet('A v B', 'm', 'home', 0.60, 2.50, 1000.0, HEDGE)
+        self.assertEqual(d.confidence, HEDGE)
+        self.assertEqual(d.multiplier, EIGHTH_KELLY)
+        self.assertIn('implausible_edge', d.flags)
 
     def test_ordinary_edge_not_flagged(self):
         decisions = [self._bet('A v B', 'home', p=0.55, odds=2.10)]  # +15.5%
