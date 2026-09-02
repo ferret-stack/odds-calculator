@@ -34,6 +34,28 @@ which the chain and the table build but nothing is staked.
 `bands='frozen'` is offered for comparison and uses production's shipped
 `data/elo_bands.json` read-only. Its numbers are contaminated by design; it
 exists so the size of the leak is visible rather than assumed.
+
+SHRINKAGE (`shrinkage=w`)
+------------------------
+The default `w=1.0` is the production model, unchanged and bit-identical to
+the run this harness has always done. Below 1.0 the probability handed to
+`size_bet` is blended with the de-vigged market probability for the SAME
+fixture and the SAME book:
+
+    p_w = w * model_prob + (1 - w) * market_fair
+
+Both legs are already normalised 1x2 distributions, so the blend is one too.
+Nothing else in the loop moves: ratings, bands, seeding and settlement are
+independent of any staking decision, so the set of priced selections is
+identical for every w -- `backtest/shrinkage.py` asserts that rather than
+assuming it.
+
+No lookahead is introduced. `market_fair` comes from the closing prices of
+that one match, which the EV arithmetic already consumes at that same point
+in the walk; no match is blended with information from any other match, and
+nothing is aggregated across dates. The honest caveat is a different one, and
+it is not about lookahead: these are CLOSING prices, while production prices
+midweek against a softer, earlier line. See backtest/NOTES.md section 8.
 """
 
 import sys
@@ -204,9 +226,14 @@ def band_is_degenerate(band_row):
 
 def run(matches, bands_mode='walkforward', warmup_seasons=1,
         frozen_bands=None, min_ev=MIN_EV, books=('avg', 'b365'),
-        max_stake_fraction=MAX_STAKE_FRACTION):
+        max_stake_fraction=MAX_STAKE_FRACTION, shrinkage=1.0):
     """
     Replay every match in date order, pricing before updating.
+
+    `shrinkage` is the weight w on the model in the blend described in the
+    module docstring: 1.0 is the pure production model (the default, and
+    exactly the arithmetic this harness ran before shrinkage existed, since
+    1.0 * p + 0.0 * f is p), 0.0 is the pure de-vigged market.
 
     Returns a dict with:
         fixtures  -- one row per (match, book, selection), bet or not
@@ -219,6 +246,8 @@ def run(matches, bands_mode='walkforward', warmup_seasons=1,
         raise ValueError(f'unknown bands mode {bands_mode!r}')
     if bands_mode == 'frozen' and not frozen_bands:
         raise ValueError('bands_mode="frozen" needs frozen_bands')
+    if not 0.0 <= shrinkage <= 1.0:
+        raise ValueError(f'shrinkage must be in [0, 1], got {shrinkage}')
 
     calc = ELOCalculator(k_factor=20, home_advantage=100, use_mov=True,
                          default_elo=SEED_ELO)
@@ -290,6 +319,16 @@ def run(matches, bands_mode='walkforward', warmup_seasons=1,
                 fair = _devig(prices)
                 name = f"{match['home_team']} v {match['away_team']}"
 
+                # The raw band price, kept beside the blended one so a row
+                # always shows what the model said on its own -- shrinkage
+                # must never be able to hide the model's own number.
+                raw = {sel: model[key] for sel, key in MARKETS.items()}
+                staked_prob = {
+                    sel: (shrinkage * raw[sel]
+                          + (1.0 - shrinkage) * fair[sel])
+                    if sel in fair else raw[sel]
+                    for sel in raw}
+
                 decisions = []
                 for selection, model_key in MARKETS.items():
                     price = prices.get(selection)
@@ -297,7 +336,7 @@ def run(matches, bands_mode='walkforward', warmup_seasons=1,
                         continue
                     decisions.append(size_bet(
                         fixture=name, market='1x2', selection=selection,
-                        probability=model[model_key],
+                        probability=staked_prob[selection],
                         odds=price, bankroll=NOTIONAL_BANKROLL,
                         confidence=STANDARD, min_ev=min_ev,
                         match_date=match['date']))
@@ -330,6 +369,8 @@ def run(matches, bands_mode='walkforward', warmup_seasons=1,
                         stronger_side=stronger,
                         selection=decision.selection,
                         model_prob=round(decision.model_probability, 6),
+                        raw_model_prob=round(raw[decision.selection], 6),
+                        shrinkage_w=shrinkage,
                         odds=decision.bookmaker_odds,
                         market_prob=round(decision.implied_probability, 6),
                         market_fair=round(fair.get(decision.selection, 0.0), 6),
@@ -387,6 +428,7 @@ def run(matches, bands_mode='walkforward', warmup_seasons=1,
             'priced_matches': len([m for m in matches
                                    if m['season'] not in warmup]),
             'min_ev': min_ev,
+            'shrinkage': shrinkage,
             'notional_bankroll': NOTIONAL_BANKROLL,
             'max_stake_fraction': max_stake_fraction,
             'books': list(books),
