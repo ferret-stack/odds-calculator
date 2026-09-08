@@ -9,9 +9,13 @@ Stages
   1. Load the validated ELO/Poisson model output (Day 1)
   2. Price every upcoming fixture and find +EV selections (>= +5% EV)
   3. Size them: Quarter-Kelly ceiling standard, Eighth-Kelly hedge/low-conf
+     and any edge at or above the +20% implausible-edge threshold
   4. Run the sanity checks (correlation, two-+EV-in-one-market)
-  5. Attach qualitative context (styles, news, formations, congestion)
-  6. Write the run report and update the bankroll ledger
+  5. Enforce the exposure caps: clamp each stake to the per-bet cap (logged),
+     then total the week and FLAG a breach of the weekly cap without
+     rescaling anything
+  6. Attach qualitative context (styles, news, formations, congestion)
+  7. Write the run report and update the bankroll ledger
 
 Design notes
 ------------
@@ -40,10 +44,12 @@ from datetime import datetime
 from pathlib import Path
 
 from elo_calculator import calculate_fair_odds
+from pipeline import confidence as conf
 from pipeline import qualitative as qual
 from pipeline.bankroll import PENDING, Ledger, normalise_fixture
 from pipeline.staking import (
-    HEDGE, LOW_CONFIDENCE, STANDARD, apply_sanity_checks, size_bet,
+    HEDGE, LOW_CONFIDENCE, STANDARD, apply_sanity_checks, apply_stake_cap,
+    check_weekly_exposure, size_bet, staking_limits,
 )
 
 # Model selection -> the bookmaker_odds key it is priced against.
@@ -105,7 +111,13 @@ def classify_confidence(fixture, model, selection, context, low_confidence_bands
 
 
 def find_edges(fixtures, current_elo, elo_bands, bankroll, config):
-    """Price every fixture, size every selection that clears the EV floor."""
+    """
+    Price every fixture, size every selection that clears the EV floor.
+
+    Each decision also carries the sample size and interval behind its band
+    probability. That is instrumentation: it is attached here because here is
+    where the band is known, and it is read by the report and by nothing else.
+    """
     decisions, skipped = [], []
     low_bands = set(config.get('low_confidence_bands', []))
 
@@ -115,6 +127,8 @@ def find_edges(fixtures, current_elo, elo_bands, bankroll, config):
         if model is None:
             skipped.append((name, 'no ELO rating for one or both teams'))
             continue
+
+        evidence = conf.band_evidence(model, elo_bands)
 
         odds = fixture.get('bookmaker_odds') or {}
         for selection, (market, model_key) in MARKETS.items():
@@ -128,7 +142,8 @@ def find_edges(fixtures, current_elo, elo_bands, bankroll, config):
             decisions.append(size_bet(
                 fixture=name, market=market, selection=selection,
                 probability=probability, odds=price, bankroll=bankroll,
-                confidence=confidence, match_date=fixture.get('date', '')))
+                confidence=confidence, match_date=fixture.get('date', ''),
+                band_evidence=evidence.get(model_key, {})))
 
     return decisions, skipped
 
@@ -227,12 +242,15 @@ def place_bets(ledger, decisions, force=False, commit=True):
 # --- reporting ------------------------------------------------------------
 
 def build_report(decisions, findings, contexts, skipped, ledger, dry_run,
-                 placed=None, duplicates=None, forced=None, force=False):
+                 placed=None, duplicates=None, forced=None, force=False,
+                 clamps=None, exposure=None, limits=None):
     # `placed` is what survived the duplicate guard, not simply everything
     # with bet=True -- those differ exactly when a re-run hits the book.
     placed = [d for d in decisions if d.bet] if placed is None else placed
     duplicates = duplicates or []
     forced = forced or []
+    clamps = clamps or []
+    per_bet_cap, weekly_cap = limits or (None, None)
     return {
         'generated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'dry_run': dry_run,
@@ -247,8 +265,30 @@ def build_report(decisions, findings, contexts, skipped, ledger, dry_run,
         'staking_rule': {
             'standard': 'Quarter-Kelly (0.25) -- ceiling',
             'hedge_or_low_confidence': 'Eighth-Kelly (0.125)',
+            'large_edge': ('Eighth-Kelly (0.125) -- any edge at or above '
+                           '+20% EV is sized down, not refused'),
             'minimum_edge': '+5% EV',
             'note': 'not Half-Kelly; older repo references are superseded',
+        },
+        # What the caps did this run. Kept in the report rather than only on
+        # stdout so a clamp is auditable after the terminal has scrolled.
+        'exposure_caps': {
+            'per_bet_cap_fraction': per_bet_cap,
+            'weekly_cap_fraction': weekly_cap,
+            'per_bet_clamps': [
+                {
+                    'fixture': c.fixture, 'market': c.market,
+                    'selection': c.selection,
+                    'calculated_stake': c.calculated_stake,
+                    'capped_stake': c.capped_stake,
+                    'reduction': c.reduction,
+                    'cap_amount': c.cap_amount,
+                    'bankroll': round(c.bankroll, 2),
+                    'detail': c.describe(),
+                }
+                for c in clamps
+            ],
+            'weekly_exposure': exposure,
         },
         'congestion_signal': qual.CONGESTION_CAVEAT,
         'bankroll': ledger.summary(),
@@ -265,9 +305,16 @@ def build_report(decisions, findings, contexts, skipped, ledger, dry_run,
                 'kelly_multiplier': d.multiplier,
                 'stake_fraction': round(d.stake_fraction, 5),
                 'stake': d.stake,
+                # Both numbers, always. Equal when no cap fired, so a clamp
+                # shows up as a difference rather than as a missing field.
+                'uncapped_stake': d.uncapped_stake,
+                'capped': d.capped,
                 'bet': d.bet,
                 'reason': d.reason,
                 'flags': d.flags,
+                # Additive instrumentation -- see pipeline/confidence.py.
+                # Nothing in the staking path reads this.
+                'band_evidence': d.band_evidence,
             }
             for d in decisions
         ],
@@ -284,6 +331,9 @@ def build_report(decisions, findings, contexts, skipped, ledger, dry_run,
             'bets_skipped_as_duplicates': len(duplicates),
             'bets_forced': len(forced),
             'total_stake': round(sum(d.stake for d in placed), 2),
+            'total_stake_uncapped': round(
+                sum(d.uncapped_stake for d in placed), 2),
+            'per_bet_clamps': len(clamps),
         },
     }
 
@@ -302,6 +352,8 @@ def print_report(report, decisions, findings, contexts, ledger):
     for d in decisions:
         marker = '✓' if d.bet else '·'
         print(f'  {marker} {d.fixture:<28} {d.explain()}')
+        if d.band_evidence:
+            print(f'      evidence: {conf.summarise(d.band_evidence)}')
 
     if findings:
         print('\n' + '=' * 72)
@@ -311,6 +363,28 @@ def print_report(report, decisions, findings, contexts, ledger):
             marker = '✗ BLOCKING' if f.blocks else '• noted'
             print(f'  {marker}  [{f.kind}] {f.fixture}')
             print(f'      {f.detail}')
+
+    caps = report['exposure_caps']
+    exposure = caps['weekly_exposure'] or {}
+    print('\n' + '=' * 72)
+    print('EXPOSURE CAPS')
+    print('=' * 72)
+    if caps['per_bet_clamps']:
+        for c in caps['per_bet_clamps']:
+            print(f"  ! CLAMPED  {c['detail']}")
+    else:
+        print(f"  no per-bet clamp fired "
+              f"(cap {caps['per_bet_cap_fraction'] * 100:.1f}% of bankroll)")
+    if exposure:
+        marker = '✗ OVER CAP' if exposure['breached'] else '• within cap'
+        print(f"  {marker}  week totals {exposure['total_stake']:.2f} across "
+              f"{exposure['bets']} bet(s) = {exposure['exposure_pct']:.2f}% "
+              f"of {exposure['bankroll']:.2f} "
+              f"(cap {exposure['weekly_cap_fraction'] * 100:.0f}% = "
+              f"{exposure['weekly_cap_amount']:.2f})")
+        if exposure['breached']:
+            print(f"      over by {exposure['over_cap_by']:.2f}. Stakes have "
+                  f"NOT been rescaled -- drop or resize bets before placing.")
 
     dup = report['duplicate_check']
     if dup['skipped'] or dup['forced']:
@@ -341,6 +415,9 @@ def print_report(report, decisions, findings, contexts, ledger):
     print('\n' + '=' * 72)
     print(f"  priced {t['priced']} selection(s), "
           f"{t['bets_placed']} bet(s), total stake {t['total_stake']:.2f}")
+    if t['per_bet_clamps']:
+        print(f"  {t['per_bet_clamps']} stake(s) clamped by the per-bet cap "
+              f"({t['total_stake_uncapped']:.2f} before capping)")
     if t['bets_skipped_as_duplicates']:
         print(f"  {t['bets_skipped_as_duplicates']} skipped as duplicate(s) "
               f"-- already on the book")
@@ -367,6 +444,8 @@ def run(data_dir='data', bankroll=None, dry_run=False, force=False,
     if bankroll is not None:
         ledger.starting_bankroll = bankroll
 
+    per_bet_cap, weekly_cap = staking_limits(config)
+
     staking_bankroll = ledger.staking_bankroll
     print(f'Pricing {len(fixtures)} fixture(s) against a staking bankroll of '
           f'{staking_bankroll:.2f}' + ('   [DRY RUN]' if dry_run else ''))
@@ -385,6 +464,24 @@ def run(data_dir='data', bankroll=None, dry_run=False, force=False,
     }
     decisions, findings = apply_sanity_checks(decisions, explanations)
 
+    # Caps run AFTER the sanity checks and BEFORE anything reaches the ledger,
+    # so a blocked bet is never clamped (it is already zero) and a clamped
+    # stake is the one actually written.
+    print(f'\nExposure caps: per-bet {per_bet_cap * 100:.1f}%, weekly '
+          f'{weekly_cap * 100:.0f}% of the {staking_bankroll:.2f} staking '
+          f'bankroll')
+    decisions, clamps = apply_stake_cap(
+        decisions, staking_bankroll, max_fraction=per_bet_cap)
+    if not clamps:
+        print('  no per-bet clamp fired')
+
+    # Flagged, never rescaled: which bet to drop is the operator's call.
+    exposure, weekly_finding = check_weekly_exposure(
+        decisions, staking_bankroll, max_fraction=weekly_cap)
+    if weekly_finding is not None:
+        findings.append(weekly_finding)
+        print(f'  [WEEKLY CAP] {weekly_finding.detail}')
+
     contexts = attach_context(fixtures, matches, data_dir)
 
     # The guard runs in both modes. Under --dry-run nothing is committed, but
@@ -395,7 +492,9 @@ def run(data_dir='data', bankroll=None, dry_run=False, force=False,
 
     report = build_report(decisions, findings, contexts, skipped, ledger,
                           dry_run, placed=placed, duplicates=duplicates,
-                          forced=forced, force=force)
+                          forced=forced, force=force, clamps=clamps,
+                          exposure=exposure,
+                          limits=(per_bet_cap, weekly_cap))
 
     print_report(report, decisions, findings, contexts, ledger)
 

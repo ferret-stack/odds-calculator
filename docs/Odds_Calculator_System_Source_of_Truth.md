@@ -52,8 +52,18 @@ This runs through its own `seed_team()` code path, separate from the generic fal
 **Formalized standard (supersedes Half-Kelly references elsewhere):**
 - Quarter-Kelly ceiling for standard +EV plays.
 - Eighth-Kelly for hedge positions / lower-confidence plays.
+- Eighth-Kelly for any edge at or above +20% EV (the `implausible_edge` threshold). Sized down, not refused.
 - This matches actual practice (MW34 and others), not the Half-Kelly currently written into `An_Odd_Prompt.md` and `odds-calculator-weekly_workflow.md` — those need updating to match this, not the other way round.
 - Existing sanity checks stay as-is: no correlated bets without explaining the correlation; two +EV outcomes in the same market = re-check the model, don't bet both.
+
+**Exposure caps** — configured in `data/pipeline_config.json` under `staking_limits`, applied after Kelly and after the sanity checks:
+- `max_stake_fraction` (3%): no single bet above 3% of the staking bankroll. Clamped automatically; every clamp is logged with the calculated and capped figures, and both appear in the run report.
+- `max_weekly_stake_fraction` (12%): no week's total above 12%. **Flagged, never silently rescaled** — which bet to drop is an operator decision, so the system reports the breach and leaves the stakes alone.
+- They live in `pipeline_config.json` rather than `bankroll.json` because `Ledger.save()` rewrites the latter from a fixed set of keys and would discard them.
+
+**`implausible_edge`, corrected (MW3).** The flag was defined at +20% EV and did fire, but `apply_sanity_checks` only ever acted on findings marked `blocks=True`, so a non-blocking finding changed nothing about the stake — it was advisory text beside a full Quarter-Kelly bet. It has never been an "away-underdog" flag; venue and underdog status appear nowhere in the trigger, only edge magnitude. The downgrade now happens in `size_bet`, where the stake is computed. Known effect: MW2 bet `00009` (Leeds v Brentford away @ 2.70, +20.12% EV) was staked £30.09 instead of £15.04.
+
+**Band confidence (instrumentation).** Every band-derived probability in the run report now carries the number of historical matches behind its band and a Wilson score interval, on both the raw band rate and the venue-adjusted scale. Wilson because the bands run down to n=4 with rates pinned at 0 and 1, where a Wald interval collapses to zero width. This is reporting only — nothing in the staking path reads it. Whether an interval should adjust a stake is an open decision, not a taken one. See `pipeline/confidence.py`.
 
 ---
 

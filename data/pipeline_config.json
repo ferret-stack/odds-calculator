@@ -4,6 +4,17 @@
     "",
     "starting_bankroll        - used only on the first run; afterwards the",
     "                           ledger in bankroll.json is the source of truth.",
+    "staking_limits           - exposure caps, as fractions of the STAKING",
+    "                           bankroll (settled balance less stake already",
+    "                           committed to open bets).",
+    "                           max_stake_fraction: no single bet above this.",
+    "                           Clamped automatically; every clamp is logged.",
+    "                           max_weekly_stake_fraction: no week's total",
+    "                           above this. FLAGGED, never silently rescaled --",
+    "                           which bet to drop is an operator decision.",
+    "                           These live here rather than in bankroll.json",
+    "                           because Ledger.save() rewrites that file from a",
+    "                           fixed set of keys and would discard them.",
     "low_confidence_bands     - ELO bands thin enough that a play in them is",
     "                           sized at Eighth-Kelly rather than Quarter.",
     "                           Bands 9 and 10 hold 6 and 4 matches, so their",
@@ -16,6 +27,13 @@
     "                           model-recheck signal, not a bet."
   ],
   "starting_bankroll": 1000.0,
-  "low_confidence_bands": [9, 10],
+  "staking_limits": {
+    "max_stake_fraction": 0.03,
+    "max_weekly_stake_fraction": 0.12
+  },
+  "low_confidence_bands": [
+    9,
+    10
+  ],
   "correlation_explanations": {}
 }
