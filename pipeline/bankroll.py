@@ -96,6 +96,18 @@ class Ledger:
                                           self.starting_bankroll)
         self.bets = [Bet(**b) for b in data.get('bets', [])]
 
+        # A bet id is how settlement and --set name a bet, so two bets
+        # sharing one is not a cosmetic defect: settle() takes the first
+        # match, which means a correction aimed at one bet lands on the
+        # other. Refuse to load rather than mis-settle.
+        seen = set()
+        clashes = sorted({b.bet_id for b in self.bets
+                          if b.bet_id in seen or seen.add(b.bet_id)})
+        if clashes:
+            raise ValueError(
+                f'{self.path}: duplicate bet id(s) {", ".join(clashes)}; '
+                f'each bet must be nameable on its own')
+
     def save(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(json.dumps({
@@ -176,6 +188,26 @@ class Ledger:
 
     # --- mutation ---------------------------------------------------------
 
+    def next_bet_id(self):
+        """
+        The next unused bet id.
+
+        One past the highest already issued -- NOT `len(self.bets) + 1`, which
+        was the original scheme and reissues a live id the moment the sequence
+        has a gap in it. A ledger that has ever had a record removed by hand
+        has such a gap, and the next run then wrote a second bet under an
+        existing id.
+
+        Ids that are not plain numbers are ignored rather than rejected: an
+        id is a name, and a hand-set one stays whatever the operator called
+        it.
+        """
+        highest = 0
+        for bet in self.bets:
+            if str(bet.bet_id).isdigit():
+                highest = max(highest, int(bet.bet_id))
+        return f'{highest + 1:05d}'
+
     def place(self, decision, bet_id=None, placed_at=None, supersedes=None):
         """
         Record a StakeDecision as a struck bet.
@@ -201,7 +233,7 @@ class Ledger:
                     f'settled as {superseded.status}')
 
         bet = Bet(
-            bet_id=bet_id or f'{len(self.bets) + 1:05d}',
+            bet_id=bet_id or self.next_bet_id(),
             placed_at=placed_at or datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             fixture=decision.fixture,
             market=decision.market,

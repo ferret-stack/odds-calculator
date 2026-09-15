@@ -97,7 +97,7 @@
       "status": "lost",
       "settled_at": "2026-08-26 15:12:04",
       "returned": 0.0,
-      "notes": "1-1 (results file)",
+      "notes": "2-2 (results file, corrected 2026-08-31 from a mistyped 1-1; a draw either way, so this bet is still lost and the PnL is unchanged)",
       "supersedes": null,
       "superseded_by": null
     },
@@ -122,7 +122,7 @@
       "superseded_by": null
     },
     {
-      "bet_id": "00006",
+      "bet_id": "00013",
       "placed_at": "2026-08-26 15:32:56",
       "fixture": "Liverpool v Nott'm Forest",
       "market": "1x2",
@@ -142,7 +142,7 @@
       "superseded_by": null
     },
     {
-      "bet_id": "00007",
+      "bet_id": "00014",
       "placed_at": "2026-08-26 15:32:56",
       "fixture": "Bournemouth v Everton",
       "market": "1x2",

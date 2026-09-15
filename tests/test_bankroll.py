@@ -1,5 +1,6 @@
 """Tests for the bankroll ledger."""
 
+import json
 import sys
 import tempfile
 import unittest
@@ -49,6 +50,53 @@ class TestPlacing(LedgerTestCase):
         first = self._place()
         second = self._place()
         self.assertLess(second.stake, first.stake)
+
+
+class TestBetIds(LedgerTestCase):
+    """
+    A bet id is how settlement and `--set` name a bet, so it has to be unique
+    for a correction to be aimable. The original scheme numbered a new bet
+    `len(self.bets) + 1`, which reissues a live id as soon as the sequence has
+    a gap in it -- as one does after a record is removed by hand.
+    """
+
+    def test_ids_are_sequential_on_an_unbroken_ledger(self):
+        self.assertEqual(['00001', '00002', '00003'],
+                         [self._place().bet_id for _ in range(3)])
+
+    def test_a_gap_does_not_reissue_a_live_id(self):
+        ids = [self._place().bet_id for _ in range(3)]
+        # The operator deletes the middle record by hand and the file is
+        # reloaded: the sequence now runs 00001, 00003.
+        del self.ledger.bets[1]
+        self.ledger.save()
+
+        reloaded = Ledger(path=self.path)
+        decision = size_bet('C v D', '1x2', 'home', 0.55, 2.10, 1000.0)
+        placed = reloaded.place(decision)
+
+        self.assertEqual('00004', placed.bet_id)
+        self.assertNotIn(placed.bet_id, ids[:1] + ids[2:])
+        self.assertEqual(3, len({b.bet_id for b in reloaded.bets}))
+
+    def test_hand_set_ids_are_left_alone_and_counted_around(self):
+        self.ledger.place(
+            size_bet('A v B', '1x2', 'home', 0.55, 2.10, 1000.0),
+            bet_id='opening-bet')
+        self.assertEqual('00001', self._place().bet_id)
+
+    def test_a_duplicated_id_refuses_to_load(self):
+        """Mis-settling on the wrong bet must not be possible silently."""
+        self._place()
+        self._place()
+        self.ledger.save()
+        payload = json.loads(self.path.read_text())
+        payload['bets'][1]['bet_id'] = payload['bets'][0]['bet_id']
+        self.path.write_text(json.dumps(payload))
+
+        with self.assertRaises(ValueError) as caught:
+            Ledger(path=self.path)
+        self.assertIn('duplicate bet id', str(caught.exception))
 
 
 class TestSettling(LedgerTestCase):
