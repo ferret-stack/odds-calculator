@@ -7,11 +7,11 @@
     "avg_reds": 0.12
   },
   "Chris Kavanagh": {
-    "games": 127,
-    "games_with_card_data": 98,
-    "avg_booking_points": 40.1,
+    "games": 128,
+    "games_with_card_data": 99,
+    "avg_booking_points": 40.5,
     "avg_yellows": 3.7,
-    "avg_reds": 0.14
+    "avg_reds": 0.15
   },
   "Michael Oliver": {
     "games": 164,
@@ -35,11 +35,11 @@
     "avg_reds": 0.15
   },
   "Stuart Attwell": {
-    "games": 145,
-    "games_with_card_data": 121,
-    "avg_booking_points": 39.3,
+    "games": 146,
+    "games_with_card_data": 122,
+    "avg_booking_points": 39.2,
     "avg_yellows": 3.6,
-    "avg_reds": 0.12
+    "avg_reds": 0.11
   },
   "Craig Pawson": {
     "games": 131,
@@ -63,9 +63,9 @@
     "avg_reds": 0.19
   },
   "Paul Tierney": {
-    "games": 117,
-    "games_with_card_data": 105,
-    "avg_booking_points": 40.4,
+    "games": 118,
+    "games_with_card_data": 106,
+    "avg_booking_points": 40.6,
     "avg_yellows": 3.8,
     "avg_reds": 0.11
   },
@@ -98,10 +98,10 @@
     "avg_reds": 0.09
   },
   "Peter Bankes": {
-    "games": 98,
-    "games_with_card_data": 77,
-    "avg_booking_points": 43.0,
-    "avg_yellows": 4.0,
+    "games": 99,
+    "games_with_card_data": 78,
+    "avg_booking_points": 43.5,
+    "avg_yellows": 4.1,
     "avg_reds": 0.1
   },
   "Simon Hooper": {
@@ -126,10 +126,10 @@
     "avg_reds": 0.06
   },
   "Robert Jones": {
-    "games": 104,
-    "games_with_card_data": 86,
-    "avg_booking_points": 40.6,
-    "avg_yellows": 3.9,
+    "games": 105,
+    "games_with_card_data": 87,
+    "avg_booking_points": 40.3,
+    "avg_yellows": 3.8,
     "avg_reds": 0.08
   },
   "Anthony Moss": {
@@ -161,9 +161,9 @@
     "avg_reds": 0.13
   },
   "Tony Harrington": {
-    "games": 48,
-    "games_with_card_data": 35,
-    "avg_booking_points": 37.4,
+    "games": 49,
+    "games_with_card_data": 36,
+    "avg_booking_points": 37.5,
     "avg_yellows": 3.5,
     "avg_reds": 0.11
   },
@@ -203,11 +203,11 @@
     "avg_reds": 0.22
   },
   "Samuel Barrott": {
-    "games": 60,
-    "games_with_card_data": 36,
-    "avg_booking_points": 38.1,
-    "avg_yellows": 3.7,
-    "avg_reds": 0.06
+    "games": 61,
+    "games_with_card_data": 37,
+    "avg_booking_points": 37.6,
+    "avg_yellows": 3.6,
+    "avg_reds": 0.05
   },
   "Simon Allison": {
     "games": 4,
@@ -266,16 +266,16 @@
     "avg_reds": 0.0
   },
   "Thomas Bramall": {
-    "games": 33,
-    "games_with_card_data": 10,
-    "avg_booking_points": 39.0,
-    "avg_yellows": 2.9,
-    "avg_reds": 0.4
+    "games": 34,
+    "games_with_card_data": 11,
+    "avg_booking_points": 37.3,
+    "avg_yellows": 2.8,
+    "avg_reds": 0.36
   },
   "Jarred Gillett": {
-    "games": 36,
-    "games_with_card_data": 14,
-    "avg_booking_points": 38.6,
+    "games": 37,
+    "games_with_card_data": 15,
+    "avg_booking_points": 39.3,
     "avg_yellows": 3.9,
     "avg_reds": 0.0
   },
@@ -315,7 +315,7 @@
     "avg_reds": 0.0
   },
   "Adam Herczeg": {
-    "games": 1,
+    "games": 2,
     "games_with_card_data": 1,
     "avg_booking_points": 50.0,
     "avg_yellows": 5.0,
