@@ -77,10 +77,10 @@ python3 tools/validate_poisson.py
 python3 -m pipeline.run_pipeline --dry-run
 python3 -m pipeline.run_pipeline
 
-# d. AFTER the matches finish: type up results, then settle
-#    (edit data/results.json first -- see section 5)
-python3 -m pipeline.settle_results --dry-run
-python3 -m pipeline.settle_results
+# d. AFTER the matches finish: re-scrape (step a) so the results are in
+#    matches_data.json, then settle straight off it -- see section 5a
+python3 -m pipeline.settle_results --from-matches --dry-run
+python3 -m pipeline.settle_results --from-matches
 
 # e. Deploy: commit the updated data files and push
 git add data/ docs/
@@ -206,6 +206,10 @@ So: **placing** bets moves `staking_bankroll` and `bets_open`.
 Settlement is a separate command on purpose -- pricing happens before kickoff,
 grading after full time.
 
+Most of this is now filled in for you -- see 5a. What follows is the format,
+which still matters for the entries the scrape cannot supply (an abandonment,
+a matchweek not scraped yet) and for correcting one it got wrong.
+
 Edit `data/results.json` and append one entry per finished fixture to the
 `results` list. The fixture name must be the one the ledger recorded
 (`Home v Away`); case and spacing do not matter:
@@ -242,6 +246,39 @@ Other options:
 
 A bet with no result in either source is **left pending and reported**.
 Settlement never infers a result from silence.
+
+### 5a. Settling without typing anything up
+
+Most weeks you do not need to touch `results.json` at all.
+`odds_calculator.py` already scrapes every finished fixture, scoreline
+included, into `data/matches_data.json`. `--from-matches` tells settlement to
+read that store, so the scorelines never get retyped:
+
+```bash
+python3 -m pipeline.settle_results --from-matches --dry-run
+python3 -m pipeline.settle_results --from-matches
+```
+
+Each bet is matched to the first scrape of its fixture **on or after the date
+the bet was struck** -- so last season's meeting of the same two teams can
+never settle this season's bet. A fixture with no such scrape stays pending
+and is named in the report.
+
+Order matters: this reads `matches_data.json`, so run step (a) for the
+finished matchweek first, or there is nothing to read.
+
+**The results file still wins where it has an entry.** Settlement checks it
+before the scrape, and without a date check, so `results.json` is where you
+overrule the scrape -- an abandonment to void, a fixture the scraper got
+wrong. It is also where a stale entry hides: one typed in with the wrong
+scoreline beats the correct scraped one, silently and permanently. If you are
+not deliberately overruling something, leave the file empty of that fixture
+and let `--from-matches` do it.
+
+That is a real risk, not a hypothetical: the `Newcastle v Liverpool` entry sat
+in this file as `1-1` when the match finished `2-2`. It cost nothing on a 1x2
+bet -- a draw either way -- but the same typo on an over/under would have
+graded the bet backwards (1-1 under 2.5, 2-2 over).
 
 Find a bet's ID:
 
