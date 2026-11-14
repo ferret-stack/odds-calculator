@@ -1,0 +1,7 @@
+canonical_name,alias,decision,evidence
+Telford United,AFC Telford United,alias,"EC only. AFC Telford United: 2011/12; Telford United: 2012/13, 2014/15. Never in the same season, never play each other. Spelling variant of one club."
+Milton Keynes Dons,Wimbledon,alias,"Wimbledon: E0 1993/94-1999/00, E1 2000/01-2003/04. Milton Keynes Dons: E2 from 2004/05. Never in the same season, never play each other, consecutive seasons. Franchise moved 2003/04; rating carries over."
+Boston Utd,Boston,alias,"Boston: E3 2002/03-2006/07. Boston Utd: EC 2024/25-2025/26. Never in the same season, never play each other. 17-season gap: ELO must re-seed as a new entrant; seeding rule TBD"
+Oxford,Oxford City,distinct,"Different clubs, no alias. Both appear in 2023/24 (Oxford E2, Oxford City EC)."
+Norwich,Northwich,distinct,"Different clubs, no alias. Both appear in 2006/07-2008/09 (Norwich E1, Northwich EC)."
+Wimbledon,AFC Wimbledon,distinct,"Different clubs, no alias. Wimbledon (old) ends 2003/04 and continues as Milton Keynes Dons; AFC Wimbledon is a separate club, first in data 2009/10 (EC)."

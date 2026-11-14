@@ -1,0 +1,49 @@
+league,check,name,other_name,reason,seasons
+E0,one season only,Barnsley,,,1997/98
+E0,one season only,Blackpool,,,2010/11
+E0,one season only,Luton,,,2023/24
+E0,one season only,Oldham,,,1993/94
+E0,one season only,Swindon,,,1993/94
+E1,one season only,Milton Keynes Dons,,,2015/16
+E1,one season only,Wrexham,,,2025/26
+E1,one season only,Wycombe,,,2020/21
+E1,one season only,Yeovil,,,2013/14
+E2,one season only,Barnet,,,1993/94
+E2,one season only,Blackburn,,,2017/18
+E2,one season only,Chester,,,1994/95
+E2,one season only,Dag and Red,,,2010/11
+E2,one season only,Forest Green,,,2022/23
+E2,one season only,Hereford,,,2008/09
+E2,one season only,Leicester,,,2008/09
+E2,one season only,Macclesfield,,,1998/99
+E2,one season only,Man City,,,1998/99
+E2,one season only,Norwich,,,2009/10
+E2,one season only,Rushden & D,,,2003/04
+E2,one season only,Torquay,,,2004/05
+E2,one season only,Wolves,,,2013/14
+E3,one season only,Bolton,,,2020/21
+E3,one season only,Coventry,,,2017/18
+E3,one season only,Huddersfield,,,2003/04
+EC,one season only,AFC Telford United,,,2011/12
+EC,one season only,Accrington,,,2005/06
+EC,one season only,Brackley Town,,,2025/26
+EC,one season only,Bristol Rvs,,,2014/15
+EC,one season only,Canvey Island,,,2005/06
+EC,one season only,Carlisle,,,2025/26
+EC,one season only,Cheltenham,,,2015/16
+EC,one season only,Chorley,,,2019/20
+EC,one season only,Droylsden,,,2007/08
+EC,one season only,Farsley,,,2007/08
+EC,one season only,Havant & Waterlooville,,,2018/19
+EC,one season only,Lewes,,,2008/09
+EC,one season only,North Ferriby,,,2016/17
+EC,one season only,Oxford City,,,2023/24
+EC,one season only,Salford,,,2018/19
+EC,one season only,Scarborough,,,2005/06
+EC,one season only,St. Albans,,,2006/07
+EC,one season only,Truro,,,2025/26
+EC,possible variant,AFC Telford United,Telford United,same after normalising case/punctuation/FC,"AFC Telford United: 2011/12 | Telford United: 2012/13, 2014/15"
+EC,possible variant,Oxford,Oxford City,one name contains the other,"Oxford: 2006/07, 2007/08, 2008/09, 2009/10 | Oxford City: 2023/24"
+cross-league,possible variant,AFC Wimbledon,Wimbledon,same after normalising case/punctuation/FC,"AFC Wimbledon: E2 2016/17, 2017/18, 2018/19, 2019/20, 2020/21, 2021/22, 2025/26; E3 2011/12, 2012/13, 2013/14, 2014/15, 2015/16, 2022/23, 2023/24, 2024/25; EC 2009/10, 2010/11 | Wimbledon: E0 1993/94, 1994/95, 1995/96, 1996/97, 1997/98, 1998/99, 1999/00; E1 2000/01, 2001/02, 2002/03, 2003/04"
+cross-league,possible variant,Boston,Boston Utd,one name contains the other,"Boston: E3 2002/03, 2003/04, 2004/05, 2005/06, 2006/07 | Boston Utd: EC 2024/25, 2025/26"
+cross-league,possible variant,Northwich,Norwich,similar spelling (0.88),"Northwich: EC 2006/07, 2007/08, 2008/09 | Norwich: E0 1993/94, 1994/95, 2004/05, 2011/12, 2012/13, 2013/14, 2015/16, 2019/20, 2021/22; E1 1995/96, 1996/97, 1997/98, 1998/99, 1999/00, 2000/01, 2001/02, 2002/03, 2003/04, 2005/06, 2006/07, 2007/08, 2008/09, 2010/11, 2014/15, 2016/17, 2017/18, 2018/19, 2020/21, 2022/23, 2023/24, 2024/25, 2025/26; E2 2009/10"
