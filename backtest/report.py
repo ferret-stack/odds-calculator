@@ -71,6 +71,27 @@ def summarise(rows, label):
     ])
 
 
+def flat_roi_ci(rows, z=1.96):
+    """
+    95% confidence interval on flat-stake ROI, in percent: (low, high).
+
+    Normal approximation on per-bet returns at a 1-unit stake (odds-1 for a
+    winner, -1 for a loser): mean +/- z * sd / sqrt(n), with the sample
+    standard deviation. Fixed before any league result was seen. It treats
+    bets as independent, which same-day bets are not exactly.
+
+    Returns (None, None) for fewer than two bets.
+    """
+    returns = [(r['odds'] - 1) if r['won'] else -1.0 for r in rows]
+    n = len(returns)
+    if n < 2:
+        return None, None
+    mean = sum(returns) / n
+    variance = sum((x - mean) ** 2 for x in returns) / (n - 1)
+    half = z * (variance / n) ** 0.5
+    return round((mean - half) * 100, 2), round((mean + half) * 100, 2)
+
+
 def group(rows, key, label_fn=str, order=None):
     """Summarise `rows` grouped by `key`, in `order` if given."""
     buckets = defaultdict(list)
