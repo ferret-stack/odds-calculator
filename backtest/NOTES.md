@@ -422,6 +422,47 @@ forward CLV log is worth running; it is not evidence of profit. NO SIGNAL
 closes this proxy. beta is in probability units: 0.1 = the close moves 10%
 of the way toward the model.
 
-### Result
+### Result: NO SIGNAL
 
-Not yet run.
+Avg -> AvgC, 2019/20-2024/25. beta = slope of y on d; CIs are 95%.
+
+| league | matches | excluded (AvgC only) | mean \|d\| | mean \|y\| | sign agree | A beta (se) | A 95% CI, match | A 95% CI, date | B beta, 95% CI | g on m (se) | A reading |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| E2 | 3,159 | 1 | 0.0420 | 0.0153 | 0.474 | −0.0228 (0.0079) | −0.0383 to −0.0072 | −0.0389 to −0.0066 | −0.0240, −0.0378 to −0.0102 | 0.0074 (0.0040) | NO SIGNAL |
+| E3 | 3,195 | 5 | 0.0402 | 0.0145 | 0.486 | −0.0031 (0.0081) | −0.0189 to 0.0127 | −0.0219 to 0.0157 | −0.0075, −0.0195 to 0.0045 | 0.0071 (0.0057) | NO SIGNAL |
+| **E2+E3 pooled (primary)** | 6,354 | 6 | 0.0411 | 0.0149 | 0.480 | **−0.0130 (0.0056)** | **−0.0239 to −0.0022** | −0.0258 to −0.0003 | −0.0159, −0.0251 to −0.0067 | 0.0073 (0.0033) | **NO SIGNAL** |
+| E1 (descriptive) | 3,312 | 0 | 0.0416 | 0.0141 | 0.457 | −0.0117 (0.0083) | −0.0279 to 0.0045 | −0.0280 to 0.0046 | −0.0226, −0.0354 to −0.0099 | 0.0116 (0.0045) | NO SIGNAL |
+| EC (descriptive) | 3,088 | 2 | 0.0392 | 0.0195 | 0.504 | 0.0432 (0.0099) | 0.0238 to 0.0626 | 0.0227 to 0.0637 | 0.0119, −0.0070 to 0.0308 | 0.0588 (0.0047) | (SIGNAL, descriptive) |
+| E0 (descriptive) | 2,280 | 0 | 0.0428 | 0.0151 | 0.491 | −0.0303 (0.0088) | −0.0476 to −0.0130 | −0.0471 to −0.0135 | −0.0203, −0.0355 to −0.0050 | −0.0052 (0.0026) | NO SIGNAL |
+
+No match was priced in Avg but not AvgC. The AvgC-only exclusions equal
+the Avg rows skipped in section 8 (E2 1, E3 5, EC 2).
+
+**Reading, applied as written.** The pooled 95% CI on beta lies entirely
+below zero, so it is not above zero: NO SIGNAL. The proxy is closed.
+
+Descriptive observations (decide nothing):
+
+- The pooled slope is slightly negative, and the CI excludes zero under
+  both clusterings. Between the Avg and AvgC snapshots the price moved
+  slightly *away* from the model, by about 1% of the disagreement. That is
+  tiny next to mean |d| of 0.041.
+- Sign agreement is below 0.5 in E0, E1, E2 and E3: the price moved toward
+  the model less often than a coin flip would.
+- EC is the only league where A's CI is above zero. It is descriptive and
+  outside the primary, so it carries no weight under the rule. It is also
+  the only league with a large price-level term (g = 0.059, against
+  0.007-0.012 elsewhere) and a larger mean |y| (0.0195), and its plain
+  slope B spans zero. So its positive beta appears only once the
+  price-level control is added. That looks like an EC-specific
+  Avg-to-AvgC price-level effect interacting with the control, not
+  match-level information. Not investigated; a follow-up would need its own
+  pre-registration.
+
+### Unverified
+
+- The 2025/26 holdout has not been looked at, by design.
+- Avg and AvgC are averages across books with possibly different book sets
+  and margins; the move y includes any change in the averaging, not only
+  price movement.
+- The EC price-level effect above has not been explained.
