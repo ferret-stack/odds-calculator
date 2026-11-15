@@ -502,6 +502,116 @@ def test_diagnostic_observations_floor_a_zero_model_probability():
     _raises(ValueError, diagnostic.observations, rows[:2], 'avg')
 
 
+# --- line-movement proxy -----------------------------------------------------
+
+def _synthetic_moves(n, seed, true_beta=0.0, drift=0.0, model_sharpen=1.0):
+    """
+    Matches with y = true_beta * d + drift * (m - 1/3) + noise, every
+    quantity summing to zero within a match as the real ones do.
+    model_sharpen > 1 makes the model lean toward favourites, so d is
+    correlated with m.
+    """
+    import math
+    import random
+    rng = random.Random(seed)
+    rows = []
+    for i in range(n):
+        raw = [rng.uniform(0.15, 1.0) for _ in range(3)]
+        m = [x / sum(raw) for x in raw]
+        raw = [mk ** model_sharpen * math.exp(rng.gauss(0, 0.3)) for mk in m]
+        p = [x / sum(raw) for x in raw]
+        noise = [rng.gauss(0, 0.02) for _ in range(3)]
+        noise = [e - sum(noise) / 3 for e in noise]
+        for k, selection in enumerate(('home', 'draw', 'away')):
+            d = p[k] - m[k]
+            y = true_beta * d + drift * (m[k] - 1 / 3) + noise[k]
+            rows.append({'league': 'E2', 'season': '2019-20',
+                         'date': f'd{i // 10}', 'match': ('E2', i),
+                         'selection': selection, 'm': m[k], 'c': m[k] + y,
+                         'p': p[k], 'd': d, 'y': y})
+    return rows
+
+
+def test_line_movement_finds_no_signal_when_moves_ignore_the_model():
+    from backtest import line_movement as lm
+    result = lm.analyse(_synthetic_moves(3000, seed=11))
+    assert result['beta_ci'][0] < 0.0 < result['beta_ci'][1]
+    assert lm.verdict(result) == 'NO SIGNAL'
+
+
+def test_line_movement_recovers_a_real_signal():
+    from backtest import line_movement as lm
+    result = lm.analyse(_synthetic_moves(3000, seed=12, true_beta=0.3))
+    low, high = result['beta_ci']
+    assert low < 0.3 < high and low > 0
+    assert lm.verdict(result) == 'SIGNAL'
+
+
+def test_line_movement_controls_absorb_a_price_level_drift():
+    # Moves depend only on price level; the model leans to favourites, so
+    # the simple slope (B) is fooled and the primary (A) is not.
+    from backtest import line_movement as lm
+    result = lm.analyse(_synthetic_moves(3000, seed=13, drift=0.05,
+                                         model_sharpen=1.5))
+    assert result['beta_simple_ci'][0] > 0
+    assert result['beta_ci'][0] < 0.0 < result['beta_ci'][1]
+    assert lm.verdict(result) == 'NO SIGNAL'
+
+
+def test_line_movement_cluster_se_matches_hc1_with_singleton_clusters():
+    # With one row per cluster, CR1 reduces to HC1:
+    # var(b) = n/(n-k) * sum((x - xbar)^2 e^2) / sum((x - xbar)^2)^2
+    import math
+    from backtest import line_movement as lm
+    xs = [0.1, -0.2, 0.05, 0.3, -0.1, 0.0]
+    ys = [0.02, -0.01, 0.0, 0.05, -0.03, 0.01]
+    rows = [{'d': x, 'y': y, 'm': 0.3, 'selection': 'home', 'match': i,
+             'date': i} for i, (x, y) in enumerate(zip(xs, ys))]
+    fit = lm.ols_clustered(rows, lm.REGRESSION_B, lm.by_match)
+    n, k = len(xs), 2
+    xbar, ybar = sum(xs) / n, sum(ys) / n
+    sxx = sum((x - xbar) ** 2 for x in xs)
+    b = sum((x - xbar) * (y - ybar) for x, y in zip(xs, ys)) / sxx
+    a = ybar - b * xbar
+    resid = [y - a - b * x for x, y in zip(xs, ys)]
+    var = n / (n - k) * sum((x - xbar) ** 2 * e ** 2
+                            for x, e in zip(xs, resid)) / sxx ** 2
+    assert abs(fit['coef']['d'] - b) < 1e-12
+    assert abs(fit['se']['d'] - math.sqrt(var)) < 1e-12
+
+
+def test_line_movement_observations_pair_families_and_count_exclusions():
+    from backtest import line_movement as lm
+
+    def legs(book, home, fairs, probs=(0.5, 0.3, 0.2)):
+        return [{'book': book, 'date': '2020-01-01', 'home_team': home,
+                 'away_team': 'Z', 'season': '2019-20', 'selection': sel,
+                 'market_fair': f, 'model_prob': p}
+                for sel, f, p in zip(('home', 'draw', 'away'), fairs, probs)]
+
+    fixtures = (legs('avg', 'A', (0.4, 0.3, 0.3))
+                + legs('avgc', 'A', (0.45, 0.3, 0.25))
+                + legs('avg', 'B', (0.4, 0.3, 0.3))
+                + legs('avgc', 'C', (0.4, 0.3, 0.3))
+                + legs('b365', 'A', (0.1, 0.1, 0.8)))
+    rows, excluded = lm.observations(fixtures, 'E2')
+    assert excluded == {'avg_only': 1, 'avgc_only': 1}
+    assert len(rows) == 3
+    home = rows[0]
+    assert home['selection'] == 'home' and home['match'][2] == 'A'
+    assert abs(home['d'] - 0.1) < 1e-12 and abs(home['y'] - 0.05) < 1e-12
+
+    mismatch = (legs('avg', 'A', (0.4, 0.3, 0.3))
+                + legs('avgc', 'A', (0.45, 0.3, 0.25), probs=(0.6, 0.2, 0.2)))
+    _raises(ValueError, lm.observations, mismatch, 'E2')
+
+
+def test_line_movement_cannot_reach_the_holdout():
+    from backtest import line_movement as lm
+    for year in (2026, 2027):
+        _raises(AssertionError, lm.league_rows, 'E2', (year,))
+
+
 if __name__ == '__main__':
     failures = 0
     for name, fn in sorted(globals().items()):

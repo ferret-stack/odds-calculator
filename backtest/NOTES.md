@@ -376,3 +376,52 @@ POOLED E2+E3: 6,360 matches
   market + model: a = 1.159 (se 0.071), b = -0.054 (se 0.081), 95% CI on b -0.213 to 0.106, LR stat 0.43
   out of sample (3,048 fit, 3,312 scored): log loss market only 1.0326, market + model 1.0349, improvement -0.0023
   b reading: NO SIGNAL
+
+## 9. Line-movement proxy (added 2026-11-15)
+
+Question: does the model's disagreement with the pre-closing price predict
+the move to the closing price? Script: `backtest/line_movement.py`
+(print-only; decisions in its header, fixed before any result).
+
+### Method
+
+- **Data**: same chains as section 8 (per-league ELO, league seeding,
+  walk-forward bands), seasons 2019/20-2024/25, families `avg` and `avgc`
+  loaded together. A match is used only if all three prices exist in both
+  families; one-family matches are counted and excluded. The model
+  probability must match across the two families' rows or the run stops.
+- **Variables**, one row per match and selection: m = Avg fair, c = AvgC
+  fair (proportional de-vig, the engine's `market_fair`), p = model
+  probability (no floor), d = p - m, y = c - m.
+- **Primary regression A**: OLS `y = a_home + a_draw + a_away + g*m +
+  beta*d`. The selection and price-level controls stop a systematic drift
+  (draws, longshots, or the de-vig of a lower-margin closing book) from
+  reading as signal, since d is itself correlated with price level.
+  Descriptive regression B: `y = a + beta*d`.
+- **Errors**: CR1 cluster-robust SEs clustered by match (absorbs the exact
+  dependence of a match's three rows, which sum to zero). Date-clustered
+  SEs descriptive. 95% CI = beta +/- 1.96 se.
+- **Tests**: no-signal, recovered signal (beta 0.3), a price-level drift
+  that fools B but not A, CR1 = HC1 on singleton clusters, family pairing
+  and exclusion counts, holdout unreachable.
+
+Commands:
+
+    python3 backtest/line_movement.py --league E2 E3 --pool
+    python3 backtest/line_movement.py --league E1 EC E0
+
+### Reading rule (pre-registered)
+
+PRIMARY: E2 + E3 pooled, regression A, match clusters. SIGNAL = 95% CI on
+beta entirely above zero. NO SIGNAL = anything else. E2 and E3 alone, E0,
+E1, EC, regression B, date clusters, sign agreement and mean |y| are
+descriptive only.
+
+SIGNAL means the model's disagreement partly anticipates the close, so a
+forward CLV log is worth running; it is not evidence of profit. NO SIGNAL
+closes this proxy. beta is in probability units: 0.1 = the close moves 10%
+of the way toward the model.
+
+### Result
+
+Not yet run.
