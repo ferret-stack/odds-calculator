@@ -303,3 +303,76 @@ Pinnacle closing (PSC\*, 2012/13-2024/25) was not run.
 - 2019/20 (E2 400, E3 440, EC 451 rows) and EC 2020/21 (477) are curtailed
   seasons, run as they are; the bottom four come from the curtailed table.
 - The CI assumes independent bets; same-day bets are not exactly independent.
+
+## Beta test
+dannyboy@pop-os:~/boolean/odds$ python3 backtest/diagnostic.py --league E2 E3 --pool
+Odds: avg | seasons 2019-20 .. 2024-25 | model prob floor 0.01 | P(k) ~ exp(a ln market + b ln model)
+
+E2: 3,159 matches
+  log loss  uniform 1.0986 | market 1.0162 | model 1.0374
+  market only: a = 1.195
+  market + model: a = 1.251 (se 0.107), b = -0.070 (se 0.117), 95% CI on b -0.298 to 0.159, LR stat 0.36
+  out of sample (1,503 fit, 1,656 scored): log loss market only 1.0137, market + model 1.0163, improvement -0.0026
+  b reading: NO SIGNAL
+
+E3: 3,195 matches
+  log loss  uniform 1.0986 | market 1.0550 | model 1.0709
+  market only: a = 1.009
+  market + model: a = 1.067 (se 0.107), b = -0.085 (se 0.129), 95% CI on b -0.337 to 0.168, LR stat 0.43
+  out of sample (1,540 fit, 1,655 scored): log loss market only 1.0543, market + model 1.0560, improvement -0.0017
+  b reading: NO SIGNAL
+
+POOLED E2+E3: 6,354 matches
+  log loss  uniform 1.0986 | market 1.0357 | model 1.0542
+  market only: a = 1.115
+  market + model: a = 1.155 (se 0.076), b = -0.053 (se 0.086), 95% CI on b -0.221 to 0.115, LR stat 0.38
+  out of sample (3,043 fit, 3,311 scored): log loss market only 1.0346, market + model 1.0370, improvement -0.0023
+  b reading: NO SIGNAL
+
+dannyboy@pop-os:~/boolean/odds$ python3 backtest/diagnostic.py --league E1 EC E0
+Odds: avg | seasons 2019-20 .. 2024-25 | model prob floor 0.01 | P(k) ~ exp(a ln market + b ln model)
+
+E1: 3,312 matches
+  log loss  uniform 1.0986 | market 1.0379 | model 1.0560
+  market only: a = 1.035
+  market + model: a = 1.146 (se 0.107), b = -0.158 (se 0.131), 95% CI on b -0.414 to 0.099, LR stat 1.45
+  out of sample (1,656 fit, 1,656 scored): log loss market only 1.0332, market + model 1.0329, improvement +0.0003
+  b reading: NO SIGNAL
+
+EC: 3,088 matches
+  log loss  uniform 1.0986 | market 1.0227 | model 1.0394
+  market only: a = 1.099
+  market + model: a = 1.172 (se 0.113), b = -0.083 (se 0.113), 95% CI on b -0.306 to 0.139, LR stat 0.54
+  out of sample (1,433 fit, 1,655 scored): log loss market only 1.0271, market + model 1.0273, improvement -0.0002
+  b reading: NO SIGNAL
+
+E0: 2,280 matches
+  log loss  uniform 1.0986 | market 0.9597 | model 0.9823
+  market only: a = 1.024
+  market + model: a = 1.217 (se 0.116), b = -0.216 (se 0.119), 95% CI on b -0.450 to 0.018, LR stat 3.20
+  out of sample (1,140 fit, 1,140 scored): log loss market only 0.9488, market + model 0.9483, improvement +0.0005
+  b reading: NO SIGNAL
+
+dannyboy@pop-os:~/boolean/odds$ python3 backtest/diagnostic.py --league E2 E3 --odds avgc --pool
+Odds: avgc | seasons 2019-20 .. 2024-25 | model prob floor 0.01 | P(k) ~ exp(a ln market + b ln model)
+
+E2: 3,160 matches
+  log loss  uniform 1.0986 | market 1.0129 | model 1.0374
+  market only: a = 1.194
+  market + model: a = 1.227 (se 0.099), b = -0.043 (se 0.110), 95% CI on b -0.257 to 0.172, LR stat 0.15
+  out of sample (1,504 fit, 1,656 scored): log loss market only 1.0129, market + model 1.0153, improvement -0.0024
+  b reading: NO SIGNAL
+
+E3: 3,200 matches
+  log loss  uniform 1.0986 | market 1.0521 | model 1.0712
+  market only: a = 1.023
+  market + model: a = 1.097 (se 0.101), b = -0.113 (se 0.124), 95% CI on b -0.355 to 0.130, LR stat 0.83
+  out of sample (1,544 fit, 1,656 scored): log loss market only 1.0512, market + model 1.0530, improvement -0.0018
+  b reading: NO SIGNAL
+
+POOLED E2+E3: 6,360 matches
+  log loss  uniform 1.0986 | market 1.0326 | model 1.0544
+  market only: a = 1.120
+  market + model: a = 1.159 (se 0.071), b = -0.054 (se 0.081), 95% CI on b -0.213 to 0.106, LR stat 0.43
+  out of sample (3,048 fit, 3,312 scored): log loss market only 1.0326, market + model 1.0349, improvement -0.0023
+  b reading: NO SIGNAL
