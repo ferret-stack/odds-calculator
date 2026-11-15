@@ -525,6 +525,61 @@ markets are closed for this model as it stands. SIGNAL: a goals betting
 test is worth its own pre-registration and a holdout check; not evidence of
 profit.
 
-### Result
+### Regression check
 
-Not yet run.
+After the engine change, the legacy PL run left `fixtures.csv`, `bets.csv`,
+`summary.csv`, `anomalies.csv` and `seeding.csv` byte-identical. The only
+change was the `summary.md` heading moving from "closing" to "PRE-CLOSING":
+the section 8 label correction, which was waiting for this regeneration.
+
+### Result: NO SIGNAL
+
+`ou25` (Avg, pre-closing), 2019/20-2024/25. Log-loss baseline: uniform
+0.6931 (ln 2).
+
+| league | matches | excl. | mean p | mean m | over rate | log loss market / model | a (market only) | b (se) | 95% CI on b | OOS improvement | reading |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| E2 | 3,159 | 1 | 0.4834 | 0.4882 | 0.4869 | 0.6855 / 0.6931 | 1.431 | −0.408 (0.481) | −1.351 to 0.535 | −0.0004 | NO SIGNAL |
+| E3 | 3,195 | 5 | 0.4683 | 0.4727 | 0.4654 | 0.6818 / 0.6918 | 1.369 | 0.026 (0.215) | −0.395 to 0.447 | −0.0000 | NO SIGNAL |
+| **E2+E3 pooled (primary)** | 6,354 | 6 | 0.4758 | 0.4804 | 0.4761 | 0.6836 / 0.6924 | 1.393 | **−0.052 (0.199)** | **−0.442 to 0.338** | −0.0000 | **NO SIGNAL** |
+| E1 (descriptive) | 3,312 | 0 | 0.4770 | 0.4733 | 0.4629 | 0.6835 / 0.6903 | 1.152 | 0.317 (0.377) | −0.421 to 1.056 | −0.0001 | NO SIGNAL |
+| EC (descriptive) | 3,088 | 2 | 0.5026 | 0.5162 | 0.5165 | 0.6872 / 0.6927 | 0.996 | −0.116 (0.403) | −0.907 to 0.675 | −0.0002 | NO SIGNAL |
+| E0 (descriptive) | 2,280 | 0 | 0.5060 | 0.5510 | 0.5500 | 0.6720 / 0.6886 | 1.074 | −0.166 (0.271) | −0.697 to 0.365 | −0.0001 | NO SIGNAL |
+
+`ou25c` (AvgC, closing), descriptive:
+
+| league | matches | excl. | mean p | mean m | over rate | log loss market / model | a (market only) | b (se) | 95% CI on b | OOS improvement | reading |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| E2 | 3,160 | 0 | 0.4834 | 0.4854 | 0.4870 | 0.6845 / 0.6931 | 1.195 | −0.487 (0.482) | −1.432 to 0.459 | −0.0001 | NO SIGNAL |
+| E3 | 3,200 | 0 | 0.4682 | 0.4671 | 0.4653 | 0.6793 / 0.6918 | 1.262 | −0.002 (0.224) | −0.441 to 0.436 | −0.0000 | NO SIGNAL |
+| E2+E3 pooled | 6,360 | 0 | 0.4758 | 0.4762 | 0.4761 | 0.6819 / 0.6924 | 1.235 | −0.082 (0.208) | −0.490 to 0.325 | +0.0000 | NO SIGNAL |
+
+The `ou25` exclusions equal the 1x2 Avg skips in section 8 (E2 1, E3 5,
+EC 2); `ou25c` excluded none.
+
+**Reading, applied as written.** The pooled 95% CI on b spans zero: NO
+SIGNAL. The band table's over-2.5 rate adds nothing to the market; goals
+markets are closed for this model as it stands.
+
+Descriptive observations (decide nothing):
+
+- The band rate is close to a coin flip: model log loss 0.6886-0.6931
+  against 0.6931 uniform, with the market 0.0055-0.0166 better everywhere.
+  One rate per ELO band carries almost no match-level goals information.
+- Every league reads NO SIGNAL on both Avg and AvgC; no out-of-sample
+  improvement exceeds 0.0001.
+- E0: the band table's mean p (0.506) sits well under the observed over
+  rate (0.550), which the market matched (0.551). The table pools evidence
+  back to 1993/94, so it lags a change in the league's goal rate. Not
+  checked by season.
+- The market-only a is above 1 in E2/E3 (1.39 Avg, 1.24 AvgC): outcomes were
+  more lopsided than the proportionally de-vigged O/U prices implied. This
+  may be the de-vig method rather than the market; not tested.
+- Any goals model built later should be compared with this baseline. A goals
+  model needs per-team information (e.g. attack/defence rates); tweaking the
+  band table will not supply it.
+
+### Unverified
+
+- The 2025/26 holdout has not been looked at, by design.
+- The E0 goal-rate lag and the a > 1 pattern are not investigated.

@@ -8,7 +8,7 @@
 
 `yield_pct` = profit / staked at Kelly sizing. `flat_roi_pct` = profit / bets at a flat 1-unit stake. `market_fair` = de-vigged market probability.
 
-## AvgH/AvgD/AvgA — market-average closing odds (primary)
+## AvgH/AvgD/AvgA — market-average PRE-CLOSING odds (primary)
 
 Selections considered: 5,700 · bets placed: 1,298 · blocked by same-market sanity check: 288 · sized down to Eighth-Kelly for a >=20% edge: 548 · per-bet cap fired: 296
 
