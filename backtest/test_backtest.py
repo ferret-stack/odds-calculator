@@ -451,6 +451,57 @@ def test_league_runner_cannot_reach_the_holdout():
                 ['--league', 'E2', '--bet-to', year])
 
 
+# --- diagnostic: does the model add to the market? --------------------------
+
+def _synthetic_obs(n, true_b, seed):
+    """Matches whose true probabilities are market^1 * model^true_b."""
+    import math
+    import random
+    from backtest import diagnostic
+    rng = random.Random(seed)
+    obs = []
+    for i in range(n):
+        def simplex():
+            raw = [rng.uniform(0.15, 1.0) for _ in range(3)]
+            return [x / sum(raw) for x in raw]
+        market, model = simplex(), simplex()
+        features = [(math.log(m), math.log(p)) for m, p in zip(market, model)]
+        truth = diagnostic._probabilities(features, [1.0, true_b], (0, 1))
+        winner = rng.choices(range(3), weights=truth)[0]
+        obs.append(('2019-20' if i % 2 else '2022-23', features, winner))
+    return obs
+
+
+def test_diagnostic_finds_no_signal_when_the_model_is_noise():
+    from backtest import diagnostic
+    result = diagnostic.analyse(_synthetic_obs(4000, 0.0, seed=1))
+    assert abs(result['a'] - 1.0) < 0.1
+    assert result['b_ci'][0] < 0.0 < result['b_ci'][1]
+    assert diagnostic.verdict(result) == 'NO SIGNAL'
+
+
+def test_diagnostic_recovers_a_real_signal():
+    from backtest import diagnostic
+    result = diagnostic.analyse(_synthetic_obs(4000, 0.5, seed=2))
+    assert abs(result['b'] - 0.5) < 0.1 and abs(result['a'] - 1.0) < 0.1
+    assert diagnostic.verdict(result) == 'SIGNAL'
+    assert result['oos']['improvement'] > 0
+
+
+def test_diagnostic_observations_floor_a_zero_model_probability():
+    import math
+    from backtest import diagnostic
+    rows = [{'book': 'avg', 'date': '2020-01-01', 'home_team': 'A',
+             'away_team': 'B', 'season': '2019-20', 'ftr': 'D',
+             'selection': sel, 'market_fair': fair, 'model_prob': prob}
+            for sel, fair, prob in (('home', 0.5, 0.7), ('draw', 0.3, 0.3),
+                                    ('away', 0.2, 0.0))]
+    (season, features, winner), = diagnostic.observations(rows, 'avg')
+    assert (season, winner) == ('2019-20', 1)
+    assert features[2] == (math.log(0.2), math.log(diagnostic.MODEL_PROB_FLOOR))
+    _raises(ValueError, diagnostic.observations, rows[:2], 'avg')
+
+
 if __name__ == '__main__':
     failures = 0
     for name, fn in sorted(globals().items()):
