@@ -303,6 +303,8 @@ def run(matches, bands_mode='walkforward', warmup_seasons=1,
         clamps    -- per-bet cap firings
         seeding   -- every deliberate seed taken during the walk
         anomalies -- Band-1-bug sightings and empty-band prices
+        goal_rates -- one row per priced match: band, band games, the
+                     band's over-2.5 rate before that date, total goals
         meta      -- run configuration, echoed for the report header
     """
     if bands_mode not in ('walkforward', 'frozen'):
@@ -345,6 +347,7 @@ def run(matches, bands_mode='walkforward', warmup_seasons=1,
 
     completed = []          # stamped matches, the walk-forward band evidence
     fixtures, clamps, seeding_log, anomalies = [], [], [], []
+    goal_rates = []         # one row per priced match, for the goals test
     bands, bands_date = (frozen_bands, None) if bands_mode == 'frozen' else ([], None)
 
     for match in matches:
@@ -407,6 +410,16 @@ def run(matches, bands_mode='walkforward', warmup_seasons=1,
         model = (_price(home_elo, away_elo, bands)
                  if pricing and bands and not degenerate else None)
         betting = match['season'] not in warmup and model is not None
+        if betting:
+            # The band's over-2.5 rate, as the table stood before this date.
+            # Kept out of the fixture log so its CSV is unchanged.
+            goal_rates.append({
+                'date': match['date'], 'season': match['season'],
+                'home_team': match['home_team'],
+                'away_team': match['away_team'],
+                'band': band, 'band_games': band_games,
+                'over_25_pct': band_row['over_25_pct'],
+                'total_goals': match['home_goals'] + match['away_goals']})
 
         stronger = 'home' if home_elo > away_elo else (
             'away' if away_elo > home_elo else 'even')
@@ -510,6 +523,7 @@ def run(matches, bands_mode='walkforward', warmup_seasons=1,
         'clamps': clamps,
         'seeding': seeding_log,
         'anomalies': anomalies,
+        'goal_rates': goal_rates,
         'final_elo': dict(calc.current_elo),
         'meta': {
             'bands_mode': bands_mode,

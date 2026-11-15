@@ -625,3 +625,115 @@ if __name__ == '__main__':
             print(f'  FAIL  {name}: {type(exc).__name__}: {exc}')
     print(f'\n{failures} failure(s)')
     raise SystemExit(1 if failures else 0)
+
+
+# --- goals diagnostic: does the band over-2.5 rate add to the market? -------
+
+def _synthetic_goal_obs(n, true_b, seed):
+    """Two-outcome matches whose true P(over) is market^1 * model^true_b."""
+    import math
+    import random
+    from backtest import diagnostic
+    rng = random.Random(seed)
+    obs = []
+    for i in range(n):
+        m, p = rng.uniform(0.3, 0.7), rng.uniform(0.3, 0.7)
+        features = [(math.log(m), math.log(p)),
+                    (math.log(1 - m), math.log(1 - p))]
+        truth = diagnostic._probabilities(features, [1.0, true_b], (0, 1))
+        winner = rng.choices(range(2), weights=truth)[0]
+        obs.append(('2019-20' if i % 2 else '2022-23', features, winner))
+    return obs
+
+
+def test_goals_diagnostic_finds_no_signal_when_the_model_is_noise():
+    import math
+    from backtest import goals_diagnostic as gd
+    result = gd.analyse(_synthetic_goal_obs(6000, 0.0, seed=21))
+    assert result['b_ci'][0] < 0.0 < result['b_ci'][1]
+    assert abs(result['logloss_uniform'] - math.log(2)) < 1e-12
+    assert gd.verdict(result) == 'NO SIGNAL'
+
+
+def test_goals_diagnostic_recovers_a_real_signal():
+    from backtest import goals_diagnostic as gd
+    result = gd.analyse(_synthetic_goal_obs(6000, 1.0, seed=22))
+    low, high = result['b_ci']
+    assert low < 1.0 < high and low > 0
+    assert gd.verdict(result) == 'SIGNAL'
+
+
+def test_goals_observations_clamp_devig_and_count_missing_prices():
+    import math
+    from backtest import goals_diagnostic as gd
+
+    def rate(home, pct, goals):
+        return {'date': '2020-01-01', 'season': '2019-20', 'home_team': home,
+                'away_team': 'Z', 'band': 1, 'band_games': 5,
+                'over_25_pct': pct, 'total_goals': goals}
+
+    matches = [
+        {'date': '2020-01-01', 'home_team': 'A', 'away_team': 'Z',
+         'odds': {'ou25': {'over': 2.0, 'under': 2.0}}},
+        {'date': '2020-01-01', 'home_team': 'B', 'away_team': 'Z',
+         'odds': {'ou25': {'over': 1.5, 'under': 3.0}}},
+        {'date': '2020-01-01', 'home_team': 'C', 'away_team': 'Z',
+         'odds': {}},
+    ]
+    rates = [rate('A', 1.0, 3), rate('B', 0.0, 2), rate('C', 0.5, 4)]
+    obs, summary = gd.observations(rates, matches, 'ou25')
+    assert summary['missing_price'] == 1 and len(obs) == 2
+    (_, fa, wa), (_, fb, wb) = obs
+    assert (wa, wb) == (0, 1), 'outcome 0 is over 2.5'
+    assert abs(fa[0][0] - math.log(0.5)) < 1e-12
+    assert abs(fa[0][1] - math.log(0.99)) < 1e-12
+    assert abs(fa[1][1] - math.log(0.01)) < 1e-12
+    assert abs(fb[0][0] - math.log(2 / 3)) < 1e-12
+    assert abs(fb[0][1] - math.log(0.01)) < 1e-12
+    _raises(ValueError, gd.observations, rates, matches[:2], 'ou25')
+
+
+def test_goals_families_load_and_a_missing_column_is_an_error():
+    import tempfile
+    header = 'Div,Date,HomeTeam,AwayTeam,FTHG,FTAG,FTR,Avg>2.5,Avg<2.5'
+    with tempfile.TemporaryDirectory() as root:
+        _write_league(root, 'E2', 2020, ['E2,03/08/2019,A,B,2,1,H,1.9,1.95',
+                                         'E2,03/08/2019,C,D,0,0,D,,1.95'],
+                      header=header)
+        matches, skips = load_league('E2', seasons=[2020], bet_seasons=[2020],
+                                     families=('ou25',), root=root)
+        assert matches[0]['odds']['ou25'] == {'over': 1.9, 'under': 1.95}
+        assert matches[1]['odds'] == {}
+        assert skips[0]['skipped'] == 1
+        exc = _raises(DataError, load_league, 'E2', seasons=[2020],
+                      bet_seasons=[2020], families=('ou25c',), root=root)
+        assert 'AvgC>2.5' in str(exc)
+    assert 'ou25' not in data.ODDS_FAMILIES, '1x2 runners must not offer it'
+
+
+def test_goal_rates_match_the_band_table_and_leave_fixtures_alone():
+    matches = load_all()
+    frozen = [{'band': b, 'range': '', 'total_games': 100,
+               'evenly_rated_games': 0, 'stronger_win_pct': 0.45,
+               'draw_pct': 0.27, 'weaker_win_pct': 0.28,
+               'over_25_pct': round(0.40 + b / 100, 4)}
+              for b in range(1, 11)]
+    result = run(matches, bands_mode='frozen', frozen_bands=frozen,
+                 books=('avg',))
+    rates = result['goal_rates']
+    assert rates
+    for r in rates:
+        assert r['over_25_pct'] == round(0.40 + r['band'] / 100, 4)
+        assert r['band_games'] == 100
+    keys = {(r['date'], r['home_team'], r['away_team']) for r in rates}
+    assert {(r['date'], r['home_team'], r['away_team'])
+            for r in result['fixtures']} <= keys
+    assert all('over_25_pct' not in r for r in result['fixtures'])
+    plain = run(matches, bands_mode='frozen', frozen_bands=frozen, books=())
+    assert plain['goal_rates'] == rates, 'goal rates do not depend on books'
+
+
+def test_goals_diagnostic_cannot_reach_the_holdout():
+    from backtest import goals_diagnostic as gd
+    for year in (2026, 2027):
+        _raises(AssertionError, gd.league_obs, 'E2', 'ou25', (year,))

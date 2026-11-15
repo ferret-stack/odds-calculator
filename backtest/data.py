@@ -32,6 +32,9 @@ Odds families, column names from docs/Football-Data-Notes.md:
     avgc  AvgCH/AvgCD/AvgCA   market average, closing
     b365  B365H/B365D/B365A   Bet365, pre-closing
     psc   PSCH/PSCD/PSCA      Pinnacle, closing
+    ou25  Avg>2.5/Avg<2.5     over/under 2.5 goals, market average,
+                              pre-closing (GOALS_FAMILIES)
+    ou25c AvgC>2.5/AvgC<2.5   over/under 2.5 goals, market average, closing
 
 Odds are read ONLY for the seasons named in `bet_seasons`. Warm-up seasons
 load fixtures and results and nothing else, so the older BbAv* averages (a
@@ -73,6 +76,15 @@ ODDS_FAMILIES = {
     'b365': {'home': 'B365H', 'draw': 'B365D', 'away': 'B365A'},
     'psc': {'home': 'PSCH', 'draw': 'PSCD', 'away': 'PSCA'},
 }
+
+# Over/under 2.5 goals. Kept apart from ODDS_FAMILIES, which the 1x2 runners
+# offer as --odds choices: a goals family there would silently bet nothing.
+GOALS_FAMILIES = {
+    'ou25': {'over': 'Avg>2.5', 'under': 'Avg<2.5'},      # pre-closing
+    'ou25c': {'over': 'AvgC>2.5', 'under': 'AvgC<2.5'},   # closing
+}
+
+_ALL_FAMILIES = {**ODDS_FAMILIES, **GOALS_FAMILIES}
 
 REQUIRED = ('Date', 'HomeTeam', 'AwayTeam', 'FTHG', 'FTAG', 'FTR')
 
@@ -165,7 +177,7 @@ def _load_season(path, season, families, aliases, legacy_regression=False):
 
     absent = [c for c in REQUIRED if c not in header]
     for family in families:
-        absent += [c for c in ODDS_FAMILIES[family].values()
+        absent += [c for c in _ALL_FAMILIES[family].values()
                    if c not in header]
     if absent:
         raise DataError(f'{path}: missing column(s) {", ".join(absent)}')
@@ -183,7 +195,7 @@ def _load_season(path, season, families, aliases, legacy_regression=False):
         odds = {}
         for family in families:
             prices = {sel: _price(row, col)
-                      for sel, col in ODDS_FAMILIES[family].items()}
+                      for sel, col in _ALL_FAMILIES[family].items()}
             if all(prices.values()):
                 odds[family] = prices
             else:
@@ -260,10 +272,10 @@ def load_league(code, seasons=None, bet_seasons=(), families=('avg',),
     {'league', 'season', 'family', 'rows', 'skipped'}, one per betting
     season and family, zeros included.
     """
-    unknown = [f for f in families if f not in ODDS_FAMILIES]
+    unknown = [f for f in families if f not in _ALL_FAMILIES]
     if unknown:
         raise DataError(f'unknown odds family {unknown}; expected one of '
-                        f'{", ".join(ODDS_FAMILIES)}')
+                        f'{", ".join(_ALL_FAMILIES)}')
 
     available = available_seasons(code, root)
     years = sorted(available if seasons is None else set(seasons))

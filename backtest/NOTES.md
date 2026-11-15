@@ -466,3 +466,65 @@ Descriptive observations (decide nothing):
   and margins; the move y includes any change in the averaging, not only
   price movement.
 - The EC price-level effect above has not been explained.
+
+
+## 10. Goals diagnostic: over/under 2.5 (added 2026-11-15)
+
+Question: does the band table's over-2.5 rate know anything the O/U 2.5
+market price does not? Script: `backtest/goals_diagnostic.py` (print-only;
+decisions in its header, fixed before any result).
+
+### What is being tested
+
+The model's P(over 2.5) is the walk-forward band table's `over_25_pct` for
+the match's ELO-difference band: one rate per band, no venue adjustment, no
+team identity. Production prices and bets 1x2 only
+(`pipeline/run_pipeline.py` `MARKETS`), so this tests the band table's goals
+column, not anything production does. O/U 2.5 is the only goals line priced
+in these files. The result is the baseline any later goals model has to
+beat.
+
+### Method
+
+- **Data**: same chains as section 8, seasons 2019/20-2024/25. New loader
+  families in `GOALS_FAMILIES` (kept out of `ODDS_FAMILIES` so the 1x2
+  runners cannot be pointed at them): `ou25` = `Avg>2.5`/`Avg<2.5`
+  (pre-closing), `ou25c` = `AvgC>2.5`/`AvgC<2.5` (closing). Same loader
+  rules: a missing column is an error; a blank price skips the match for
+  that family and is counted.
+- **Engine**: `run()` also returns `goal_rates`, one row per priced match
+  (band, band games, `over_25_pct` as of before the date, total goals). A
+  separate key, not fixture-log columns, so `backtest/out/` is unchanged.
+- **Inclusion**: a match is used if the engine priced it (band non-empty,
+  not degenerate) and both O/U prices exist; the rest are counted.
+- **Inputs**: m = O/U price de-vigged proportionally over two outcomes;
+  p = `over_25_pct` clamped to [0.01, 0.99].
+- **Model**: the two-outcome form of section 8's beta test, reusing
+  `diagnostic.fit`/`analyse`/`verdict`: logit P(over) = a logit(m) +
+  b logit(p), no intercept. Uniform log-loss baseline is ln 2.
+- **Tests**: no signal on noise, real b recovered, clamp / de-vig /
+  missing-price counts, new families load and a missing column errors,
+  `goal_rates` equal a frozen band table and leave fixture rows unchanged,
+  holdout unreachable.
+
+Commands:
+
+    python3 backtest/goals_diagnostic.py --league E2 E3 --pool
+    python3 backtest/goals_diagnostic.py --league E1 EC E0
+    python3 backtest/goals_diagnostic.py --league E2 E3 --odds ou25c --pool
+
+### Reading rule (pre-registered)
+
+PRIMARY: E2 + E3 pooled, `ou25` (Avg, pre-closing). SIGNAL = 95% CI on b
+entirely above zero. NO SIGNAL = anything else. E2 and E3 alone, E0, E1, EC,
+`ou25c`, the out-of-sample log-loss difference and mean p / mean m /
+observed over rate are descriptive only.
+
+NO SIGNAL: the band table's goals rate adds nothing to the market; goals
+markets are closed for this model as it stands. SIGNAL: a goals betting
+test is worth its own pre-registration and a holdout check; not evidence of
+profit.
+
+### Result
+
+Not yet run.
