@@ -1,0 +1,38 @@
+## Odds Calculator: lower-leagues backtest (branch lower-leagues-data)
+- [x] Step 0 read-through of backtest/, ELO code, audit and alias files; found two contradictions in the brief before writing any code
+- [x] Contradiction 1 resolved: holdout guard blocks every `<code>/2026.csv` incl. E0; the flat PL 2026 file is readable only via the argument-less `load_legacy_pl_flat()` (supersedes the brief's blanket "2026.csv never loaded", for the PL regression only)
+- [x] Contradiction 2 resolved: seeding policy `legacy|league`, `league` default, `legacy` refused outside E0 (supersedes "step 3 regression must match with new seeding")
+- [x] Generalised loader: league code, season range, odds families avg/avgc/b365/psc, missing column = error, blank price = skip and count, aliases applied
+- [x] PL regression reproduced exactly twice (after loader, after seeding): 1,298 bets, -10.23% yield, -11.68% flat ROI, `backtest/out/` byte-identical
+- [x] Per-league ELO chains with entrant seeding (promoted = bottom-four avg, relegated/unknown = league avg, re-entrants re-seeded)
+- [x] Ran E2, E3 (primary), E1, EC, E0 (descriptive) on Avg and E2+E3 on AvgC, 2019/20 to 2024/25
+- [x] Reading rule applied verbatim: NOT A PASS. E2+E3 pooled flat ROI -9.41%, 95% CI -14.70 to -4.13; E2 -9.15%, E3 -9.70%
+- [x] Method and results appended to `backtest/NOTES.md` section 8; committed (5104f34) and pushed by Wesley
+- [x] Built `backtest/diagnostic.py` (does the model add to the market price?) with decisions fixed in its header before running
+- [x] Diagnostic run by Wesley: NO SIGNAL on all three commands (numbers not seen by Claude; Wesley adding them to NOTES.md as "Beta Test")
+- [x] Label correction: Avg H/D/A are pre-closing, not closing; runner relabelled
+- [-] Pinnacle closing run (PSC, 2012/13 to 2024/25): not run
+- [-] Other countries' leagues (Denmark, Sweden): parked for later
+- [-] Portfolios/accumulators as a source of edge: dropped, combining negative-EV bets does not create edge
+- [w] Pre-registered test held end to end: rule fixed first, holdout never touched, result reported against the rule with no slicing
+- [c] Push failed from Claude's shell (no GitHub credentials); Wesley pushed manually
+- [c] The brief contradicted itself twice (holdout vs PL regression; new seeding vs exact regression); both needed a decision before work could start
+- [c] Model loses in all five leagues and adds nothing to the market price: the 1x2 band model is closed as a source of edge
+- [?] `band1_default_1500` fired 26/34/27 times in E2/E3/E1 bet seasons; presumed ordinary ratings landing on 1500, not checked one by one
+- [?] Entrant directions spot-checked on four known movements only
+- [?] Is real money still being staked by the weekly pipeline from this model?
+- [>] Switch default model off Fable (`/model sonnet`) at the start of the next session
+- [>] Line-movement proxy test (model disagreement vs Avg to AvgC move): brief written, to run in a new chat
+- [>] Goals market quick look (over/under 2.5): brief written, to run in a new chat
+- [>] Forward paper-trading log for team-news picks, judged on closing line value: brief written, after the two tests above
+- [>] Blog posts on this process come first
+- [>] Fix live crash in `calculate_fair_odds` on ELO gaps of 401+ (NOTES.md section 3), still open
+- [I] Use market-derived probabilities for Super 6, where there is no bookmaker margin
+- [I] Blog angles: frozen vs walk-forward lookahead (+1.32% vs -11.68%), pre-registration, the "closing" mislabel, July season starts
+- [>] Docs to consider updating (suggestion only): NOTES.md sections 1-7 still say "closing" for Avg; `backtest/out/summary.md` carries the old label until regenerated; `docs/Odds_Calculator_System_Source_of_Truth.md` does not yet record these results
+- [b] [[backtest/NOTES.md]]
+- [b] [[backtest/data.py]]
+- [b] [[backtest/engine.py]]
+- [b] [[backtest/report.py]]
+- [b] [[backtest/run_backtest.py]]
+- [b] [[backtest/diagnostic.py]]
